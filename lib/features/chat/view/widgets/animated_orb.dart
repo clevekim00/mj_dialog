@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:mj_dialog/features/chat/provider/chat_provider.dart';
+import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
 
 class AnimatedOrb extends StatefulWidget {
   final ConversationState state;

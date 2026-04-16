@@ -1,4 +1,4 @@
-name: mj_dialog
+name: speech_rehab
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -40,6 +40,9 @@ dependencies:
   dio: ^5.9.2
   flutter_gemma: ^0.12.6
   uuid: ^4.0.0
+  shared_preferences: ^2.5.2
+  intl: ^0.20.2
+  permission_handler: ^12.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

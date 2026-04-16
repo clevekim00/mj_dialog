@@ -15,16 +15,28 @@ class SttService {
   bool _sttEnabled = false;
 
   Future<bool> init() async {
+    // STT is unstable on desktop platforms in some Flutter environments.
+    // We skip initialization on desktop to prevent TCC crashes.
+    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+      debugPrint('STT is not supported on this platform. Avoiding initialization.');
+      return false;
+    }
+
     if (_sttEnabled) {
       return true;
     }
 
-    _sttEnabled = await _speechToText.initialize(
-      onError: _handleError,
-      onStatus: (status) {
-        debugPrint('STT status: $status');
-      },
-    );
+    try {
+      _sttEnabled = await _speechToText.initialize(
+        onError: _handleError,
+        onStatus: (status) {
+          debugPrint('STT status: $status');
+        },
+      );
+    } catch (e) {
+      debugPrint('STT initialization error: $e');
+      _sttEnabled = false;
+    }
 
     if (_sttEnabled) {
       final locales = await _speechToText.locales();

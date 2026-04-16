@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mj Dialog</string>
+	<string>Speech Rehab</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>mj_dialog</string>
+	<string>Speech Rehab</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,8 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to record your voice for pronunciation feedback.</string>
+	<string>Speech Rehab requires microphone access to record your voice for pronunciation feedback.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app requires speech recognition access to transcribe your spoken words.</string>
+	<string>Speech Rehab requires speech recognition access to transcribe your spoken words.</string>
 </dict>
 </plist>

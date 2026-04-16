@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
-import 'package:mj_dialog/features/chat/view/chat_screen.dart';
+import 'package:speech_rehab/features/chat/view/history_screen.dart';
+import 'package:speech_rehab/features/chat/view/permission_screen.dart';
+import 'package:speech_rehab/services/permission_service.dart';
 import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Only attempt Gemma initialization on mobile platforms where the plugin is fully supported.
-  // On macOS/Windows/Linux desktop, the asset copy mechanism is not implemented.
   final isDesktop = !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
   
   if (!isDesktop) {
@@ -24,8 +24,6 @@ void main() async {
     } catch (e) {
       debugPrint('Gemma init failed or no model loaded: $e');
     }
-  } else {
-    debugPrint('Running on desktop — skipping Gemma model loading (not supported on desktop).');
   }
 
   runApp(const MyApp());
@@ -48,7 +46,7 @@ class _AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MJ Dialog',
+      title: 'Speech Rehab',
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF121212),
@@ -58,8 +56,37 @@ class _AppView extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ChatScreen(),
+      home: const StartupResolver(),
       debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class StartupResolver extends StatelessWidget {
+  const StartupResolver({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: PermissionService.hasAllPermissions(),
+      builder: (context, snapshot) {
+        // While checking, show a blank dark screen or a loader
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF121212),
+            body: Center(
+              child: CircularProgressIndicator(color: Colors.white10),
+            ),
+          );
+        }
+
+        final hasPermissions = snapshot.data ?? false;
+        if (hasPermissions) {
+          return const HistoryScreen();
+        } else {
+          return const PermissionScreen();
+        }
+      },
     );
   }
 }

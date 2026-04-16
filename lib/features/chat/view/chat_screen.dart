@@ -1,52 +1,18 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mj_dialog/features/chat/provider/chat_provider.dart';
-import 'package:mj_dialog/features/chat/view/widgets/animated_orb.dart';
-import 'package:mj_dialog/features/chat/view/widgets/feedback_card.dart';
+import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
+import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
+import 'package:speech_rehab/features/chat/view/widgets/feedback_card.dart';
 
-class ChatScreen extends ConsumerStatefulWidget {
+class ChatScreen extends ConsumerWidget {
   const ChatScreen({super.key});
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends ConsumerState<ChatScreen> {
-  final TextEditingController _textController = TextEditingController();
-
-  bool get _isDesktop =>
-      !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
-
-  bool get _isVoiceSupported => !_isDesktop;
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  void _submitText(WidgetRef ref) {
-    final text = _textController.text.trim();
-    if (text.isEmpty) {
-      return;
-    }
-
-    _textController.clear();
-    ref.read(chatControllerProvider.notifier).submitText(text);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     ref.listen<String?>(
       chatControllerProvider.select((session) => session.errorMessage),
       (previous, next) {
-        if (next == null || next == previous) {
-          return;
-        }
-
+        if (next == null || next == previous) return;
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(SnackBar(content: Text(next)));
@@ -58,38 +24,70 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final state = session.conversationState;
 
     return Scaffold(
+      backgroundColor: const Color(0xFF121212),
       body: SafeArea(
         child: Stack(
           children: [
+            // Top Bar with Back Button
             Positioned(
-              top: 24,
-              left: 24,
-              right: 24,
+              top: 16,
+              left: 16,
+              right: 16,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white54),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.graphic_eq,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'SPEECH REHAB',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withValues(alpha: 0.5),
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 48), // Spacer to balance back button
+                ],
+              ),
+            ),
+
+            // Central Orb - The focus of the conversation
+            Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.graphic_eq,
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(width: 8),
+                  AnimatedOrb(state: state),
+                  const SizedBox(height: 48),
+                  // Helpful status text
                   Text(
-                    'Gemma AI Coach',
+                    _getStatusText(state),
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      letterSpacing: 2.0,
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ],
               ),
             ),
-            Center(
-              child: AnimatedOrb(state: state),
-            ),
+
+            // Live Text / Response Text Display - Higher for readability
             Positioned(
-              bottom: _isDesktop ? 180 : 160,
+              bottom: 220,
               left: 32,
               right: 32,
               child: AnimatedOpacity(
@@ -102,7 +100,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   session.liveText.isEmpty ? '듣고 있어요...' : session.liveText,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     height: 1.4,
@@ -110,10 +108,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
             ),
+
+            // Feedback Card
             AnimatedPositioned(
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeOutQuart,
-              bottom: state == ConversationState.feedback ? 120 : -400,
+              bottom: state == ConversationState.feedback ? 160 : -400,
               left: 24,
               right: 24,
               child: session.feedback != null
@@ -125,13 +125,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     )
                   : const SizedBox.shrink(),
             ),
+
+            // Bottom Mic Button - Simplified, no text input
             Positioned(
-              bottom: 24,
-              left: 24,
-              right: 24,
-              child: _isDesktop
-                  ? _buildDesktopInput(ref, session)
-                  : _buildMobileMic(ref, state),
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _buildMicButton(ref, state),
+              ),
             ),
           ],
         ),
@@ -139,92 +141,69 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget _buildDesktopInput(WidgetRef ref, ChatSessionState session) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Row(
+  String _getStatusText(ConversationState state) {
+    switch (state) {
+      case ConversationState.idle:
+        return '준비되었어요';
+      case ConversationState.listening:
+        return '말씀해 주세요';
+      case ConversationState.thinking:
+        return '생각 중이에요';
+      case ConversationState.speaking:
+        return '말하는 중이에요';
+      case ConversationState.feedback:
+        return '피드백 확인 중';
+    }
+  }
+
+  Widget _buildMicButton(WidgetRef ref, ConversationState state) {
+    final isListening = state == ConversationState.listening;
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(chatControllerProvider.notifier).toggleVoiceInput(
+              isVoiceSupported: true,
+            );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _textController,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-              decoration: InputDecoration(
-                hintText: session.isProcessing ? '처리 중...' : '메시지를 입력하세요...',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isListening ? Colors.redAccent : Colors.white10,
+              border: Border.all(
+                color: isListening ? Colors.redAccent : Colors.white24,
+                width: 2,
               ),
-              enabled: !session.isProcessing,
-              onSubmitted: (_) => _submitText(ref),
+              boxShadow: [
+                BoxShadow(
+                  color: (isListening ? Colors.redAccent : Colors.white10)
+                      .withValues(alpha: 0.2),
+                  blurRadius: 24,
+                  spreadRadius: 8,
+                ),
+              ],
+            ),
+            child: Icon(
+              isListening ? Icons.stop_rounded : Icons.mic_rounded,
+              size: 40,
+              color: isListening ? Colors.white : Colors.white70,
             ),
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: session.isProcessing ? null : () => _submitText(ref),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: session.isProcessing ? Colors.grey[700] : Colors.white,
-              ),
-              child: Icon(
-                Icons.send_rounded,
-                size: 22,
-                color: session.isProcessing ? Colors.grey[500] : Colors.black87,
-              ),
+          const SizedBox(height: 16),
+          Text(
+            isListening ? '완료하려면 탭' : '탭하여 시작',
+            style: const TextStyle(
+              color: Colors.white38,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMobileMic(WidgetRef ref, ConversationState state) {
-    return Center(
-      child: GestureDetector(
-        onTap: () {
-          ref.read(chatControllerProvider.notifier).toggleVoiceInput(
-                isVoiceSupported: _isVoiceSupported,
-              );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color:
-                state == ConversationState.listening ? Colors.red[400] : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color:
-                    (state == ConversationState.listening ? Colors.red : Colors.white)
-                        .withValues(alpha: 0.3),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: Icon(
-            state == ConversationState.listening
-                ? Icons.stop_rounded
-                : Icons.mic_rounded,
-            size: 32,
-            color:
-                state == ConversationState.listening ? Colors.white : Colors.black87,
-          ),
-        ),
       ),
     );
   }

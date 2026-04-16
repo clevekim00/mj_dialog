@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:mj_dialog/services/api/ai_service.dart';
+import 'package:speech_rehab/services/api/ai_service.dart';
 
 class FeedbackCard extends StatelessWidget {
   final AiResponse aiResponse;

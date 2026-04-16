@@ -29,8 +29,8 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to record your voice for pronunciation feedback.</string>
+	<string>Speech Rehab requires microphone access to record your voice for pronunciation feedback.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app requires speech recognition access to transcribe your spoken words.</string>
+	<string>Speech Rehab requires speech recognition access to transcribe your spoken words.</string>
 </dict>
 </plist>

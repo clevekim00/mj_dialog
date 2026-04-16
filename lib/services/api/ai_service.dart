@@ -43,16 +43,19 @@ class AiService {
 
   String _buildPrompt(String userText) {
     return '''
-You are '영은', a friendly language rehabilitation assistant in Korean.
+You are '영은', a professional and friendly language rehabilitation coach.
 The user said: "$userText".
-1. Give a conversational reply.
-2. Provide a pronunciation score out of 100 based on standard Korean grammar and naturalness of the sentence text.
-3. Provide brief pronunciation and speech feedback.
+
+Goals:
+1. Reply naturally to the user. Always end with a natural follow-up question to keep the conversation moving.
+2. Evaluate pronunciation/grammar objectively. Do NOT give excessive praise (e.g., avoid "Perfect!" or "Amazingly great!" if it's just normal). Be honest but encouraging.
+3. Provide one specific tip for better speech or pronunciation based on the text.
+
 Respond ONLY as JSON with this exact shape:
 {
-  "replyText": "your reply here",
-  "pronunciationScore": 85,
-  "pronunciationFeedback": "your feedback here"
+  "replyText": "your reply with a follow-up question",
+  "pronunciationScore": 0-100,
+  "pronunciationFeedback": "objective tip or feedback"
 }
 ''';
   }
@@ -71,11 +74,7 @@ Respond ONLY as JSON with this exact shape:
       );
     } catch (error) {
       debugPrint('Failed to parse Gemma response: $error');
-      return AiResponse(
-        replyText: '무슨 말씀이신지 이해했어요.',
-        pronunciationScore: 80,
-        pronunciationFeedback: '기본적인 전달력이 좋습니다.',
-      );
+      return _fallbackParse('error');
     }
   }
 
@@ -97,21 +96,21 @@ Respond ONLY as JSON with this exact shape:
   String _sanitizeText(String? value) {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {
-      return '의사소통이 원활할 수 있도록 연습해 보아요.';
+      return '천천히 대화를 이어가 볼까요? 최근에 즐거웠던 일이 있으신가요?';
     }
 
     return normalized;
   }
 
   AiResponse _fallbackParse(String userText) {
-    var reply = '안녕하세요! 발음이 아주 좋으시네요. 어떤 이야기를 나누고 싶으신가요?';
-    var score = 85;
-    var feedback = '전반적으로 훌륭하지만, 약간의 억양 교정이 필요할 수 있습니다.';
+    var reply = '반가워요! 오늘 하루는 어떠셨나요? 특별한 일은 없으셨어요?';
+    var score = 80;
+    var feedback = '문장이 자연스럽습니다. 다만 끝맺음을 조금 더 명확하게 해주시면 좋을 것 같아요.';
 
     if (userText.contains('어려워')) {
-      reply = '천천히 다시 해보세요. 제가 도와드릴게요.';
-      score = 60;
-      feedback = "'어려워'라는 단어의 '려' 발음을 명확하게 해보세요.";
+      reply = '많이 힘드셨군요. 어떤 부분이 가장 어려우셨나요?';
+      score = 65;
+      feedback = "'어려워' 발음 시 혀의 위치를 조금 더 신경 써보시면 좋겠습니다.";
     }
 
     return AiResponse(
@@ -121,6 +120,7 @@ Respond ONLY as JSON with this exact shape:
     );
   }
 }
+
 
 class AiResponse {
   const AiResponse({

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mj_dialog/main.dart';
+import 'package:speech_rehab/main.dart';
 
 void main() {
   testWidgets('renders the chat experience shell', (tester) async {

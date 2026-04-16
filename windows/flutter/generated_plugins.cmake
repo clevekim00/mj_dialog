@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_gemma
   flutter_tts
+  permission_handler_windows
   speech_to_text_windows
 )
 
