@@ -1,14 +1,15 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:mj_dialog/features/chat/provider/chat_provider.dart';
 
 class AnimatedOrb extends StatefulWidget {
   final ConversationState state;
 
-  const AnimatedOrb({Key? key, required this.state}) : super(key: key);
+  const AnimatedOrb({super.key, required this.state});
 
   @override
-  _AnimatedOrbState createState() => _AnimatedOrbState();
+  State<AnimatedOrb> createState() => _AnimatedOrbState();
 }
 
 class _AnimatedOrbState extends State<AnimatedOrb> with SingleTickerProviderStateMixin {
@@ -49,7 +50,7 @@ class _AnimatedOrbState extends State<AnimatedOrb> with SingleTickerProviderStat
             gradientColors = [Colors.blue[400]!, Colors.cyan[300]!];
             shadows = [
               BoxShadow(
-                color: Colors.blueAccent.withOpacity(0.4 * pulse),
+                color: Colors.blueAccent.withValues(alpha: 0.4 * pulse),
                 blurRadius: 40 + (pulse * 20),
                 spreadRadius: 10 + (pulse * 10),
               )
@@ -60,7 +61,7 @@ class _AnimatedOrbState extends State<AnimatedOrb> with SingleTickerProviderStat
             gradientColors = [Colors.purpleAccent, Colors.pinkAccent];
             shadows = [
               BoxShadow(
-                color: Colors.purple.withOpacity(0.6),
+                color: Colors.purple.withValues(alpha: 0.6),
                 blurRadius: 30,
                 spreadRadius: 5,
               )
@@ -71,7 +72,7 @@ class _AnimatedOrbState extends State<AnimatedOrb> with SingleTickerProviderStat
             gradientColors = [Colors.white, Colors.grey[200]!];
             shadows = [
               BoxShadow(
-                color: Colors.white.withOpacity(0.3 * pulse),
+                color: Colors.white.withValues(alpha: 0.3 * pulse),
                 blurRadius: 50 + (pulse * 30),
                 spreadRadius: 10 + (pulse * 20),
               )
@@ -82,7 +83,7 @@ class _AnimatedOrbState extends State<AnimatedOrb> with SingleTickerProviderStat
             gradientColors = [Colors.teal[300]!, Colors.teal[500]!];
             shadows = [
               BoxShadow(
-                color: Colors.teal.withOpacity(0.4),
+                color: Colors.teal.withValues(alpha: 0.4),
                 blurRadius: 20,
               )
             ];

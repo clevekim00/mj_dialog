@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:mj_dialog/services/api/ai_service.dart';
 
@@ -7,16 +8,19 @@ class FeedbackCard extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const FeedbackCard({
-    Key? key,
+    super.key,
     required this.aiResponse,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     Color scoreColor = Colors.greenAccent;
-    if (aiResponse.pronunciationScore < 60) scoreColor = Colors.redAccent;
-    else if (aiResponse.pronunciationScore < 80) scoreColor = Colors.orangeAccent;
+    if (aiResponse.pronunciationScore < 60) {
+      scoreColor = Colors.redAccent;
+    } else if (aiResponse.pronunciationScore < 80) {
+      scoreColor = Colors.orangeAccent;
+    }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24.0),
@@ -26,9 +30,9 @@ class FeedbackCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(24.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(24.0),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,13 +46,13 @@ class FeedbackCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: scoreColor.withOpacity(0.2),
+                      color: scoreColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: scoreColor),
                     ),
@@ -66,7 +70,10 @@ class FeedbackCard extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'AI의 응답:',
-                style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -76,7 +83,10 @@ class FeedbackCard extends StatelessWidget {
               const SizedBox(height: 24),
               Text(
                 '코칭 조언:',
-                style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.6)),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -90,7 +100,7 @@ class FeedbackCard extends StatelessWidget {
                   onPressed: onDismiss,
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),

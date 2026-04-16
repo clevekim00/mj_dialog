@@ -1,6 +1,6 @@
 # MJ Dialog — AI 언어 재활 코치 앱
 
-> **Gemma 4 기반 온디바이스 AI**를 활용한 한국어 발음 교정 & 대화 연습 앱
+> **Gemma 2B 기반 온디바이스 AI**를 활용한 한국어 발음 교정 & 대화 연습 앱
 
 ---
 
@@ -27,7 +27,7 @@ lib/
 ├── features/
 │   └── chat/
 │       ├── provider/
-│       │   └── chat_provider.dart               # 상태 관리 (ConversationState, STT 텍스트, AI 피드백)
+│       │   └── chat_provider.dart               # ChatController 기반 세션 상태/흐름 관리
 │       └── view/
 │           ├── chat_screen.dart                  # 메인 화면 (데스크톱: 텍스트 입력 / 모바일: 음성 입력)
 │           └── widgets/
@@ -147,12 +147,13 @@ Respond EXACTLY in this JSON format:
 - 다크 테마 적용
 
 ### `chat_provider.dart`
-- `ConversationState` 열거형: `idle` → `listening` → `thinking` → `speaking` → `feedback`
-- Riverpod `Notifier` 패턴으로 STT 텍스트, 대화 상태, AI 피드백을 관리
+- `ChatSessionState`로 대화 상태, 표시 텍스트, 피드백, 메시지 목록을 일관되게 관리
+- `ChatController`가 텍스트 제출, STT 시작/정지, AI 요청, TTS 완료 후 상태 전환을 담당
 
 ### `chat_screen.dart`
 - 플랫폼 감지: 데스크톱은 텍스트 입력, 모바일은 마이크 버튼
 - Stack 기반 레이아웃: Orb + 텍스트 + 피드백 카드 + 입력 영역
+- 에러 메시지는 Riverpod 상태를 listen 해서 Snackbar로 표시
 
 ### `animated_orb.dart`
 - `AnimationController`로 1.5초 주기 반복 애니메이션
@@ -164,7 +165,7 @@ Respond EXACTLY in this JSON format:
 
 ### `ai_service.dart`
 - Gemma 온디바이스 추론 또는 fallback 응답 제공
-- JSON 응답 파싱 (정규식 기반)
+- JSON 응답 파싱 (`jsonDecode` 기반)
 
 ---
 
@@ -173,6 +174,15 @@ Respond EXACTLY in this JSON format:
 1. **macOS Gemma 모델 로딩**: `flutter_gemma`의 에셋 복사가 데스크톱에서 미지원 → fallback 응답 사용
 2. **macOS STT**: `speech_to_text`가 macOS TCC(Transparency, Consent, Control)와 충돌하여 SIGABRT 크래시 발생 → 데스크톱에서는 텍스트 입력으로 대체
 3. **Gemma 2B 성능**: 소형 모델이므로 복잡한 한국어 문장에 대한 품질이 제한적
+
+---
+
+## ✅ 품질 개선 반영 사항
+
+- 앱 루트에서 `ProviderScope`를 직접 포함해 테스트/실행 환경 차이를 줄였습니다.
+- 대화 상태를 단일 세션 모델로 통합해 상태 불일치 가능성을 낮췄습니다.
+- TTS는 고정 지연이 아니라 실제 완료 시점 기준으로 피드백 단계로 넘어갑니다.
+- 위젯 테스트를 현재 앱 구조에 맞게 교체했습니다.
 
 ---
 

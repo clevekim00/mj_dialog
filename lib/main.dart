@@ -28,15 +28,22 @@ void main() async {
     debugPrint('Running on desktop — skipping Gemma model loading (not supported on desktop).');
   }
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const ProviderScope(
+      child: _AppView(),
+    );
+  }
+}
+
+class _AppView extends StatelessWidget {
+  const _AppView();
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +57,6 @@ class MyApp extends StatelessWidget {
           secondary: Colors.blueAccent,
         ),
         useMaterial3: true,
-        fontFamily: 'Pretendard', // Fallback cleanly if not available
       ),
       home: const ChatScreen(),
       debugShowCheckedModeBanner: false,
