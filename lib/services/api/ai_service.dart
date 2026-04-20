@@ -11,6 +11,63 @@ final aiServiceProvider = Provider<AiService>((ref) {
 class AiService {
   const AiService();
 
+  Future<AiResponse> getReadingFeedback(String targetText, String spokenText) async {
+    try {
+      if (!FlutterGemma.hasActiveModel()) {
+        debugPrint('Gemma model is not active. Falling back to simple evaluation.');
+        return _fallbackReadingEvaluation(targetText, spokenText);
+      }
+
+      final prompt = _buildReadingPrompt(targetText, spokenText);
+      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
+      final chat = await model.createChat(temperature: 0.3); // Lower temperature for objective evaluation
+      await chat.addQuery(Message(text: prompt, isUser: true));
+      final modelResponse = await chat.generateChatResponse();
+
+      final responseText = switch (modelResponse) {
+        TextResponse() => modelResponse.token,
+        _ => '',
+      };
+
+      if (responseText.isEmpty) {
+        return _fallbackReadingEvaluation(targetText, spokenText);
+      }
+
+      return _parseResponse(responseText);
+    } catch (error) {
+      debugPrint('Reading evaluation failed: $error');
+      return _fallbackReadingEvaluation(targetText, spokenText);
+    }
+  }
+
+  Future<AiResponse> getFreeReadingFeedback(String spokenText) async {
+    try {
+      if (!FlutterGemma.hasActiveModel()) {
+        return _fallbackReadingEvaluation('', spokenText);
+      }
+
+      final prompt = _buildFreeReadingPrompt(spokenText);
+      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
+      final chat = await model.createChat(temperature: 0.3);
+      await chat.addQuery(Message(text: prompt, isUser: true));
+      final modelResponse = await chat.generateChatResponse();
+
+      final responseText = switch (modelResponse) {
+        TextResponse() => modelResponse.token,
+        _ => '',
+      };
+
+      if (responseText.isEmpty) {
+        return _fallbackReadingEvaluation('', spokenText);
+      }
+
+      return _parseResponse(responseText);
+    } catch (error) {
+      debugPrint('Free reading evaluation failed: $error');
+      return _fallbackReadingEvaluation('', spokenText);
+    }
+  }
+
   Future<AiResponse> getResponseAndFeedback(String userText) async {
     try {
       if (!FlutterGemma.hasActiveModel()) {
@@ -118,6 +175,79 @@ Respond ONLY as JSON with this exact shape:
       pronunciationScore: score,
       pronunciationFeedback: feedback,
     );
+  }
+
+  AiResponse _fallbackReadingEvaluation(String targetText, String spokenText) {
+    if (targetText.isEmpty) {
+      return AiResponse(
+        replyText: '자유 읽기 연습을 완료했습니다.',
+        pronunciationScore: spokenText.isEmpty ? 0 : 85,
+        pronunciationFeedback: spokenText.isEmpty 
+          ? '아무 내용이나 말씀해 보세요. 연습을 시작할 준비가 되었습니다.' 
+          : '전체적으로 명확하게 들립니다. 꾸준히 연습해 보세요!',
+      );
+    }
+
+    final target = targetText.replaceAll(' ', '');
+    final spoken = spokenText.replaceAll(' ', '');
+    
+    int score = 80;
+    if (spoken.isEmpty) score = 0;
+    else if (target == spoken) score = 100;
+    else if (spoken.length < target.length / 2) score = 40;
+    else if (spoken.length < target.length * 0.8) score = 65;
+
+    return AiResponse(
+      replyText: '문장 읽기 연습을 완료했습니다.',
+      pronunciationScore: score,
+      pronunciationFeedback: score > 90 
+        ? '거의 완벽하게 읽으셨습니다! 아주 훌륭합니다.' 
+        : '제시된 문장과 조금 차이가 있습니다. 단어를 하나씩 천천히 다시 읽어보세요.',
+    );
+  }
+
+  String _buildReadingPrompt(String targetText, String spokenText) {
+    return '''
+You are '영은', a professional language rehabilitation coach.
+The user is practicing reading a specific sentence aloud.
+
+Target Sentence: "$targetText"
+User Spoke: "$spokenText"
+
+Goals:
+1. Compare the 'User Spoke' text with the 'Target Sentence'.
+2. Identify any mispronunciations, omissions, or additions.
+3. Provide an encouraging but objective pronunciation score (0-100).
+4. Provide one specific tip to improve the pronunciation of this specific sentence.
+
+Respond ONLY as JSON with this exact shape:
+{
+  "replyText": "Encouraging summary of the attempt",
+  "pronunciationScore": 0-100,
+  "pronunciationFeedback": "Specific tip for improvement"
+}
+''';
+  }
+
+  String _buildFreeReadingPrompt(String spokenText) {
+    return '''
+You are '영은', a professional language rehabilitation coach.
+The user is speaking freely without a target sentence.
+
+User Spoke: "$spokenText"
+
+Goals:
+1. Evaluate the clarity, articulation, and naturalness of the 'User Spoke' text.
+2. Provide an encouraging but objective pronunciation/fluency score (0-100).
+3. Provide one specific tip for clearer or more natural speech based on what the user said.
+
+Respond ONLY as JSON with this exact shape:
+{
+  "replyText": "Feedback on the content and delivery",
+  "pronunciationScore": 0-100,
+  "pronunciationFeedback": "Specific tip for clearer speech"
+}
+''';
   }
 }
 
