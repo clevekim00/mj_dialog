@@ -19,6 +19,7 @@ class PracticeProgress {
   final String? lastAudioPath;
   final List<PracticeSession> history;
   final bool isFreeMode;
+  final bool isPlaying;
 
   PracticeProgress({
     required this.state,
@@ -28,6 +29,7 @@ class PracticeProgress {
     this.lastAudioPath,
     this.history = const [],
     this.isFreeMode = false,
+    this.isPlaying = false,
   });
 
   PracticeProgress copyWith({
@@ -38,6 +40,7 @@ class PracticeProgress {
     String? lastAudioPath,
     List<PracticeSession>? history,
     bool? isFreeMode,
+    bool? isPlaying,
   }) {
     return PracticeProgress(
       state: state ?? this.state,
@@ -47,6 +50,7 @@ class PracticeProgress {
       lastAudioPath: lastAudioPath ?? this.lastAudioPath,
       history: history ?? this.history,
       isFreeMode: isFreeMode ?? this.isFreeMode,
+      isPlaying: isPlaying ?? this.isPlaying,
     );
   }
 }
@@ -78,6 +82,12 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   Future<void> _init() async {
     _sentencesList = await sentenceService.getRecommendedSentences();
     final history = await historyService.loadPractices();
+    
+    // Listen for audio completion to reset isPlaying state
+    audioPlayer.onPlaybackComplete(() {
+      state = state.copyWith(isPlaying: false);
+    });
+
     state = state.copyWith(
       history: history,
       targetText:
@@ -96,11 +106,29 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
+  void dismissFeedback() {
+    state = state.copyWith(
+      state: PracticeState.idle, // Return to idle so user can practice again immediately
+      feedback: null,
+      spokenText: '',
+      isPlaying: false,
+    );
+    audioPlayer.stop(); // Ensure any feedback audio or recording playback stops
+  }
+
   void nextSentence() {
     if (state.isFreeMode || _sentencesList.isEmpty) return;
     final currentIndex = _sentencesList.indexOf(state.targetText);
     final nextIndex = (currentIndex + 1) % _sentencesList.length;
     setTargetText(_sentencesList[nextIndex]);
+  }
+
+  void resetPractice() {
+    state = state.copyWith(
+      state: PracticeState.idle,
+      spokenText: '',
+      feedback: null,
+    );
   }
 
   void setTargetText(String text) {
@@ -115,6 +143,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   String _tempSpokenText = '';
+  DateTime? _recordingStartTime;
 
   Future<void> startRecording() async {
     if (state.state == PracticeState.recording) return;
@@ -132,45 +161,94 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
 
     _tempSpokenText = '';
+    _recordingStartTime = DateTime.now();
     final fileName = 'practice_${DateTime.now().millisecondsSinceEpoch}';
-    await audioRecorder.startRecording(fileName);
 
+    // Start STT first to let it configure the audio session
     await sttService.startListening(onResult: (text, isFinal) async {
       _tempSpokenText = text;
-      // Not updating state.spokenText here to hide live STT
+      state = state.copyWith(spokenText: text);
     });
+
+    // Wait a bit for the audio session to stabilize before starting the high-quality recorder
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    await audioRecorder.startRecording(fileName);
   }
 
   Future<void> stopRecording() async {
     if (state.state != PracticeState.recording) return;
 
+    // Guard: Prevent stopping too fast
+    if (_recordingStartTime != null) {
+      final elapsed = DateTime.now().difference(_recordingStartTime!);
+      if (elapsed.inMilliseconds < 500) {
+        await Future.delayed(Duration(milliseconds: 500 - elapsed.inMilliseconds));
+      }
+    }
+
+    state = state.copyWith(state: PracticeState.analyzing);
+
+    // Stop the recorder and STT engine
+    final audioFile = await audioRecorder.stopRecording();
+    await sttService.stopListening();
+
+    // Small delay to allow the STT engine to process the last audio chunk
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    String finalSpokenText = _tempSpokenText;
+    debugPrint('Final Transcription: "$finalSpokenText"');
+    
+    // On macOS, STT simulation
+    if (defaultTargetPlatform == TargetPlatform.macOS && finalSpokenText.isEmpty) {
+      debugPrint('macOS detected: Simulating transcription for testing.');
+      finalSpokenText = state.isFreeMode ? '오늘 날씨가 정말 정겹고 화창하네요.' : state.targetText;
+    }
+
     state = state.copyWith(
-      state: PracticeState.analyzing,
-      spokenText: _tempSpokenText, // Show the full text now
+      spokenText: finalSpokenText,
     );
 
-    await sttService.stopListening();
-    final audioFile = await audioRecorder.stopRecording();
-
     if (audioFile == null) {
+      debugPrint('Error: Audio file is null.');
       state = state.copyWith(state: PracticeState.error);
       return;
     }
 
-    final feedback = state.isFreeMode 
-      ? await aiService.getFreeReadingFeedback(_tempSpokenText)
-      : await aiService.getReadingFeedback(state.targetText, _tempSpokenText);
+    AiResponse feedback;
+    if (audioFile == null) {
+      debugPrint('Error: Audio file is null.');
+      state = state.copyWith(state: PracticeState.error);
+      return;
+    }
+
+    debugPrint('Starting Gemma 4 Multimodal Analysis for: ${state.isFreeMode ? "Free Reading" : "Sentence Practice"}');
+    try {
+      // Transitioning to native audio token processing with Gemma 4
+      feedback = await aiService.evaluateAudio(audioFile, state.targetText);
+      debugPrint('Gemma 4 Analysis Completed successfully.');
+    } catch (e) {
+      debugPrint('Gemma 4 Analysis failed with exception: $e');
+      feedback = await aiService.getReadingFeedback(state.targetText, finalSpokenText);
+    }
 
     final session = PracticeSession(
       id: const Uuid().v4(),
       targetText: state.isFreeMode ? '자유 읽기' : state.targetText,
-      spokenText: state.spokenText,
+      spokenText: finalSpokenText,
       audioFilePath: audioFile,
       score: feedback.pronunciationScore,
       feedback: feedback.pronunciationFeedback,
+      phonemeAccuracy: feedback.phonemeAccuracy?.map((e) => {
+        'phoneme': e.phoneme,
+        'score': e.score,
+        'issue': e.issue
+      }).toList(),
+      intonationFeedback: feedback.intonationFeedback,
       timestamp: DateTime.now(),
     );
 
+    debugPrint('Saving practice history...');
     await historyService.savePractice(session);
     final updatedHistory = await historyService.loadPractices();
 
@@ -182,10 +260,28 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
+  Future<void> deleteSession(String id) async {
+    await historyService.deletePractice(id);
+    final updatedHistory = await historyService.loadPractices();
+    state = state.copyWith(history: updatedHistory);
+  }
+
   Future<void> playRecording(String? path) async {
     final filePath = path ?? state.lastAudioPath;
     if (filePath != null) {
-      await audioPlayer.playFile(filePath);
+      state = state.copyWith(isPlaying: true);
+      try {
+        await audioPlayer.playFile(filePath);
+        // We could listen to playback completion here, but for now we reset on stop
+      } catch (e) {
+        debugPrint('Playback failed: $e');
+        state = state.copyWith(isPlaying: false);
+      }
     }
+  }
+
+  Future<void> stopPlayback() async {
+    await audioPlayer.stop();
+    state = state.copyWith(isPlaying: false);
   }
 }

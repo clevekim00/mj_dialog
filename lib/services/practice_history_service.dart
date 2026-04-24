@@ -9,6 +9,8 @@ class PracticeSession {
   final String audioFilePath;
   final int score;
   final String feedback;
+  final List<Map<String, dynamic>>? phonemeAccuracy;
+  final String? intonationFeedback;
   final DateTime timestamp;
 
   PracticeSession({
@@ -18,6 +20,8 @@ class PracticeSession {
     required this.audioFilePath,
     required this.score,
     required this.feedback,
+    this.phonemeAccuracy,
+    this.intonationFeedback,
     required this.timestamp,
   });
 
@@ -28,6 +32,8 @@ class PracticeSession {
         'audioFilePath': audioFilePath,
         'score': score,
         'feedback': feedback,
+        'phonemeAccuracy': phonemeAccuracy,
+        'intonationFeedback': intonationFeedback,
         'timestamp': timestamp.toIso8601String(),
       };
 
@@ -38,6 +44,8 @@ class PracticeSession {
         audioFilePath: json['audioFilePath'] as String,
         score: json['score'] as int,
         feedback: json['feedback'] as String,
+        phonemeAccuracy: (json['phonemeAccuracy'] as List?)?.cast<Map<String, dynamic>>(),
+        intonationFeedback: json['intonationFeedback'] as String?,
         timestamp: DateTime.parse(json['timestamp'] as String),
       );
 }
@@ -67,6 +75,15 @@ class PracticeHistoryService {
     } catch (e) {
       return [];
     }
+  }
+
+  Future<void> deletePractice(String id) async {
+    final sessions = await loadPractices();
+    sessions.removeWhere((s) => s.id == id);
+    
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = sessions.map((s) => s.toJson()).toList();
+    await prefs.setString(_storageKey, jsonEncode(jsonList));
   }
 
   Future<void> clearHistory() async {

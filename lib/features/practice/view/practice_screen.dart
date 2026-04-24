@@ -22,6 +22,13 @@ class PracticeScreen extends ConsumerWidget {
         elevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/dashboard');
+            },
+            tooltip: '성과 대시보드',
+          ),
+          IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
               Navigator.pushNamed(context, '/practice_history');
@@ -51,7 +58,7 @@ class PracticeScreen extends ConsumerWidget {
               if (practice.feedback != null) ...[
                 FeedbackCard(
                   aiResponse: practice.feedback!,
-                  onDismiss: () => notifier.setTargetText(practice.targetText),
+                  onDismiss: () => notifier.dismissFeedback(),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -196,17 +203,54 @@ class PracticeScreen extends ConsumerWidget {
   }
 
   Widget _buildInteractionArea(BuildContext context, WidgetRef ref, PracticeProgress practice, PracticeNotifier notifier) {
-    if (practice.state == PracticeState.analyzing) {
-      return const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(color: Colors.blueAccent),
-          SizedBox(height: 20),
-          Text('AI가 발음을 분석하고 있습니다...', style: TextStyle(color: Colors.white70)),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (practice.spokenText.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '인식된 내용:',
+                  style: TextStyle(color: Colors.blueAccent.withValues(alpha: 0.6), fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  practice.spokenText,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
         ],
-      );
-    }
+        
+        if (practice.state == PracticeState.analyzing)
+          const Column(
+            children: [
+              CircularProgressIndicator(color: Colors.blueAccent),
+              SizedBox(height: 20),
+              Text('AI가 발음을 분석하고 있습니다...', style: TextStyle(color: Colors.white70)),
+            ],
+          )
+        else
+          _buildOrbArea(practice, notifier),
+      ],
+    );
+  }
 
+  Widget _buildOrbArea(PracticeProgress practice, PracticeNotifier notifier) {
     // Map PracticeState to ConversationState for AnimatedOrb
     final orbState = switch (practice.state) {
       PracticeState.recording => ConversationState.listening,
@@ -231,27 +275,12 @@ class PracticeScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 32),
         Text(
-          practice.state == PracticeState.recording ? '듣고 있습니다... 끝내려면 터치하세요' : '구슬을 터치하여 녹음 시작',
+          practice.state == PracticeState.recording ? '듣고 있습니다... 끝내려면 터치하세요' : '구슬을 터치하여 다시 녹음',
           style: TextStyle(
             color: practice.state == PracticeState.recording ? Colors.redAccent : Colors.white54,
             fontSize: 16,
           ),
         ),
-        if (practice.state != PracticeState.recording && practice.spokenText.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.blueAccent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              practice.spokenText,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.blueAccent, fontSize: 18),
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -261,19 +290,23 @@ class PracticeScreen extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton.icon(
-          onPressed: () => notifier.playRecording(null),
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('내 목소리 듣기'),
+          onPressed: practice.isPlaying 
+              ? () => notifier.stopPlayback() 
+              : () => notifier.playRecording(null),
+          icon: Icon(practice.isPlaying ? Icons.stop : Icons.play_arrow),
+          label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withValues(alpha: 0.1),
-            foregroundColor: Colors.white,
+            backgroundColor: practice.isPlaying 
+                ? Colors.redAccent.withValues(alpha: 0.1) 
+                : Colors.white.withValues(alpha: 0.1),
+            foregroundColor: practice.isPlaying ? Colors.redAccent : Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
         ),
         const SizedBox(width: 16),
         ElevatedButton.icon(
-          onPressed: () => notifier.setTargetText(practice.targetText),
+          onPressed: () => notifier.resetPractice(),
           icon: const Icon(Icons.refresh),
           label: const Text('다시 하기'),
           style: ElevatedButton.styleFrom(

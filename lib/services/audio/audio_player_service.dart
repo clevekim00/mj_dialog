@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,7 +9,12 @@ final audioPlayerServiceProvider = Provider<AudioPlayerService>((ref) {
 class AudioPlayerService {
   final AudioPlayer _player = AudioPlayer();
 
+  void onPlaybackComplete(VoidCallback callback) {
+    _player.onPlayerComplete.listen((_) => callback());
+  }
+
   Future<void> playFile(String filePath) async {
+    await _player.stop(); // Hard reset to clear previous source/state
     await _player.play(DeviceFileSource(filePath));
   }
 

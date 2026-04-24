@@ -6,6 +6,7 @@ import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
+import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'dart:io' show Platform;
 
@@ -62,6 +63,7 @@ class _AppView extends StatelessWidget {
       routes: {
         '/practice': (context) => const PracticeScreen(),
         '/practice_history': (context) => const PracticeHistoryScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

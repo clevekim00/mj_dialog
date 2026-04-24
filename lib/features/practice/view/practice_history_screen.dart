@@ -57,21 +57,32 @@ class PracticeHistoryScreen extends ConsumerWidget {
                 dateStr,
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getScoreColor(session.score).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _getScoreColor(session.score)),
-                ),
-                child: Text(
-                  '${session.score}점',
-                  style: TextStyle(
-                    color: _getScoreColor(session.score),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                   Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getScoreColor(session.score).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _getScoreColor(session.score)),
+                    ),
+                    child: Text(
+                      '${session.score}점',
+                      style: TextStyle(
+                        color: _getScoreColor(session.score),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.white24, size: 20),
+                    onPressed: () => _confirmDeletion(context, notifier, session.id),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ),
             ],
           ),
@@ -100,6 +111,33 @@ class PracticeHistoryScreen extends ConsumerWidget {
                 onPressed: () => notifier.playRecording(session.audioFilePath),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeletion(BuildContext context, PracticeNotifier notifier, String id) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text('기록 삭제', style: TextStyle(color: Colors.white)),
+        content: const Text('이 연습 기록을 정말 삭제하시겠습니까?', style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              notifier.deleteSession(id);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('기록이 삭제되었습니다.')),
+              );
+            },
+            child: const Text('삭제', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),

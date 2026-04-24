@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = Speech Rehab
+PRODUCT_NAME = SpeechRehab
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.clevekim00.speechrehab
+PRODUCT_BUNDLE_IDENTIFIER = com.clevekim00.speechrehab2
 
 #include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"

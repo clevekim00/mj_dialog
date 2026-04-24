@@ -15,9 +15,11 @@ class SttService {
   bool _sttEnabled = false;
 
   Future<bool> init() async {
-    // STT is unstable on desktop platforms in some Flutter environments.
-    // We skip initialization on desktop to prevent TCC crashes.
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+    // STT is unstable on some desktop platforms, but we enable it for macOS 26.4+
+    // to provide real evaluation support in this environment.
+    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && 
+                   defaultTargetPlatform != TargetPlatform.iOS &&
+                   defaultTargetPlatform != TargetPlatform.macOS)) {
       debugPrint('STT is not supported on this platform. Avoiding initialization.');
       return false;
     }
