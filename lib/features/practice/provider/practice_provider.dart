@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 import '../../../services/api/ai_service.dart';
 import '../../../services/audio/audio_player_service.dart';
@@ -37,7 +38,9 @@ class PracticeProgress {
     String? targetText,
     String? spokenText,
     AiResponse? feedback,
+    bool clearFeedback = false,
     String? lastAudioPath,
+    bool clearLastAudioPath = false,
     List<PracticeSession>? history,
     bool? isFreeMode,
     bool? isPlaying,
@@ -46,8 +49,8 @@ class PracticeProgress {
       state: state ?? this.state,
       targetText: targetText ?? this.targetText,
       spokenText: spokenText ?? this.spokenText,
-      feedback: feedback ?? this.feedback,
-      lastAudioPath: lastAudioPath ?? this.lastAudioPath,
+      feedback: clearFeedback ? null : (feedback ?? this.feedback),
+      lastAudioPath: clearLastAudioPath ? null : (lastAudioPath ?? this.lastAudioPath),
       history: history ?? this.history,
       isFreeMode: isFreeMode ?? this.isFreeMode,
       isPlaying: isPlaying ?? this.isPlaying,
@@ -100,7 +103,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     state = state.copyWith(
       isFreeMode: newFreeMode,
       targetText: newFreeMode ? '' : (_sentencesList.isNotEmpty ? _sentencesList[0] : '꾸준한 연습만이 올바른 발음을 만드는 비결입니다.'),
-      feedback: null,
+      clearFeedback: true,
       spokenText: '',
       state: PracticeState.idle,
     );
@@ -109,7 +112,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   void dismissFeedback() {
     state = state.copyWith(
       state: PracticeState.idle, // Return to idle so user can practice again immediately
-      feedback: null,
+      clearFeedback: true,
       spokenText: '',
       isPlaying: false,
     );
@@ -157,7 +160,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     state = state.copyWith(
       state: PracticeState.recording,
       spokenText: '',
-      feedback: null,
+      clearFeedback: true,
     );
 
     _tempSpokenText = '';
@@ -284,4 +287,15 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     await audioPlayer.stop();
     state = state.copyWith(isPlaying: false);
   }
+
+  Future<void> shareRecording() async {
+    if (state.lastAudioPath != null) {
+      final file = XFile(state.lastAudioPath!);
+      await Share.shareXFiles(
+        [file],
+        text: '내 발음 연습 녹음 파일입니다: "${state.targetText}"',
+      );
+    }
+  }
 }
+

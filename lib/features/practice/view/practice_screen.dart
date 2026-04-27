@@ -300,11 +300,23 @@ class PracticeScreen extends ConsumerWidget {
                 ? Colors.redAccent.withValues(alpha: 0.1) 
                 : Colors.white.withValues(alpha: 0.1),
             foregroundColor: practice.isPlaying ? Colors.redAccent : Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
+        ElevatedButton.icon(
+          onPressed: () => notifier.shareRecording(),
+          icon: const Icon(Icons.share, size: 20),
+          label: const Text('공유'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+        ),
+        const SizedBox(width: 12),
         ElevatedButton.icon(
           onPressed: () => notifier.resetPractice(),
           icon: const Icon(Icons.refresh),
