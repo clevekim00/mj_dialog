@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/features/chat/view/history_screen.dart';
+import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
+import 'package:speech_rehab/services/rehab_profile_service.dart';
 
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
@@ -14,13 +16,23 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
   Future<void> _handleRequest() async {
     setState(() => _isRequesting = true);
-    
+
     final granted = await PermissionService.requestAllPermissions();
-    
+
     if (mounted) {
       if (granted) {
+        final completedOnboarding =
+            await RehabProfileService.hasCompletedOnboarding();
+        if (!mounted) {
+          return;
+        }
+
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HistoryScreen()),
+          MaterialPageRoute(
+            builder: (_) => completedOnboarding
+                ? const HistoryScreen()
+                : const RehabOnboardingScreen(),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,7 +56,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
           child: Column(
             children: [
               const Spacer(flex: 2),
-              
+
               // Animated Icon Header
               Container(
                 width: 100,
@@ -60,9 +72,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
                   color: Colors.white54,
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               const Text(
                 '권한 설정 안내',
                 style: TextStyle(
@@ -72,9 +84,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
                   letterSpacing: -0.5,
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               const Text(
                 'AI 코치와 원활한 상담을 위해\n아래 권한 허용이 필요합니다.',
                 textAlign: TextAlign.center,
@@ -84,9 +96,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
                   height: 1.5,
                 ),
               ),
-              
+
               const SizedBox(height: 60),
-              
+
               // Permission Items
               _PermissionItem(
                 icon: Icons.mic_rounded,
@@ -94,18 +106,18 @@ class _PermissionScreenState extends State<PermissionScreen> {
                 description: '발음 인식 및 대화 진행을 위해 필요합니다.',
                 color: Colors.blueAccent,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               _PermissionItem(
                 icon: Icons.graphic_eq_rounded,
                 title: '음성 인식',
                 description: '인공지능이 말씀을 텍스트로 이해하기 위해 필요합니다.',
                 color: Colors.tealAccent,
               ),
-              
+
               const Spacer(flex: 3),
-              
+
               // Action Button
               SizedBox(
                 width: double.infinity,
@@ -138,9 +150,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
                         ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               TextButton(
                 onPressed: () => PermissionService.openSystemSettings(),
                 child: const Text(
@@ -152,7 +164,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
             ],
           ),

@@ -41,7 +41,7 @@ class HistoryScreen extends ConsumerWidget {
 
     final filteredHistory = selectedTab == 0
         ? combinedHistory
-        : combinedHistory.where((item) => item is PracticeSession).toList();
+        : combinedHistory.whereType<PracticeSession>().toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),

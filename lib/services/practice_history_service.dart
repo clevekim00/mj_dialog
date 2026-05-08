@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 class PracticeSession {
   final String id;
@@ -12,6 +11,10 @@ class PracticeSession {
   final List<Map<String, dynamic>>? phonemeAccuracy;
   final String? intonationFeedback;
   final DateTime timestamp;
+  final String sessionGoal;
+  final int fatigueBefore;
+  final int? fatigueAfter;
+  final int durationSeconds;
 
   PracticeSession({
     required this.id,
@@ -23,30 +26,44 @@ class PracticeSession {
     this.phonemeAccuracy,
     this.intonationFeedback,
     required this.timestamp,
+    this.sessionGoal = '또렷하게 말하기',
+    this.fatigueBefore = 1,
+    this.fatigueAfter,
+    this.durationSeconds = 0,
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'targetText': targetText,
-        'spokenText': spokenText,
-        'audioFilePath': audioFilePath,
-        'score': score,
-        'feedback': feedback,
-        'phonemeAccuracy': phonemeAccuracy,
-        'intonationFeedback': intonationFeedback,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'id': id,
+    'targetText': targetText,
+    'spokenText': spokenText,
+    'audioFilePath': audioFilePath,
+    'score': score,
+    'feedback': feedback,
+    'phonemeAccuracy': phonemeAccuracy,
+    'intonationFeedback': intonationFeedback,
+    'timestamp': timestamp.toIso8601String(),
+    'sessionGoal': sessionGoal,
+    'fatigueBefore': fatigueBefore,
+    'fatigueAfter': fatigueAfter,
+    'durationSeconds': durationSeconds,
+  };
 
-  factory PracticeSession.fromJson(Map<String, dynamic> json) => PracticeSession(
+  factory PracticeSession.fromJson(Map<String, dynamic> json) =>
+      PracticeSession(
         id: json['id'] as String,
         targetText: json['targetText'] as String,
         spokenText: json['spokenText'] as String,
         audioFilePath: json['audioFilePath'] as String,
         score: json['score'] as int,
         feedback: json['feedback'] as String,
-        phonemeAccuracy: (json['phonemeAccuracy'] as List?)?.cast<Map<String, dynamic>>(),
+        phonemeAccuracy: (json['phonemeAccuracy'] as List?)
+            ?.cast<Map<String, dynamic>>(),
         intonationFeedback: json['intonationFeedback'] as String?,
         timestamp: DateTime.parse(json['timestamp'] as String),
+        sessionGoal: json['sessionGoal'] as String? ?? '또렷하게 말하기',
+        fatigueBefore: json['fatigueBefore'] as int? ?? 1,
+        fatigueAfter: json['fatigueAfter'] as int?,
+        durationSeconds: json['durationSeconds'] as int? ?? 0,
       );
 }
 
@@ -56,7 +73,7 @@ class PracticeHistoryService {
   Future<void> savePractice(PracticeSession session) async {
     final sessions = await loadPractices();
     sessions.insert(0, session);
-    
+
     final prefs = await SharedPreferences.getInstance();
     final jsonList = sessions.map((s) => s.toJson()).toList();
     await prefs.setString(_storageKey, jsonEncode(jsonList));
@@ -80,7 +97,7 @@ class PracticeHistoryService {
   Future<void> deletePractice(String id) async {
     final sessions = await loadPractices();
     sessions.removeWhere((s) => s.id == id);
-    
+
     final prefs = await SharedPreferences.getInstance();
     final jsonList = sessions.map((s) => s.toJson()).toList();
     await prefs.setString(_storageKey, jsonEncode(jsonList));

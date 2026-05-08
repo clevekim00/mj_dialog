@@ -1,8 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final practiceSentenceServiceProvider = Provider((ref) => PracticeSentenceService());
+final practiceSentenceServiceProvider = Provider(
+  (ref) => PracticeSentenceService(),
+);
 
 class PracticeSentenceService {
+  static const List<String> _functionalSentences = [
+    '물을 마시고 싶어요.',
+    '조금 쉬고 싶어요.',
+    '화장실에 가고 싶어요.',
+    '어지러워요. 도와주세요.',
+    '통증이 있어요.',
+    '천천히 다시 말해 주세요.',
+    '제가 천천히 말해 볼게요.',
+    '오늘은 발음 연습을 5분만 하겠습니다.',
+    '약 먹는 시간을 확인해 주세요.',
+    '괜찮아요. 조금만 기다려 주세요.',
+  ];
+
   // These are linguistically selected difficult Korean phrases for pronunciation/articulation rehab.
   static const List<String> _difficultSentences = [
     '간장 공장 공장장은 강 공장장이고, 된장 공장 공장장은 장 공장장이다.',
@@ -23,13 +38,14 @@ class PracticeSentenceService {
     '꾸준한 연습만이 올바른 언어 습관을 만드는 비결입니다.',
   ];
 
-  /// Returns a combined list of sentences. 
+  /// Returns a combined list of sentences.
   /// In the future, this could fetch from a database of common mistakes.
   Future<List<String>> getRecommendedSentences() async {
     // Logic can be added here to prioritize sentences based on user logs
     return [
-      ..._difficultSentences,
+      ..._functionalSentences,
       ..._dailySentences,
+      ..._difficultSentences,
     ];
   }
 }

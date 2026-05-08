@@ -4,7 +4,6 @@ import '../provider/practice_provider.dart';
 import '../../chat/provider/chat_provider.dart';
 import '../../chat/view/widgets/feedback_card.dart';
 import '../../chat/view/widgets/animated_orb.dart';
-import '../../../services/api/ai_service.dart';
 
 class PracticeScreen extends ConsumerWidget {
   const PracticeScreen({super.key});
@@ -43,6 +42,8 @@ class PracticeScreen extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 20),
+              _buildRehabSessionCard(ref, practice),
+              const SizedBox(height: 20),
               _buildModeSelector(ref, practice.isFreeMode),
               const SizedBox(height: 20),
               _buildTargetCard(context, ref, practice),
@@ -51,7 +52,12 @@ class PracticeScreen extends ConsumerWidget {
               Container(
                 constraints: const BoxConstraints(minHeight: 250),
                 child: Center(
-                  child: _buildInteractionArea(context, ref, practice, notifier),
+                  child: _buildInteractionArea(
+                    context,
+                    ref,
+                    practice,
+                    notifier,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -89,9 +95,118 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildRehabSessionCard(WidgetRef ref, PracticeProgress practice) {
+    const goals = ['또렷하게 말하기', '천천히 말하기', '크게 말하기', '숨 조절하기'];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.health_and_safety_outlined, color: Colors.blueAccent),
+              SizedBox(width: 8),
+              Text(
+                '오늘의 재활 세션',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            '불편감, 사레, 호흡 곤란, 갑작스러운 말 변화가 있으면 연습을 멈추고 의료진에게 문의하세요.',
+            style: TextStyle(color: Colors.white54, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            '목표',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: goals.map((goal) {
+              final isSelected = practice.sessionGoal == goal;
+              return ChoiceChip(
+                label: Text(goal),
+                selected: isSelected,
+                selectedColor: Colors.blueAccent,
+                backgroundColor: Colors.white.withValues(alpha: 0.06),
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                side: BorderSide(
+                  color: isSelected ? Colors.blueAccent : Colors.white12,
+                ),
+                onSelected: (_) {
+                  ref.read(practiceProvider.notifier).setSessionGoal(goal);
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  '시작 전 피로도',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                '${practice.fatigueBefore}/5',
+                style: const TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Slider(
+            value: practice.fatigueBefore.toDouble(),
+            min: 1,
+            max: 5,
+            divisions: 4,
+            activeColor: Colors.blueAccent,
+            inactiveColor: Colors.white12,
+            label: '${practice.fatigueBefore}',
+            onChanged: practice.state == PracticeState.recording
+                ? null
+                : (value) {
+                    ref
+                        .read(practiceProvider.notifier)
+                        .setFatigueBefore(value.round());
+                  },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildModeButton(WidgetRef ref, String label, bool isSelected) {
     return GestureDetector(
-      onTap: isSelected ? null : () => ref.read(practiceProvider.notifier).toggleFreeMode(),
+      onTap: isSelected
+          ? null
+          : () => ref.read(practiceProvider.notifier).toggleFreeMode(),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -110,7 +225,11 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTargetCard(BuildContext context, WidgetRef ref, PracticeProgress practice) {
+  Widget _buildTargetCard(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeProgress practice,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -136,13 +255,22 @@ class PracticeScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.menu_book, color: Colors.blueAccent, size: 20),
+                      icon: const Icon(
+                        Icons.menu_book,
+                        color: Colors.blueAccent,
+                        size: 20,
+                      ),
                       onPressed: () => _showTextInputDialog(context, ref),
                       tooltip: '연습할 문장 입력',
                     ),
                     IconButton(
-                      icon: const Icon(Icons.skip_next, color: Colors.white54, size: 20),
-                      onPressed: () => ref.read(practiceProvider.notifier).nextSentence(),
+                      icon: const Icon(
+                        Icons.skip_next,
+                        color: Colors.white54,
+                        size: 20,
+                      ),
+                      onPressed: () =>
+                          ref.read(practiceProvider.notifier).nextSentence(),
                       tooltip: '다음 문장',
                     ),
                   ],
@@ -151,11 +279,15 @@ class PracticeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            practice.isFreeMode ? '어제 있었던 일이나 오늘 기분,\n좋아하는 주제로 편하게 말씀해 보세요.' : practice.targetText,
+            practice.isFreeMode
+                ? '어제 있었던 일이나 오늘 기분,\n좋아하는 주제로 편하게 말씀해 보세요.'
+                : practice.targetText,
             style: TextStyle(
               color: practice.isFreeMode ? Colors.white54 : Colors.white,
               fontSize: practice.isFreeMode ? 18 : 22,
-              fontWeight: practice.isFreeMode ? FontWeight.normal : FontWeight.bold,
+              fontWeight: practice.isFreeMode
+                  ? FontWeight.normal
+                  : FontWeight.bold,
               height: 1.4,
             ),
           ),
@@ -178,8 +310,12 @@ class PracticeScreen extends ConsumerWidget {
           decoration: const InputDecoration(
             hintText: '책에서 본 문장을 입력해 보세요...',
             hintStyle: TextStyle(color: Colors.white24),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white10)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white10),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.blueAccent),
+            ),
           ),
         ),
         actions: [
@@ -190,7 +326,9 @@ class PracticeScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
-                ref.read(practiceProvider.notifier).setTargetText(controller.text.trim());
+                ref
+                    .read(practiceProvider.notifier)
+                    .setTargetText(controller.text.trim());
                 Navigator.pop(context);
               }
             },
@@ -202,7 +340,12 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInteractionArea(BuildContext context, WidgetRef ref, PracticeProgress practice, PracticeNotifier notifier) {
+  Widget _buildInteractionArea(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeProgress practice,
+    PracticeNotifier notifier,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -212,13 +355,18 @@ class PracticeScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.blueAccent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: Colors.blueAccent.withValues(alpha: 0.2),
+              ),
             ),
             child: Column(
               children: [
                 Text(
                   '인식된 내용:',
-                  style: TextStyle(color: Colors.blueAccent.withValues(alpha: 0.6), fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.blueAccent.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -235,13 +383,16 @@ class PracticeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
         ],
-        
+
         if (practice.state == PracticeState.analyzing)
           const Column(
             children: [
               CircularProgressIndicator(color: Colors.blueAccent),
               SizedBox(height: 20),
-              Text('AI가 발음을 분석하고 있습니다...', style: TextStyle(color: Colors.white70)),
+              Text(
+                'AI가 발음을 분석하고 있습니다...',
+                style: TextStyle(color: Colors.white70),
+              ),
             ],
           )
         else
@@ -269,15 +420,17 @@ class PracticeScreen extends ConsumerWidget {
               notifier.startRecording();
             }
           },
-          child: AnimatedOrb(
-            state: orbState,
-          ),
+          child: AnimatedOrb(state: orbState),
         ),
         const SizedBox(height: 32),
         Text(
-          practice.state == PracticeState.recording ? '듣고 있습니다... 끝내려면 터치하세요' : '구슬을 터치하여 다시 녹음',
+          practice.state == PracticeState.recording
+              ? '불편하면 즉시 멈추고 쉬어 주세요'
+              : '구슬을 터치하여 오늘 목표로 연습',
           style: TextStyle(
-            color: practice.state == PracticeState.recording ? Colors.redAccent : Colors.white54,
+            color: practice.state == PracticeState.recording
+                ? Colors.redAccent
+                : Colors.white54,
             fontSize: 16,
           ),
         ),
@@ -285,23 +438,30 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(PracticeProgress practice, PracticeNotifier notifier) {
+  Widget _buildActionButtons(
+    PracticeProgress practice,
+    PracticeNotifier notifier,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton.icon(
-          onPressed: practice.isPlaying 
-              ? () => notifier.stopPlayback() 
+          onPressed: practice.isPlaying
+              ? () => notifier.stopPlayback()
               : () => notifier.playRecording(null),
           icon: Icon(practice.isPlaying ? Icons.stop : Icons.play_arrow),
           label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: practice.isPlaying 
-                ? Colors.redAccent.withValues(alpha: 0.1) 
+            backgroundColor: practice.isPlaying
+                ? Colors.redAccent.withValues(alpha: 0.1)
                 : Colors.white.withValues(alpha: 0.1),
-            foregroundColor: practice.isPlaying ? Colors.redAccent : Colors.white,
+            foregroundColor: practice.isPlaying
+                ? Colors.redAccent
+                : Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -313,7 +473,9 @@ class PracticeScreen extends ConsumerWidget {
             backgroundColor: Colors.white.withValues(alpha: 0.1),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -325,7 +487,9 @@ class PracticeScreen extends ConsumerWidget {
             backgroundColor: Colors.white.withValues(alpha: 0.1),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
         ),
       ],

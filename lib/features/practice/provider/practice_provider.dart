@@ -21,6 +21,9 @@ class PracticeProgress {
   final List<PracticeSession> history;
   final bool isFreeMode;
   final bool isPlaying;
+  final String sessionGoal;
+  final int fatigueBefore;
+  final int? fatigueAfter;
 
   PracticeProgress({
     required this.state,
@@ -31,6 +34,9 @@ class PracticeProgress {
     this.history = const [],
     this.isFreeMode = false,
     this.isPlaying = false,
+    this.sessionGoal = '또렷하게 말하기',
+    this.fatigueBefore = 1,
+    this.fatigueAfter,
   });
 
   PracticeProgress copyWith({
@@ -44,32 +50,49 @@ class PracticeProgress {
     List<PracticeSession>? history,
     bool? isFreeMode,
     bool? isPlaying,
+    String? sessionGoal,
+    int? fatigueBefore,
+    int? fatigueAfter,
+    bool clearFatigueAfter = false,
   }) {
     return PracticeProgress(
       state: state ?? this.state,
       targetText: targetText ?? this.targetText,
       spokenText: spokenText ?? this.spokenText,
       feedback: clearFeedback ? null : (feedback ?? this.feedback),
-      lastAudioPath: clearLastAudioPath ? null : (lastAudioPath ?? this.lastAudioPath),
+      lastAudioPath: clearLastAudioPath
+          ? null
+          : (lastAudioPath ?? this.lastAudioPath),
       history: history ?? this.history,
       isFreeMode: isFreeMode ?? this.isFreeMode,
       isPlaying: isPlaying ?? this.isPlaying,
+      sessionGoal: sessionGoal ?? this.sessionGoal,
+      fatigueBefore: fatigueBefore ?? this.fatigueBefore,
+      fatigueAfter: clearFatigueAfter
+          ? null
+          : (fatigueAfter ?? this.fatigueAfter),
     );
   }
 }
 
-final practiceHistoryServiceProvider = Provider((ref) => PracticeHistoryService());
+final practiceHistoryServiceProvider = Provider(
+  (ref) => PracticeHistoryService(),
+);
 
-final practiceProvider =
-    NotifierProvider<PracticeNotifier, PracticeProgress>(PracticeNotifier.new);
+final practiceProvider = NotifierProvider<PracticeNotifier, PracticeProgress>(
+  PracticeNotifier.new,
+);
 
 class PracticeNotifier extends Notifier<PracticeProgress> {
-  AudioRecorderService get audioRecorder => ref.watch(audioRecorderServiceProvider);
+  AudioRecorderService get audioRecorder =>
+      ref.watch(audioRecorderServiceProvider);
   AudioPlayerService get audioPlayer => ref.watch(audioPlayerServiceProvider);
   SttService get sttService => ref.watch(sttServiceProvider);
   AiService get aiService => ref.read(aiServiceProvider);
-  PracticeHistoryService get historyService => ref.watch(practiceHistoryServiceProvider);
-  PracticeSentenceService get sentenceService => ref.watch(practiceSentenceServiceProvider);
+  PracticeHistoryService get historyService =>
+      ref.watch(practiceHistoryServiceProvider);
+  PracticeSentenceService get sentenceService =>
+      ref.watch(practiceSentenceServiceProvider);
 
   List<String> _sentencesList = [];
 
@@ -85,7 +108,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   Future<void> _init() async {
     _sentencesList = await sentenceService.getRecommendedSentences();
     final history = await historyService.loadPractices();
-    
+
     // Listen for audio completion to reset isPlaying state
     audioPlayer.onPlaybackComplete(() {
       state = state.copyWith(isPlaying: false);
@@ -93,8 +116,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     state = state.copyWith(
       history: history,
-      targetText:
-          _sentencesList.isNotEmpty ? _sentencesList[0] : state.targetText,
+      targetText: _sentencesList.isNotEmpty
+          ? _sentencesList[0]
+          : state.targetText,
     );
   }
 
@@ -102,19 +126,26 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final newFreeMode = !state.isFreeMode;
     state = state.copyWith(
       isFreeMode: newFreeMode,
-      targetText: newFreeMode ? '' : (_sentencesList.isNotEmpty ? _sentencesList[0] : '꾸준한 연습만이 올바른 발음을 만드는 비결입니다.'),
+      targetText: newFreeMode
+          ? ''
+          : (_sentencesList.isNotEmpty
+                ? _sentencesList[0]
+                : '꾸준한 연습만이 올바른 발음을 만드는 비결입니다.'),
       clearFeedback: true,
       spokenText: '',
       state: PracticeState.idle,
+      clearFatigueAfter: true,
     );
   }
 
   void dismissFeedback() {
     state = state.copyWith(
-      state: PracticeState.idle, // Return to idle so user can practice again immediately
+      state: PracticeState
+          .idle, // Return to idle so user can practice again immediately
       clearFeedback: true,
       spokenText: '',
       isPlaying: false,
+      clearFatigueAfter: true,
     );
     audioPlayer.stop(); // Ensure any feedback audio or recording playback stops
   }
@@ -131,6 +162,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       spokenText: '',
       feedback: null,
+      clearFatigueAfter: true,
     );
   }
 
@@ -142,7 +174,20 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       spokenText: '',
       feedback: null,
       lastAudioPath: null,
+      clearFatigueAfter: true,
     );
+  }
+
+  void setSessionGoal(String goal) {
+    state = state.copyWith(sessionGoal: goal);
+  }
+
+  void setFatigueBefore(int value) {
+    state = state.copyWith(fatigueBefore: value);
+  }
+
+  void setFatigueAfter(int value) {
+    state = state.copyWith(fatigueAfter: value);
   }
 
   String _tempSpokenText = '';
@@ -161,6 +206,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.recording,
       spokenText: '',
       clearFeedback: true,
+      clearFatigueAfter: true,
     );
 
     _tempSpokenText = '';
@@ -168,10 +214,12 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final fileName = 'practice_${DateTime.now().millisecondsSinceEpoch}';
 
     // Start STT first to let it configure the audio session
-    await sttService.startListening(onResult: (text, isFinal) async {
-      _tempSpokenText = text;
-      state = state.copyWith(spokenText: text);
-    });
+    await sttService.startListening(
+      onResult: (text, isFinal) async {
+        _tempSpokenText = text;
+        state = state.copyWith(spokenText: text);
+      },
+    );
 
     // Wait a bit for the audio session to stabilize before starting the high-quality recorder
     await Future.delayed(const Duration(milliseconds: 400));
@@ -186,7 +234,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     if (_recordingStartTime != null) {
       final elapsed = DateTime.now().difference(_recordingStartTime!);
       if (elapsed.inMilliseconds < 500) {
-        await Future.delayed(Duration(milliseconds: 500 - elapsed.inMilliseconds));
+        await Future.delayed(
+          Duration(milliseconds: 500 - elapsed.inMilliseconds),
+        );
       }
     }
 
@@ -201,38 +251,38 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     String finalSpokenText = _tempSpokenText;
     debugPrint('Final Transcription: "$finalSpokenText"');
-    
+
     // On macOS, STT simulation
-    if (defaultTargetPlatform == TargetPlatform.macOS && finalSpokenText.isEmpty) {
+    if (defaultTargetPlatform == TargetPlatform.macOS &&
+        finalSpokenText.isEmpty) {
       debugPrint('macOS detected: Simulating transcription for testing.');
-      finalSpokenText = state.isFreeMode ? '오늘 날씨가 정말 정겹고 화창하네요.' : state.targetText;
+      finalSpokenText = state.isFreeMode
+          ? '오늘 날씨가 정말 정겹고 화창하네요.'
+          : state.targetText;
     }
 
-    state = state.copyWith(
-      spokenText: finalSpokenText,
+    state = state.copyWith(spokenText: finalSpokenText);
+
+    if (audioFile == null) {
+      debugPrint('Error: Audio file is null.');
+      state = state.copyWith(state: PracticeState.error);
+      return;
+    }
+
+    debugPrint(
+      'Starting Gemma 4 Multimodal Analysis for: ${state.isFreeMode ? "Free Reading" : "Sentence Practice"}',
     );
-
-    if (audioFile == null) {
-      debugPrint('Error: Audio file is null.');
-      state = state.copyWith(state: PracticeState.error);
-      return;
-    }
-
-    AiResponse feedback;
-    if (audioFile == null) {
-      debugPrint('Error: Audio file is null.');
-      state = state.copyWith(state: PracticeState.error);
-      return;
-    }
-
-    debugPrint('Starting Gemma 4 Multimodal Analysis for: ${state.isFreeMode ? "Free Reading" : "Sentence Practice"}');
+    late final AiResponse feedback;
     try {
       // Transitioning to native audio token processing with Gemma 4
       feedback = await aiService.evaluateAudio(audioFile, state.targetText);
       debugPrint('Gemma 4 Analysis Completed successfully.');
     } catch (e) {
       debugPrint('Gemma 4 Analysis failed with exception: $e');
-      feedback = await aiService.getReadingFeedback(state.targetText, finalSpokenText);
+      feedback = await aiService.getReadingFeedback(
+        state.targetText,
+        finalSpokenText,
+      );
     }
 
     final session = PracticeSession(
@@ -242,13 +292,19 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       audioFilePath: audioFile,
       score: feedback.pronunciationScore,
       feedback: feedback.pronunciationFeedback,
-      phonemeAccuracy: feedback.phonemeAccuracy?.map((e) => {
-        'phoneme': e.phoneme,
-        'score': e.score,
-        'issue': e.issue
-      }).toList(),
+      phonemeAccuracy: feedback.phonemeAccuracy
+          ?.map(
+            (e) => {'phoneme': e.phoneme, 'score': e.score, 'issue': e.issue},
+          )
+          .toList(),
       intonationFeedback: feedback.intonationFeedback,
       timestamp: DateTime.now(),
+      sessionGoal: state.sessionGoal,
+      fatigueBefore: state.fatigueBefore,
+      fatigueAfter: state.fatigueAfter ?? state.fatigueBefore,
+      durationSeconds: _recordingStartTime == null
+          ? 0
+          : DateTime.now().difference(_recordingStartTime!).inSeconds,
     );
 
     debugPrint('Saving practice history...');
@@ -291,11 +347,12 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   Future<void> shareRecording() async {
     if (state.lastAudioPath != null) {
       final file = XFile(state.lastAudioPath!);
-      await Share.shareXFiles(
-        [file],
-        text: '내 발음 연습 녹음 파일입니다: "${state.targetText}"',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [file],
+          text: '내 발음 연습 녹음 파일입니다: "${state.targetText}"',
+        ),
       );
     }
   }
 }
-

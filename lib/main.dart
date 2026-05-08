@@ -4,17 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
+import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
+import 'package:speech_rehab/services/rehab_profile_service.dart';
 import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  final isDesktop = !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
-  
+
+  final isDesktop =
+      !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
+
   if (!isDesktop) {
     try {
       await FlutterGemma.initialize();
@@ -37,9 +40,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ProviderScope(
-      child: _AppView(),
-    );
+    return const ProviderScope(child: _AppView());
   }
 }
 
@@ -75,8 +76,8 @@ class StartupResolver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: PermissionService.hasAllPermissions(),
+    return FutureBuilder<_StartupDestination>(
+      future: _resolveDestination(),
       builder: (context, snapshot) {
         // While checking, show a blank dark screen or a loader
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -88,13 +89,29 @@ class StartupResolver extends StatelessWidget {
           );
         }
 
-        final hasPermissions = snapshot.data ?? false;
-        if (hasPermissions) {
-          return const HistoryScreen();
-        } else {
-          return const PermissionScreen();
-        }
+        return switch (snapshot.data ?? _StartupDestination.permission) {
+          _StartupDestination.permission => const PermissionScreen(),
+          _StartupDestination.onboarding => const RehabOnboardingScreen(),
+          _StartupDestination.history => const HistoryScreen(),
+        };
       },
     );
   }
+
+  Future<_StartupDestination> _resolveDestination() async {
+    final hasPermissions = await PermissionService.hasAllPermissions();
+    if (!hasPermissions) {
+      return _StartupDestination.permission;
+    }
+
+    final completedOnboarding =
+        await RehabProfileService.hasCompletedOnboarding();
+    if (!completedOnboarding) {
+      return _StartupDestination.onboarding;
+    }
+
+    return _StartupDestination.history;
+  }
 }
+
+enum _StartupDestination { permission, onboarding, history }

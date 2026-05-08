@@ -12,12 +12,17 @@ class DashboardScreen extends ConsumerWidget {
     final history = practice.history;
 
     final totalPractices = history.length;
-    final avgScore = history.isEmpty 
-        ? 0 
+    final avgScore = history.isEmpty
+        ? 0
         : history.map((s) => s.score).reduce((a, b) => a + b) ~/ history.length;
-    final bestScore = history.isEmpty 
-        ? 0 
+    final bestScore = history.isEmpty
+        ? 0
         : history.map((s) => s.score).reduce((a, b) => a > b ? a : b);
+    final activeDays = _countActiveDays(history);
+    final avgFatigue = history.isEmpty
+        ? 0
+        : history.map((s) => s.fatigueBefore).reduce((a, b) => a + b) ~/
+              history.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
@@ -32,6 +37,8 @@ class DashboardScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSummaryGrid(totalPractices, avgScore, bestScore),
+            const SizedBox(height: 16),
+            _buildRehabConsistencyCard(activeDays, avgFatigue),
             const SizedBox(height: 32),
             _buildSectionTitle('최근 7일 연습 활동'),
             const SizedBox(height: 16),
@@ -74,6 +81,37 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildRehabConsistencyCard(int activeDays, int avgFatigue) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.blueAccent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.event_available_outlined, color: Colors.blueAccent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '최근 7일 중 $activeDays일 연습했습니다.',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            avgFatigue == 0 ? '피로도 기록 없음' : '평균 피로도 $avgFatigue/5',
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatCard(String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -106,17 +144,25 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildWeeklyChart(List<dynamic> history) {
     final now = DateTime.now();
-    final last7Days = List.generate(7, (i) => now.subtract(Duration(days: 6 - i)));
-    
+    final last7Days = List.generate(
+      7,
+      (i) => now.subtract(Duration(days: 6 - i)),
+    );
+
     final countsPerDay = last7Days.map((date) {
-      return history.where((s) => 
-        s.timestamp.year == date.year && 
-        s.timestamp.month == date.month && 
-        s.timestamp.day == date.day
-      ).length;
+      return history
+          .where(
+            (s) =>
+                s.timestamp.year == date.year &&
+                s.timestamp.month == date.month &&
+                s.timestamp.day == date.day,
+          )
+          .length;
     }).toList();
 
-    final maxCount = countsPerDay.isEmpty ? 1 : countsPerDay.reduce((a, b) => a > b ? a : b);
+    final maxCount = countsPerDay.isEmpty
+        ? 1
+        : countsPerDay.reduce((a, b) => a > b ? a : b);
     final displayMax = maxCount == 0 ? 5 : maxCount + 1;
 
     return Container(
@@ -145,17 +191,26 @@ class DashboardScreen extends ConsumerWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: isToday 
-                        ? [Colors.blueAccent, Colors.blueAccent.withValues(alpha: 0.3)]
+                    colors: isToday
+                        ? [
+                            Colors.blueAccent,
+                            Colors.blueAccent.withValues(alpha: 0.3),
+                          ]
                         : [Colors.white24, Colors.white10],
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: count > 0 ? Text(
-                    count.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  ) : null,
+                  child: count > 0
+                      ? Text(
+                          count.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
               ),
               const SizedBox(height: 8),
@@ -171,6 +226,22 @@ class DashboardScreen extends ConsumerWidget {
         }),
       ),
     );
+  }
+
+  int _countActiveDays(List<dynamic> history) {
+    final now = DateTime.now();
+    final recentDays = List.generate(7, (i) {
+      final date = now.subtract(Duration(days: i));
+      return DateTime(date.year, date.month, date.day);
+    }).toSet();
+
+    return history
+        .map(
+          (s) => DateTime(s.timestamp.year, s.timestamp.month, s.timestamp.day),
+        )
+        .where(recentDays.contains)
+        .toSet()
+        .length;
   }
 
   Widget _buildScoreDistribution(List<dynamic> history) {
@@ -204,8 +275,18 @@ class DashboardScreen extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            Text('$count회', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            Text(
+              '$count회',
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -229,52 +310,66 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         _buildSectionTitle('최근 실력 변화'),
         const SizedBox(height: 16),
-        ...recent.map((s) => Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(16),
+        ...recent.map(
+          (s) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.mic,
+                    color: Colors.blueAccent,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.targetText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('MM.dd HH:mm').format(s.timestamp),
+                        style: const TextStyle(
+                          color: Colors.white24,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${s.score}점',
+                  style: TextStyle(
+                    color: s.score >= 90
+                        ? Colors.greenAccent
+                        : Colors.orangeAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.mic, color: Colors.blueAccent, size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      s.targetText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    Text(
-                      DateFormat('MM.dd HH:mm').format(s.timestamp),
-                      style: const TextStyle(color: Colors.white24, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                '${s.score}점',
-                style: TextStyle(
-                  color: s.score >= 90 ? Colors.greenAccent : Colors.orangeAccent,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        )),
+        ),
       ],
     );
   }

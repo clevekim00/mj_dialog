@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -148,49 +147,6 @@ Respond ONLY as JSON with this exact shape:
     }
   }
 
-  String _buildGemma4ReadingPrompt(String targetText) {
-    return '''
-You are a professional language rehabilitation AI using Gemma 4 multimodal capabilities.
-The user is providing an audio input.
-The target sentence is: "$targetText".
-
-Analyze the NATIVE AUDIO TOKENS and compare them with the target text.
-1. Provide a phoneme-level accuracy breakdown.
-2. Evaluate the intonation, rhythm, and pitch.
-3. Provide an overall pronunciation score (0-100).
-4. Give specific, actionable feedback in Korean.
-
-Respond ONLY as JSON:
-{
-  "replyText": "brief summary",
-  "pronunciationScore": 0-100,
-  "pronunciationFeedback": "main tip",
-  "phonemeAccuracy": [{"phoneme": "string", "score": 0-100, "issue": "string or null"}],
-  "intonationFeedback": "intonation/pitch feedback string"
-}
-''';
-  }
-
-  AiResponse _parseGemma4Response(String rawOutput) {
-    try {
-      final jsonText = _extractJsonObject(rawOutput);
-      final decoded = jsonDecode(jsonText) as Map<String, dynamic>;
-      
-      return AiResponse(
-        replyText: decoded['replyText'] as String? ?? '',
-        pronunciationScore: (decoded['pronunciationScore'] as num?)?.toInt() ?? 0,
-        pronunciationFeedback: decoded['pronunciationFeedback'] as String? ?? '',
-        phonemeAccuracy: (decoded['phonemeAccuracy'] as List?)
-            ?.map((e) => PhonemeData.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        intonationFeedback: decoded['intonationFeedback'] as String?,
-      );
-    } catch (e) {
-      debugPrint('Error parsing Gemma 4 response: $e');
-      return _fallbackReadingEvaluation('', '');
-    }
-  }
-
   AiResponse _parseResponse(String rawGemmaOutput) {
     try {
       final jsonText = _extractJsonObject(rawGemmaOutput);
@@ -269,11 +225,16 @@ Respond ONLY as JSON:
     final target = targetText.replaceAll(' ', '');
     final spoken = spokenText.replaceAll(' ', '');
     
-    int score = 80;
-    if (isEmpty) score = 0;
-    else if (target == spoken) score = 100;
-    else if (spoken.length < target.length / 2) score = 40;
-    else if (spoken.length < target.length * 0.8) score = 65;
+    var score = 80;
+    if (isEmpty) {
+      score = 0;
+    } else if (target == spoken) {
+      score = 100;
+    } else if (spoken.length < target.length / 2) {
+      score = 40;
+    } else if (spoken.length < target.length * 0.8) {
+      score = 65;
+    }
 
     return AiResponse(
       replyText: '문장 읽기 연습을 완료했습니다.',
