@@ -22,16 +22,23 @@ class AiService {
     };
   }
 
-  Future<AiResponse> getReadingFeedback(String targetText, String spokenText) async {
+  Future<AiResponse> getReadingFeedback(
+    String targetText,
+    String spokenText,
+  ) async {
     try {
       if (!FlutterGemma.hasActiveModel()) {
-        debugPrint('Gemma model is not active. Falling back to simple evaluation.');
+        debugPrint(
+          'Gemma model is not active. Falling back to simple evaluation.',
+        );
         return _fallbackReadingEvaluation(targetText, spokenText);
       }
 
       final prompt = _buildReadingPrompt(targetText, spokenText);
       final model = await FlutterGemma.getActiveModel(maxTokens: 512);
-      final chat = await model.createChat(temperature: 0.3); // Lower temperature for objective evaluation
+      final chat = await model.createChat(
+        temperature: 0.3,
+      ); // Lower temperature for objective evaluation
       await chat.addQuery(Message(text: prompt, isUser: true));
       final modelResponse = await chat.generateChatResponse();
 
@@ -82,7 +89,9 @@ class AiService {
   Future<AiResponse> getResponseAndFeedback(String userText) async {
     try {
       if (!FlutterGemma.hasActiveModel()) {
-        debugPrint('Gemma model is not active. Falling back to canned response.');
+        debugPrint(
+          'Gemma model is not active. Falling back to canned response.',
+        );
         return _fallbackParse(userText);
       }
 
@@ -111,7 +120,7 @@ class AiService {
 
   String _buildPrompt(String userText) {
     return '''
-You are '영은', a professional and friendly language rehabilitation coach.
+You are '영은', a professional and friendly speech practice coach.
 The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
 The user said: "$userText".
 
@@ -132,14 +141,14 @@ Respond ONLY as JSON with this exact shape:
   Future<AiResponse> evaluateAudio(String audioPath, String targetText) async {
     try {
       debugPrint('Starting Gemma 4 Analysis for: $targetText');
-      
+
       // Implement a delay to simulate backend processing
       await Future.delayed(const Duration(milliseconds: 800));
 
       // Use the active Gemma model to evaluate based on the prompt
       // Note: In actual production, this would be a multipart request to our Kotlin/Spring Boot backend
       // for native audio token analysis.
-      
+
       return await getReadingFeedback(targetText, "");
     } catch (error) {
       debugPrint('Gemma 4 evaluation failed: $error');
@@ -156,8 +165,9 @@ Respond ONLY as JSON with this exact shape:
       return AiResponse(
         replyText: _sanitizeText(decoded['replyText'] as String?),
         pronunciationScore: score.clamp(0, 100),
-        pronunciationFeedback:
-            _sanitizeText(decoded['pronunciationFeedback'] as String?),
+        pronunciationFeedback: _sanitizeText(
+          decoded['pronunciationFeedback'] as String?,
+        ),
       );
     } catch (error) {
       debugPrint('Failed to parse Gemma response: $error');
@@ -183,7 +193,7 @@ Respond ONLY as JSON with this exact shape:
   String _sanitizeText(String? value) {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {
-      return _osLanguage == 'Korean' 
+      return _osLanguage == 'Korean'
           ? '천천히 대화를 이어가 볼까요? 최근에 즐거웠던 일이 있으신가요?'
           : 'Shall we continue our conversation slowly? Has anything pleasant happened recently?';
     }
@@ -216,15 +226,15 @@ Respond ONLY as JSON with this exact shape:
       return AiResponse(
         replyText: '자유 읽기 연습을 완료했습니다.',
         pronunciationScore: isEmpty ? 0 : 85,
-        pronunciationFeedback: isEmpty 
-          ? '음성이 감지되지 않았습니다. 마이크 권한을 확인하거나 조금 더 크게 말씀해 보세요.' 
-          : '전체적으로 명확하게 들립니다. 꾸준히 연습해 보세요!',
+        pronunciationFeedback: isEmpty
+            ? '음성이 감지되지 않았습니다. 마이크 권한을 확인하거나 조금 더 크게 말씀해 보세요.'
+            : '전체적으로 명확하게 들립니다. 꾸준히 연습해 보세요!',
       );
     }
 
     final target = targetText.replaceAll(' ', '');
     final spoken = spokenText.replaceAll(' ', '');
-    
+
     var score = 80;
     if (isEmpty) {
       score = 0;
@@ -240,16 +250,16 @@ Respond ONLY as JSON with this exact shape:
       replyText: '문장 읽기 연습을 완료했습니다.',
       pronunciationScore: score,
       pronunciationFeedback: isEmpty
-        ? '목소리가 인식되지 않았습니다. 다시 한 번 읽어주시겠어요?'
-        : (score > 90 
-          ? '거의 완벽하게 읽으셨습니다! 아주 훌륭합니다.' 
-          : '제시된 문장과 조금 차이가 있습니다. 단어를 하나씩 천천히 다시 읽어보세요.'),
+          ? '목소리가 인식되지 않았습니다. 다시 한 번 읽어주시겠어요?'
+          : (score > 90
+                ? '거의 완벽하게 읽으셨습니다! 아주 훌륭합니다.'
+                : '제시된 문장과 조금 차이가 있습니다. 단어를 하나씩 천천히 다시 읽어보세요.'),
     );
   }
 
   String _buildReadingPrompt(String targetText, String spokenText) {
     return '''
-You are '영은', a professional language rehabilitation coach.
+You are '영은', a professional speech practice coach.
 The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
 The user is practicing reading a specific sentence aloud.
 
@@ -273,7 +283,7 @@ Respond ONLY as JSON with this exact shape:
 
   String _buildFreeReadingPrompt(String spokenText) {
     return '''
-You are '영은', a professional language rehabilitation coach.
+You are '영은', a professional speech practice coach.
 The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
 The user is speaking freely without a target sentence.
 
@@ -315,11 +325,7 @@ class PhonemeData {
   final int score;
   final String? issue;
 
-  PhonemeData({
-    required this.phoneme,
-    required this.score,
-    this.issue,
-  });
+  PhonemeData({required this.phoneme, required this.score, this.issue});
 
   factory PhonemeData.fromJson(Map<String, dynamic> json) {
     return PhonemeData(

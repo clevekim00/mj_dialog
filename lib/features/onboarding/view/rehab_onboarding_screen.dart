@@ -10,7 +10,7 @@ class RehabOnboardingScreen extends StatefulWidget {
 }
 
 class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
-  String _strokeStage = '3-6개월';
+  String _practiceStage = '3-6개월';
   String _primaryGoal = '또렷하게 말하기';
   int _dailyPracticeMinutes = 5;
   bool _hasCaregiverSupport = false;
@@ -19,7 +19,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
   Future<void> _completeOnboarding() async {
     await RehabProfileService.saveProfile(
       RehabProfile(
-        strokeStage: _strokeStage,
+        practiceStage: _practiceStage,
         primaryGoal: _primaryGoal,
         dailyPracticeMinutes: _dailyPracticeMinutes,
         hasCaregiverSupport: _hasCaregiverSupport,
@@ -45,7 +45,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
           children: [
             const Text(
-              '말하기 재활을 안전하게 시작해요',
+              '말하기 연습을 안전하게 시작해요',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 28,
@@ -55,7 +55,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
             ),
             const SizedBox(height: 12),
             const Text(
-              '뇌경색 후 마비성 발음장애 연습을 돕는 보조 도구입니다. 치료 계획은 언어재활사와 상의해 조정해 주세요.',
+              '말하기 연습을 돕는 보조 도구입니다. 필요할 때는 전문가와 상의해 연습 계획을 조정해 주세요.',
               style: TextStyle(
                 color: Colors.white60,
                 fontSize: 15,
@@ -65,11 +65,11 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
             const SizedBox(height: 28),
             _buildSafetyNotice(),
             const SizedBox(height: 24),
-            _buildSectionTitle('현재 재활 단계'),
+            _buildSectionTitle('연습을 이어온 기간'),
             _buildChoiceWrap(
               values: const ['1개월 미만', '1-3개월', '3-6개월', '6개월 이상'],
-              selected: _strokeStage,
-              onSelected: (value) => setState(() => _strokeStage = value),
+              selected: _practiceStage,
+              onSelected: (value) => setState(() => _practiceStage = value),
             ),
             const SizedBox(height: 24),
             _buildSectionTitle('오늘의 주 목표'),
@@ -124,7 +124,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
                 ),
               ),
               subtitle: const Text(
-                '갑작스러운 말 변화, 삼킴 곤란, 호흡 불편, 새 마비 증상이 있으면 즉시 의료진에게 문의하세요.',
+                '말이 갑자기 달라지거나 삼킴 곤란, 사레, 호흡 불편이 있으면 연습을 멈추고 전문가에게 문의하세요.',
                 style: TextStyle(color: Colors.white38, height: 1.4),
               ),
             ),
@@ -143,7 +143,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
                   ),
                 ),
                 child: const Text(
-                  '재활 연습 시작하기',
+                  '말하기 연습 시작하기',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -181,7 +181,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
           ),
           SizedBox(height: 12),
           Text(
-            '이 앱은 말하기 연습을 돕는 보조 도구이며 진단이나 치료를 대체하지 않습니다. 삼킴 곤란, 사레, 호흡 불편, 갑작스러운 신경학적 변화가 있으면 연습을 중단하고 의료진에게 문의하세요.',
+            '이 앱은 말하기 연습을 돕는 보조 도구이며 전문적인 평가나 도움을 대체하지 않습니다. 삼킴 곤란, 사레, 호흡 불편, 갑작스러운 말 변화가 있으면 연습을 중단하고 전문가에게 문의하세요.',
             style: TextStyle(color: Colors.white70, height: 1.5),
           ),
         ],

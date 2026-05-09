@@ -114,7 +114,7 @@ class PracticeScreen extends ConsumerWidget {
               Icon(Icons.health_and_safety_outlined, color: Colors.blueAccent),
               SizedBox(width: 8),
               Text(
-                '오늘의 재활 세션',
+                '오늘의 연습 세션',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 17,
@@ -125,7 +125,7 @@ class PracticeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           const Text(
-            '불편감, 사레, 호흡 곤란, 갑작스러운 말 변화가 있으면 연습을 멈추고 의료진에게 문의하세요.',
+            '불편감, 사레, 호흡 곤란, 갑작스러운 말 변화가 있으면 연습을 멈추고 전문가에게 문의하세요.',
             style: TextStyle(color: Colors.white54, fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 18),

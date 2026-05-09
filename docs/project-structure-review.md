@@ -4,7 +4,7 @@
 
 ## 1. 프로젝트 요약
 
-Speech Rehab은 Flutter 기반의 AI 언어 재활 코치 앱이다. 핵심 기능은 음성 기반 AI 대화, 소리 내어 읽기 연습, 발음 피드백, 대화/연습 히스토리 관리로 구성되어 있다.
+Speech Rehab은 Flutter 기반의 AI 언어 연습 코치 앱이다. 핵심 기능은 음성 기반 AI 대화, 소리 내어 읽기 연습, 발음 피드백, 대화/연습 히스토리 관리로 구성되어 있다.
 
 현재 코드는 단순 채팅 프로토타입에서 한 단계 확장되어, `chat` 기능과 `practice` 기능이 분리되어 있고 공통 서비스 계층이 추가된 상태다. 앱의 첫 진입점은 권한 상태를 확인한 뒤 히스토리 화면 또는 권한 안내 화면으로 분기한다.
 
@@ -137,7 +137,7 @@ lib/services/practice_sentence_service.dart
 
 ### Backend 모듈
 
-`backend/src/main/kotlin/com/clevekim00/speechrehab/backend/Gemma4Backend.kt`에는 Spring 스타일의 Gemma 4 음성 평가 API 스텁이 있다.
+백엔드 Kotlin 모듈에는 Spring 스타일의 Gemma 4 음성 평가 API 스텁이 있다.
 
 현재 백엔드는 실제 앱의 `AiService.evaluateAudio()`와 연결되어 있지 않다. Flutter 쪽에서는 800ms 지연 후 `getReadingFeedback(targetText, "")`를 호출하는 시뮬레이션에 가깝다.
 

@@ -4,21 +4,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class RehabProfile {
   const RehabProfile({
-    required this.strokeStage,
+    required this.practiceStage,
     required this.primaryGoal,
     required this.dailyPracticeMinutes,
     required this.hasCaregiverSupport,
     required this.acceptedSafetyNoticeAt,
   });
 
-  final String strokeStage;
+  final String practiceStage;
   final String primaryGoal;
   final int dailyPracticeMinutes;
   final bool hasCaregiverSupport;
   final DateTime acceptedSafetyNoticeAt;
 
   Map<String, dynamic> toJson() => {
-    'strokeStage': strokeStage,
+    'practiceStage': practiceStage,
     'primaryGoal': primaryGoal,
     'dailyPracticeMinutes': dailyPracticeMinutes,
     'hasCaregiverSupport': hasCaregiverSupport,
@@ -27,7 +27,7 @@ class RehabProfile {
 
   factory RehabProfile.fromJson(Map<String, dynamic> json) {
     return RehabProfile(
-      strokeStage: json['strokeStage'] as String? ?? 'unknown',
+      practiceStage: json['practiceStage'] as String? ?? 'unknown',
       primaryGoal: json['primaryGoal'] as String? ?? 'clearSpeech',
       dailyPracticeMinutes: json['dailyPracticeMinutes'] as int? ?? 5,
       hasCaregiverSupport: json['hasCaregiverSupport'] as bool? ?? false,

@@ -18,7 +18,7 @@ class PracticeSentenceService {
     '괜찮아요. 조금만 기다려 주세요.',
   ];
 
-  // These are linguistically selected difficult Korean phrases for pronunciation/articulation rehab.
+  // These phrases are useful for practicing precise Korean articulation.
   static const List<String> _difficultSentences = [
     '간장 공장 공장장은 강 공장장이고, 된장 공장 공장장은 장 공장장이다.',
     '우리 집 옆집 앞집 뒷창살은 홑겹창살이고, 우리 집 뒷집 앞집 옆창살은 겹홑창살이다.',
