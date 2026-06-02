@@ -8,7 +8,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 import 'package:speech_rehab/services/practice_history_service.dart';
 
-final historyTabProvider = NotifierProvider<HistoryTabNotifier, int>(HistoryTabNotifier.new);
+final historyTabProvider = NotifierProvider<HistoryTabNotifier, int>(
+  HistoryTabNotifier.new,
+);
 
 class HistoryTabNotifier extends Notifier<int> {
   @override
@@ -34,8 +36,12 @@ class HistoryScreen extends ConsumerWidget {
 
     // Sort by date (descending)
     combinedHistory.sort((a, b) {
-      final dateA = (a is ChatSession) ? a.createdAt : (a as PracticeSession).timestamp;
-      final dateB = (b is ChatSession) ? b.createdAt : (b as PracticeSession).timestamp;
+      final dateA = (a is ChatSession)
+          ? a.createdAt
+          : (a as PracticeSession).timestamp;
+      final dateB = (b is ChatSession)
+          ? b.createdAt
+          : (b as PracticeSession).timestamp;
       return dateB.compareTo(dateA);
     });
 
@@ -52,9 +58,9 @@ class HistoryScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.record_voice_over),
-            tooltip: '읽기 연습',
+            tooltip: '연습 선택',
             onPressed: () {
-              Navigator.pushNamed(context, '/practice');
+              Navigator.pushNamed(context, '/practice_modes');
             },
           ),
           IconButton(
@@ -79,15 +85,23 @@ class HistoryScreen extends ConsumerWidget {
               children: const {
                 0: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text('전체', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  child: Text(
+                    '전체',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                 ),
                 1: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text('연습 기록', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  child: Text(
+                    '연습 기록',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                 ),
               },
               onValueChanged: (value) {
-                if (value != null) ref.read(historyTabProvider.notifier).setTab(value);
+                if (value != null) {
+                  ref.read(historyTabProvider.notifier).setTab(value);
+                }
               },
             ),
           ),
@@ -95,27 +109,38 @@ class HistoryScreen extends ConsumerWidget {
       ),
       body: filteredHistory.isEmpty
           ? const Center(
-              child: Text(
-                '기록이 없습니다.',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: Text('기록이 없습니다.', style: TextStyle(color: Colors.white54)),
             )
           : ListView.builder(
               itemCount: filteredHistory.length,
               itemBuilder: (context, index) {
                 final item = filteredHistory[index];
-                
+
                 if (item is ChatSession) {
-                  return _buildChatSessionItem(context, ref, item, sessionState.currentSessionId);
+                  return _buildChatSessionItem(
+                    context,
+                    ref,
+                    item,
+                    sessionState.currentSessionId,
+                  );
                 } else {
-                  return _buildPracticeSessionItem(context, ref, item as PracticeSession);
+                  return _buildPracticeSessionItem(
+                    context,
+                    ref,
+                    item as PracticeSession,
+                  );
                 }
               },
             ),
     );
   }
 
-  Widget _buildChatSessionItem(BuildContext context, WidgetRef ref, ChatSession session, String? currentId) {
+  Widget _buildChatSessionItem(
+    BuildContext context,
+    WidgetRef ref,
+    ChatSession session,
+    String? currentId,
+  ) {
     final isCurrent = session.id == currentId;
     final dateStr = DateFormat('MM월 dd일 HH:mm').format(session.createdAt);
 
@@ -160,7 +185,11 @@ class HistoryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPracticeSessionItem(BuildContext context, WidgetRef ref, PracticeSession session) {
+  Widget _buildPracticeSessionItem(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeSession session,
+  ) {
     final dateStr = DateFormat('MM월 dd일 HH:mm').format(session.timestamp);
 
     return ListTile(
@@ -171,7 +200,11 @@ class HistoryScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.3)),
         ),
-        child: const Icon(Icons.record_voice_over, color: Colors.blueAccent, size: 20),
+        child: const Icon(
+          Icons.record_voice_over,
+          color: Colors.blueAccent,
+          size: 20,
+        ),
       ),
       title: Text(
         session.targetText,
@@ -191,8 +224,8 @@ class HistoryScreen extends ConsumerWidget {
               color: Colors.blueAccent.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Text(
-              'PRACTICE',
+            child: Text(
+              _practiceModeLabel(session.mode).toUpperCase(),
               style: TextStyle(
                 color: Colors.blueAccent,
                 fontSize: 9,
@@ -212,5 +245,14 @@ class HistoryScreen extends ConsumerWidget {
         Navigator.pushNamed(context, '/practice_history');
       },
     );
+  }
+
+  String _practiceModeLabel(String mode) {
+    return switch (mode) {
+      'wordGame' => 'WORD',
+      'longSentence' => 'LONG',
+      'freeSpeech' => 'FREE',
+      _ => 'SHORT',
+    };
   }
 }

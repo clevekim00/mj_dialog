@@ -38,6 +38,8 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             _buildSummaryGrid(totalPractices, avgScore, bestScore),
             const SizedBox(height: 16),
+            _buildModeSummary(history),
+            const SizedBox(height: 16),
             _buildRehabConsistencyCard(activeDays, avgFatigue),
             const SizedBox(height: 32),
             _buildSectionTitle('최근 7일 연습 활동'),
@@ -108,6 +110,73 @@ class DashboardScreen extends ConsumerWidget {
             style: const TextStyle(color: Colors.white54, fontSize: 12),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildModeSummary(List<dynamic> history) {
+    final wordCount = history.where((s) => s.mode == 'wordGame').length;
+    final shortCount = history
+        .where((s) => s.mode == 'shortSentence' || s.mode == null)
+        .length;
+    final longCount = history.where((s) => s.mode == 'longSentence').length;
+    final freeCount = history.where((s) => s.mode == 'freeSpeech').length;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.tune_outlined, color: Colors.white70),
+              SizedBox(width: 8),
+              Text(
+                '모드별 연습',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildModeChip('단어', wordCount, Colors.greenAccent),
+              _buildModeChip('짧은 문장', shortCount, Colors.blueAccent),
+              _buildModeChip('긴 문장', longCount, Colors.orangeAccent),
+              _buildModeChip('자유', freeCount, Colors.purpleAccent),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeChip(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Text(
+        '$label $count회',
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

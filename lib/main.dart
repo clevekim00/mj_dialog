@@ -6,6 +6,7 @@ import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
+import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
@@ -63,6 +64,7 @@ class _AppView extends StatelessWidget {
       home: const StartupResolver(),
       routes: {
         '/practice': (context) => const PracticeScreen(),
+        '/practice_modes': (context) => const PracticeModeSelectionScreen(),
         '/practice_history': (context) => const PracticeHistoryScreen(),
         '/dashboard': (context) => const DashboardScreen(),
       },

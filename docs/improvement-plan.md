@@ -30,3 +30,25 @@ README, 앱 루트 구성, 디자인/플랫폼 설명을 실제 코드와 맞추
 - 앱 루트의 `ProviderScope` 내장
 - 현재 구조에 맞는 위젯 테스트 교체
 - 정적 분석 경고 정리
+
+## 2026-06-01 추가 반영 범위
+
+- 연습 선택 화면 추가
+- 단어 게임, 짧은 문장 읽기, 긴 문장 읽기, 자유 대화 모드 분리
+- 단어 게임에서 70점 미만 실패 단어 복습 모드 추가
+- `PracticeContentService`와 `PracticeContentItem` 추가
+- `PracticeSession`에 모드/콘텐츠/난이도/재시도/연속 성공 기록 추가
+- 긴 문장 모드에서 사용자 등록 문장 추가/수정/삭제 지원
+- `AiService.evaluatePracticeByMode()`로 모드별 평가 프롬프트 분리
+- 기록 화면과 대시보드에 모드별 정보 표시
+- 콘텐츠 서비스, 기록 호환성, 연습 선택 화면 테스트 추가
+
+검증:
+
+```text
+dart analyze
+→ No issues found
+
+flutter test
+→ All tests passed
+```

@@ -114,6 +114,10 @@ class PracticeHistoryScreen extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
+              _buildMetaChip(_modeIcon(session.mode), _modeLabel(session.mode)),
+              _buildMetaChip(Icons.category_outlined, session.category),
+              if (session.contentSource == 'custom')
+                _buildMetaChip(Icons.bookmark_added_outlined, '내 문장'),
               _buildMetaChip(Icons.flag_outlined, session.sessionGoal),
               _buildMetaChip(
                 Icons.battery_3_bar_outlined,
@@ -220,5 +224,23 @@ class PracticeHistoryScreen extends ConsumerWidget {
     if (score >= 90) return Colors.greenAccent;
     if (score >= 70) return Colors.orangeAccent;
     return Colors.redAccent;
+  }
+
+  IconData _modeIcon(String mode) {
+    return switch (mode) {
+      'wordGame' => Icons.sports_esports_outlined,
+      'longSentence' => Icons.notes_outlined,
+      'freeSpeech' => Icons.forum_outlined,
+      _ => Icons.short_text,
+    };
+  }
+
+  String _modeLabel(String mode) {
+    return switch (mode) {
+      'wordGame' => '단어 게임',
+      'longSentence' => '긴 문장',
+      'freeSpeech' => '자유 말하기',
+      _ => '짧은 문장',
+    };
   }
 }

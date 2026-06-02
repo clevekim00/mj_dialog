@@ -7,8 +7,9 @@ import '../../../services/api/ai_service.dart';
 import '../../../services/audio/audio_player_service.dart';
 import '../../../services/audio/audio_recorder_service.dart';
 import '../../../services/audio/stt_service.dart';
+import '../../../services/practice_content_service.dart';
 import '../../../services/practice_history_service.dart';
-import '../../../services/practice_sentence_service.dart';
+import '../model/practice_mode.dart';
 
 enum PracticeState { idle, recording, analyzing, completed, error }
 
@@ -24,6 +25,15 @@ class PracticeProgress {
   final String sessionGoal;
   final int fatigueBefore;
   final int? fatigueAfter;
+  final PracticeMode mode;
+  final int currentItemIndex;
+  final int retryCount;
+  final int streakCount;
+  final String? contentId;
+  final String category;
+  final int difficulty;
+  final PracticeContentSource contentSource;
+  final bool isReviewMode;
 
   PracticeProgress({
     required this.state,
@@ -37,6 +47,15 @@ class PracticeProgress {
     this.sessionGoal = '또렷하게 말하기',
     this.fatigueBefore = 1,
     this.fatigueAfter,
+    this.mode = PracticeMode.shortSentence,
+    this.currentItemIndex = 0,
+    this.retryCount = 0,
+    this.streakCount = 0,
+    this.contentId,
+    this.category = '일반',
+    this.difficulty = 1,
+    this.contentSource = PracticeContentSource.builtIn,
+    this.isReviewMode = false,
   });
 
   PracticeProgress copyWith({
@@ -54,6 +73,16 @@ class PracticeProgress {
     int? fatigueBefore,
     int? fatigueAfter,
     bool clearFatigueAfter = false,
+    PracticeMode? mode,
+    int? currentItemIndex,
+    int? retryCount,
+    int? streakCount,
+    String? contentId,
+    bool clearContentId = false,
+    String? category,
+    int? difficulty,
+    PracticeContentSource? contentSource,
+    bool? isReviewMode,
   }) {
     return PracticeProgress(
       state: state ?? this.state,
@@ -71,6 +100,15 @@ class PracticeProgress {
       fatigueAfter: clearFatigueAfter
           ? null
           : (fatigueAfter ?? this.fatigueAfter),
+      mode: mode ?? this.mode,
+      currentItemIndex: currentItemIndex ?? this.currentItemIndex,
+      retryCount: retryCount ?? this.retryCount,
+      streakCount: streakCount ?? this.streakCount,
+      contentId: clearContentId ? null : (contentId ?? this.contentId),
+      category: category ?? this.category,
+      difficulty: difficulty ?? this.difficulty,
+      contentSource: contentSource ?? this.contentSource,
+      isReviewMode: isReviewMode ?? this.isReviewMode,
     );
   }
 }
@@ -91,22 +129,24 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   AiService get aiService => ref.read(aiServiceProvider);
   PracticeHistoryService get historyService =>
       ref.watch(practiceHistoryServiceProvider);
-  PracticeSentenceService get sentenceService =>
-      ref.watch(practiceSentenceServiceProvider);
+  PracticeContentService get contentService =>
+      ref.watch(practiceContentServiceProvider);
+  CustomPracticeContentService get customContentService =>
+      ref.watch(customPracticeContentServiceProvider);
 
-  List<String> _sentencesList = [];
+  List<PracticeContentItem> _currentItems = [];
 
   @override
   PracticeProgress build() {
     _init();
     return PracticeProgress(
       state: PracticeState.idle,
-      targetText: '꾸준한 연습만이 올바른 발음을 만드는 비결입니다.',
+      targetText: '물을 마시고 싶어요.',
     );
   }
 
   Future<void> _init() async {
-    _sentencesList = await sentenceService.getRecommendedSentences();
+    _currentItems = await _loadItemsForMode(PracticeMode.shortSentence);
     final history = await historyService.loadPractices();
 
     // Listen for audio completion to reset isPlaying state
@@ -116,25 +156,22 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     state = state.copyWith(
       history: history,
-      targetText: _sentencesList.isNotEmpty
-          ? _sentencesList[0]
+      targetText: _currentItems.isNotEmpty
+          ? _currentItems[0].text
           : state.targetText,
+      contentId: _currentItems.isNotEmpty ? _currentItems[0].id : null,
+      category: _currentItems.isNotEmpty ? _currentItems[0].category : '일반',
+      difficulty: _currentItems.isNotEmpty ? _currentItems[0].difficulty : 1,
+      contentSource: _currentItems.isNotEmpty
+          ? _currentItems[0].source
+          : PracticeContentSource.builtIn,
+      isReviewMode: false,
     );
   }
 
   void toggleFreeMode() {
-    final newFreeMode = !state.isFreeMode;
-    state = state.copyWith(
-      isFreeMode: newFreeMode,
-      targetText: newFreeMode
-          ? ''
-          : (_sentencesList.isNotEmpty
-                ? _sentencesList[0]
-                : '꾸준한 연습만이 올바른 발음을 만드는 비결입니다.'),
-      clearFeedback: true,
-      spokenText: '',
-      state: PracticeState.idle,
-      clearFatigueAfter: true,
+    setMode(
+      state.isFreeMode ? PracticeMode.shortSentence : PracticeMode.freeSpeech,
     );
   }
 
@@ -150,11 +187,14 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     audioPlayer.stop(); // Ensure any feedback audio or recording playback stops
   }
 
+  void nextItem() {
+    if (state.isFreeMode || _currentItems.isEmpty) return;
+    final nextIndex = (state.currentItemIndex + 1) % _currentItems.length;
+    _setCurrentItem(nextIndex);
+  }
+
   void nextSentence() {
-    if (state.isFreeMode || _sentencesList.isEmpty) return;
-    final currentIndex = _sentencesList.indexOf(state.targetText);
-    final nextIndex = (currentIndex + 1) % _sentencesList.length;
-    setTargetText(_sentencesList[nextIndex]);
+    nextItem();
   }
 
   void resetPractice() {
@@ -170,12 +210,149 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     state = state.copyWith(
       targetText: text,
       isFreeMode: false,
+      mode: PracticeMode.shortSentence,
       state: PracticeState.idle,
       spokenText: '',
       feedback: null,
       lastAudioPath: null,
       clearFatigueAfter: true,
+      clearContentId: true,
+      category: '직접 입력',
+      difficulty: 1,
+      retryCount: 0,
+      isReviewMode: false,
     );
+  }
+
+  Future<void> setMode(PracticeMode mode) async {
+    final isFreeSpeech = mode == PracticeMode.freeSpeech;
+    _currentItems = isFreeSpeech ? [] : await _loadItemsForMode(mode);
+    final firstItem = _currentItems.isEmpty ? null : _currentItems.first;
+
+    state = state.copyWith(
+      mode: mode,
+      isFreeMode: isFreeSpeech,
+      targetText: isFreeSpeech ? '' : firstItem?.text ?? state.targetText,
+      currentItemIndex: 0,
+      retryCount: 0,
+      streakCount: 0,
+      spokenText: '',
+      state: PracticeState.idle,
+      clearFeedback: true,
+      clearLastAudioPath: true,
+      clearFatigueAfter: true,
+      contentId: firstItem?.id,
+      clearContentId: firstItem == null,
+      category: isFreeSpeech ? '자유 말하기' : firstItem?.category ?? '일반',
+      difficulty: firstItem?.difficulty ?? 1,
+      contentSource: firstItem?.source ?? PracticeContentSource.builtIn,
+      isReviewMode: false,
+    );
+  }
+
+  bool startFailedWordReview() {
+    final reviewItems = contentService.getFailedWordReviewItems(state.history);
+    if (reviewItems.isEmpty) {
+      return false;
+    }
+
+    _currentItems = reviewItems;
+    final firstItem = _currentItems.first;
+    state = state.copyWith(
+      mode: PracticeMode.wordGame,
+      isFreeMode: false,
+      targetText: firstItem.text,
+      currentItemIndex: 0,
+      retryCount: 0,
+      spokenText: '',
+      state: PracticeState.idle,
+      clearFeedback: true,
+      clearLastAudioPath: true,
+      clearFatigueAfter: true,
+      contentId: firstItem.id,
+      category: firstItem.category,
+      difficulty: firstItem.difficulty,
+      contentSource: firstItem.source,
+      isReviewMode: true,
+    );
+    return true;
+  }
+
+  Future<List<PracticeContentItem>> _loadItemsForMode(PracticeMode mode) async {
+    final builtInItems = contentService.getItems(mode);
+    if (mode != PracticeMode.longSentence) {
+      return builtInItems;
+    }
+
+    final customItems = await customContentService.loadLongSentences();
+    return [...customItems, ...builtInItems];
+  }
+
+  void _setCurrentItem(int index) {
+    final item = _currentItems[index];
+    state = state.copyWith(
+      targetText: item.text,
+      currentItemIndex: index,
+      retryCount: 0,
+      spokenText: '',
+      state: PracticeState.idle,
+      clearFeedback: true,
+      clearLastAudioPath: true,
+      clearFatigueAfter: true,
+      contentId: item.id,
+      category: item.category,
+      difficulty: item.difficulty,
+      contentSource: item.source,
+    );
+  }
+
+  Future<void> addCustomLongSentence({
+    required String text,
+    required String category,
+  }) async {
+    final item = await customContentService.addLongSentence(
+      text: text,
+      category: category,
+    );
+    await _refreshLongSentenceItems(selectContentId: item.id);
+  }
+
+  Future<void> updateCustomLongSentence({
+    required String id,
+    required String text,
+    required String category,
+  }) async {
+    await customContentService.updateLongSentence(
+      id: id,
+      text: text,
+      category: category,
+    );
+    await _refreshLongSentenceItems(selectContentId: id);
+  }
+
+  Future<void> deleteCustomLongSentence(String id) async {
+    await customContentService.deleteLongSentence(id);
+    await _refreshLongSentenceItems();
+  }
+
+  Future<List<PracticeContentItem>> loadCustomLongSentences() {
+    return customContentService.loadLongSentences();
+  }
+
+  Future<void> _refreshLongSentenceItems({String? selectContentId}) async {
+    if (state.mode != PracticeMode.longSentence) {
+      return;
+    }
+
+    _currentItems = await _loadItemsForMode(PracticeMode.longSentence);
+    if (_currentItems.isEmpty) {
+      return;
+    }
+
+    final selectedIndex = selectContentId == null
+        ? state.currentItemIndex.clamp(0, _currentItems.length - 1)
+        : _currentItems.indexWhere((item) => item.id == selectContentId);
+    _setCurrentItem(selectedIndex == -1 ? 0 : selectedIndex);
   }
 
   void setSessionGoal(String goal) {
@@ -269,21 +446,37 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       return;
     }
 
-    debugPrint(
-      'Starting Gemma 4 Multimodal Analysis for: ${state.isFreeMode ? "Free Reading" : "Sentence Practice"}',
-    );
+    debugPrint('Starting practice analysis for: ${state.mode.label}');
     late final AiResponse feedback;
     try {
-      // Transitioning to native audio token processing with Gemma 4
-      feedback = await aiService.evaluateAudio(audioFile, state.targetText);
-      debugPrint('Gemma 4 Analysis Completed successfully.');
+      feedback = await aiService.evaluatePracticeByMode(
+        mode: state.mode,
+        targetText: state.targetText,
+        spokenText: finalSpokenText,
+        durationSeconds: _recordingStartTime == null
+            ? 0
+            : DateTime.now().difference(_recordingStartTime!).inSeconds,
+      );
+      debugPrint('Practice analysis completed successfully.');
     } catch (e) {
       debugPrint('Gemma 4 Analysis failed with exception: $e');
-      feedback = await aiService.getReadingFeedback(
-        state.targetText,
-        finalSpokenText,
+      feedback = await aiService.evaluatePracticeByMode(
+        mode: state.mode,
+        targetText: state.targetText,
+        spokenText: finalSpokenText,
+        durationSeconds: _recordingStartTime == null
+            ? 0
+            : DateTime.now().difference(_recordingStartTime!).inSeconds,
       );
     }
+
+    final previousBestScore = _previousBestScore();
+    final nextRetryCount = feedback.pronunciationScore >= 70
+        ? state.retryCount
+        : state.retryCount + 1;
+    final nextStreakCount = feedback.pronunciationScore >= 80
+        ? state.streakCount + 1
+        : 0;
 
     final session = PracticeSession(
       id: const Uuid().v4(),
@@ -305,6 +498,14 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       durationSeconds: _recordingStartTime == null
           ? 0
           : DateTime.now().difference(_recordingStartTime!).inSeconds,
+      mode: state.mode.storageValue,
+      contentId: state.contentId,
+      category: state.category,
+      difficulty: state.difficulty,
+      retryCount: nextRetryCount,
+      streakCount: nextStreakCount,
+      previousBestScore: previousBestScore,
+      contentSource: state.contentSource.storageValue,
     );
 
     debugPrint('Saving practice history...');
@@ -316,7 +517,26 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       feedback: feedback,
       lastAudioPath: audioFile,
       history: updatedHistory,
+      retryCount: nextRetryCount,
+      streakCount: nextStreakCount,
     );
+  }
+
+  int? _previousBestScore() {
+    final contentId = state.contentId;
+    if (contentId == null) {
+      return null;
+    }
+
+    final matchingScores = state.history
+        .where((session) => session.contentId == contentId)
+        .map((session) => session.score)
+        .toList();
+    if (matchingScores.isEmpty) {
+      return null;
+    }
+    matchingScores.sort();
+    return matchingScores.last;
   }
 
   Future<void> deleteSession(String id) async {

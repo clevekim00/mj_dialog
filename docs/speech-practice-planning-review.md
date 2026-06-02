@@ -78,6 +78,41 @@ flutter test
 → All tests passed
 ```
 
+2026-06-01 기준으로 구조화된 발음 연습 모드를 추가 반영했다.
+
+```text
+연습 선택 화면
+→ 단어 게임, 짧은 문장 읽기, 긴 문장 읽기, 자유 대화 선택
+
+틀린 단어 복습
+→ 단어 게임에서 70점 미만으로 실패한 단어를 다시 연습하고 최근 2회 80점 이상이면 복습 목록에서 제외
+
+콘텐츠 구조화
+→ PracticeContentItem으로 모드, 카테고리, 난이도, 목표 발음, 콘텐츠 출처 관리
+
+내 긴 문장
+→ 긴 문장 모드에서 사용자 등록 문장 추가, 수정, 삭제 지원
+
+모드별 평가
+→ AiService.evaluatePracticeByMode()로 단어/짧은 문장/긴 문장/자유 말하기 평가 기준 분리
+
+기록 확장
+→ PracticeSession에 mode, contentId, category, difficulty, retryCount, streakCount, previousBestScore 저장
+
+대시보드/기록
+→ 모드별 연습 횟수와 기록 칩 표시
+```
+
+검증 결과:
+
+```text
+dart analyze
+→ No issues found
+
+flutter test
+→ All tests passed
+```
+
 ## 4. 추가로 필요한 기능
 
 ### 4.1 사용자 상태 기반 초기 설정

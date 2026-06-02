@@ -19,6 +19,7 @@ Speech Rehab은 Flutter 기반의 AI 언어 연습 코치 앱이다. 핵심 기�
 │   │   │   ├── provider/
 │   │   │   └── view/
 │   │   └── practice/
+│   │       ├── model/
 │   │       ├── provider/
 │   │       └── view/
 │   └── services/
@@ -26,6 +27,7 @@ Speech Rehab은 Flutter 기반의 AI 언어 연습 코치 앱이다. 핵심 기�
 │       ├── audio/
 │       ├── history_service.dart
 │       ├── permission_service.dart
+│       ├── practice_content_service.dart
 │       ├── practice_history_service.dart
 │       └── practice_sentence_service.dart
 ├── backend/
@@ -100,22 +102,27 @@ lib/features/practice/view/practice_history_screen.dart
 lib/features/practice/view/dashboard_screen.dart
 ```
 
-`PracticeNotifier`는 문장 연습, 자유 읽기, 녹음, STT, AI 평가, 재생, 공유, 연습 히스토리 저장을 담당한다. 사용자 관점의 기능은 풍부하지만, 녹음과 STT와 AI 분석이 하나의 Notifier에 많이 모여 있다.
+`PracticeNotifier`는 단어 게임, 틀린 단어 복습, 짧은 문장 읽기, 긴 문장 읽기, 자유 말하기, 사용자 등록 긴 문장, 녹음, STT, AI 평가, 재생, 공유, 연습 히스토리 저장을 담당한다. 사용자 관점의 기능은 풍부하지만, 녹음과 STT와 AI 분석이 하나의 Notifier에 많이 모여 있다.
 
 현재 연습 흐름은 다음과 같다.
 
 ```text
-PracticeScreen
-→ 문장 연습 또는 자유 읽기 선택
+HistoryScreen
+→ PracticeModeSelectionScreen
+→ 단어 게임 / 짧은 문장 / 긴 문장 / 자유 대화 선택
+→ PracticeScreen 또는 ChatScreen
 → 녹음 시작
 → STT와 로컬 녹음 시작
 → 녹음 종료
 → STT 종료 및 텍스트 확정
-→ AiService.evaluateAudio()
-→ 실패 시 getReadingFeedback() fallback
+→ AiService.evaluatePracticeByMode()
 → PracticeHistoryService.savePractice()
 → 피드백, 녹음 재생, 공유 제공
 ```
+
+긴 문장 모드에서는 `CustomPracticeContentService`가 사용자가 등록한 긴 문장을 `SharedPreferences`에 저장하고, 기본 긴 문장과 합쳐서 연습 항목으로 제공한다.
+
+단어 게임에서는 `PracticeContentService.getFailedWordReviewItems()`가 연습 기록을 기준으로 복습 단어를 계산한다. 70점 미만 기록이 있는 단어는 복습 후보가 되고, 최근 2회가 모두 80점 이상이면 복습 목록에서 제외된다.
 
 ### 서비스 계층
 
@@ -130,6 +137,7 @@ lib/services/audio/audio_player_service.dart
 lib/services/history_service.dart
 lib/services/practice_history_service.dart
 lib/services/permission_service.dart
+lib/services/practice_content_service.dart
 lib/services/practice_sentence_service.dart
 ```
 
@@ -139,7 +147,7 @@ lib/services/practice_sentence_service.dart
 
 백엔드 Kotlin 모듈에는 Spring 스타일의 Gemma 4 음성 평가 API 스텁이 있다.
 
-현재 백엔드는 실제 앱의 `AiService.evaluateAudio()`와 연결되어 있지 않다. Flutter 쪽에서는 800ms 지연 후 `getReadingFeedback(targetText, "")`를 호출하는 시뮬레이션에 가깝다.
+현재 백엔드는 실제 앱의 구조화 연습 평가와 직접 연결되어 있지 않다. Flutter 쪽에서는 `AiService.evaluatePracticeByMode()`가 텍스트 인식 결과와 모드별 프롬프트를 기반으로 단어, 짧은 문장, 긴 문장, 자유 말하기 피드백을 만든다.
 
 ## 4. 현재 검증 결과
 
