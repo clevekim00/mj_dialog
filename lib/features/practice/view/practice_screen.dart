@@ -47,6 +47,10 @@ class PracticeScreen extends ConsumerWidget {
               _buildRehabSessionCard(ref, practice),
               const SizedBox(height: 20),
               _buildModeSelector(ref, practice.mode),
+              if (practice.mode == PracticeMode.wordGame) ...[
+                const SizedBox(height: 14),
+                _buildWordGameControls(ref, practice),
+              ],
               const SizedBox(height: 20),
               _buildTargetCard(context, ref, practice),
               const SizedBox(height: 40),
@@ -206,6 +210,57 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildWordGameControls(WidgetRef ref, PracticeProgress practice) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildDifficultyButton(ref, '쉬움', practice.wordGameDifficulty, 1),
+          _buildDifficultyButton(ref, '보통', practice.wordGameDifficulty, 2),
+          _buildDifficultyButton(ref, '집중', practice.wordGameDifficulty, 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifficultyButton(
+    WidgetRef ref,
+    String label,
+    int current,
+    int value,
+  ) {
+    final isSelected = current == value;
+    return GestureDetector(
+      onTap: isSelected
+          ? null
+          : () => ref
+                .read(practiceProvider.notifier)
+                .setWordGameDifficulty(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.greenAccent.withValues(alpha: 0.25)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.greenAccent : Colors.white54,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildModeButton(
     WidgetRef ref,
     String label,
@@ -240,6 +295,10 @@ class PracticeScreen extends ConsumerWidget {
     WidgetRef ref,
     PracticeProgress practice,
   ) {
+    if (practice.mode == PracticeMode.wordGame) {
+      return _buildFallingWordGameCard(context, ref, practice);
+    }
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -351,6 +410,14 @@ class PracticeScreen extends ConsumerWidget {
                   _buildSmallChip(Icons.bookmark_added_outlined, '내 문장'),
                 if (practice.isReviewMode)
                   _buildSmallChip(Icons.replay_circle_filled_outlined, '복습'),
+                if (practice.mode == PracticeMode.wordGame) ...[
+                  _buildSmallChip(
+                    Icons.sync_alt_outlined,
+                    '움직임 ${practice.movementScore}/5',
+                  ),
+                  if (practice.isExercisePattern)
+                    _buildSmallChip(Icons.fitness_center_outlined, '운동 음절'),
+                ],
                 if (practice.retryCount > 0)
                   _buildSmallChip(
                     Icons.replay_outlined,
@@ -365,6 +432,243 @@ class PracticeScreen extends ConsumerWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildFallingWordGameCard(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeProgress practice,
+  ) {
+    final notifier = ref.read(practiceProvider.notifier);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  '단어가 바닥에 닿기 전에 발음하세요',
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.replay_circle_filled_outlined,
+                  color: Colors.greenAccent,
+                  size: 20,
+                ),
+                onPressed: () => _startFailedWordReview(context, ref),
+                tooltip: '틀린 단어 복습',
+              ),
+              IconButton(
+                icon: const Icon(Icons.restart_alt, color: Colors.white54),
+                onPressed: () => notifier.resetFallingWordGame(),
+                tooltip: '게임 초기화',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildWordGameStats(practice),
+          const SizedBox(height: 12),
+          _buildFallingWordArena(practice),
+          const SizedBox(height: 14),
+          if (practice.wordGameStatus == WordGameStatus.running)
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildSmallChip(Icons.gps_fixed, '목표 ${practice.targetText}'),
+                _buildSmallChip(
+                  Icons.sync_alt_outlined,
+                  '움직임 ${practice.movementScore}/5',
+                ),
+                if (practice.isExercisePattern)
+                  _buildSmallChip(Icons.fitness_center_outlined, '운동 음절'),
+                if (practice.isReviewMode)
+                  _buildSmallChip(Icons.replay_circle_filled_outlined, '복습'),
+              ],
+            )
+          else
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () => notifier.startFallingWordGame(),
+                icon: const Icon(Icons.play_arrow),
+                label: Text(
+                  practice.wordGameStatus == WordGameStatus.gameOver
+                      ? '다시 시작'
+                      : '게임 시작',
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWordGameStats(PracticeProgress practice) {
+    final average = practice.wordGameHits == 0
+        ? 0
+        : practice.wordGameScore ~/ practice.wordGameHits;
+    return Row(
+      children: [
+        Expanded(
+          child: _buildGameStat(
+            '성공',
+            '${practice.wordGameHits}',
+            Colors.greenAccent,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildGameStat(
+            '실패',
+            '${practice.wordGameMisses}',
+            Colors.redAccent,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(child: _buildGameStat('평균', '$average점', Colors.blueAccent)),
+      ],
+    );
+  }
+
+  Widget _buildGameStat(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white54, fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFallingWordArena(PracticeProgress practice) {
+    const arenaHeight = 320.0;
+    return Container(
+      height: arenaHeight,
+      width: double.infinity,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final laneWidth = constraints.maxWidth / 3;
+          return Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 16,
+                child: Container(
+                  height: 2,
+                  color: Colors.redAccent.withValues(alpha: 0.8),
+                ),
+              ),
+              if (practice.wordGameStatus == WordGameStatus.ready)
+                const Center(
+                  child: Text(
+                    '게임 시작을 누르면 단어가 내려옵니다.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ),
+              if (practice.wordGameStatus == WordGameStatus.gameOver)
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        '게임 종료',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '성공 ${practice.wordGameHits}개 · 평균 ${practice.wordGameHits == 0 ? 0 : practice.wordGameScore ~/ practice.wordGameHits}점',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
+              for (final word in practice.fallingWords)
+                Positioned(
+                  left: word.lane * laneWidth + 8,
+                  top: word.progress * (arenaHeight - 56),
+                  width: laneWidth - 16,
+                  child: _buildFallingWordChip(
+                    word,
+                    isTarget: word.item.id == practice.contentId,
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFallingWordChip(FallingWord word, {required bool isTarget}) {
+    final color = isTarget ? Colors.greenAccent : Colors.white70;
+    return Container(
+      height: 42,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: isTarget
+            ? Colors.greenAccent.withValues(alpha: 0.18)
+            : Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        word.item.text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
       ),
     );
   }
@@ -816,7 +1120,7 @@ class PracticeScreen extends ConsumerWidget {
 
   String _idlePrompt(PracticeMode mode) {
     return switch (mode) {
-      PracticeMode.wordGame => '구슬을 터치하여 단어 녹음',
+      PracticeMode.wordGame => '목표 단어를 보고 구슬을 터치하여 녹음',
       PracticeMode.shortSentence => '구슬을 터치하여 짧은 문장 녹음',
       PracticeMode.longSentence => '구슬을 터치하여 긴 문장 녹음',
       PracticeMode.freeSpeech => '구슬을 터치하여 자유롭게 말하기',

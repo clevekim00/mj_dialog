@@ -33,6 +33,20 @@ void main() {
       expect(word.category, isNotEmpty);
       expect(word.difficulty, greaterThanOrEqualTo(1));
       expect(word.targetSounds, isNotEmpty);
+      expect(word.movementScore, greaterThanOrEqualTo(1));
+      expect(word.baseWeight, greaterThan(0));
+    });
+
+    test('contains high movement exercise pattern words', () {
+      final service = PracticeContentService();
+      final words = service.getItems(PracticeMode.wordGame);
+
+      expect(words.map((item) => item.text), contains('퍼터커'));
+      expect(words.map((item) => item.text), contains('파타카'));
+      expect(
+        words.where((item) => item.isExercisePattern),
+        hasLength(greaterThanOrEqualTo(4)),
+      );
     });
 
     test('returns failed word review items from low scoring history', () {
@@ -87,6 +101,37 @@ void main() {
       final reviewItems = service.getFailedWordReviewItems(history);
 
       expect(reviewItems.map((item) => item.id), isNot(contains('word_water')));
+    });
+
+    test('picks a weighted word from available word items', () {
+      final service = PracticeContentService();
+      final items = service.getItems(PracticeMode.wordGame);
+
+      final picked = service.pickWeightedWord(
+        items: items,
+        history: const [],
+        difficultyLevel: 3,
+      );
+
+      expect(items.map((item) => item.id), contains(picked.id));
+    });
+
+    test('counts difficult target sounds from failed word sessions', () {
+      final service = PracticeContentService();
+      final history = [
+        _wordSession(
+          contentId: 'word_puh_tuh_kuh',
+          targetText: '퍼터커',
+          score: 50,
+          timestamp: DateTime(2026, 6, 2, 9),
+        ),
+      ];
+
+      final counts = service.getDifficultSoundCounts(history);
+
+      expect(counts['ㅍ'], 1);
+      expect(counts['ㅌ'], 1);
+      expect(counts['ㅋ'], 1);
     });
   });
 

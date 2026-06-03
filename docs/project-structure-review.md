@@ -56,7 +56,7 @@ main()
 → MyApp
 → StartupResolver
 → PermissionService.hasAllPermissions()
-→ 권한 있음: HistoryScreen
+→ 권한 있음: PracticeModeSelectionScreen
 → 권한 없음: PermissionScreen
 ```
 
@@ -107,10 +107,10 @@ lib/features/practice/view/dashboard_screen.dart
 현재 연습 흐름은 다음과 같다.
 
 ```text
-HistoryScreen
+StartupResolver
 → PracticeModeSelectionScreen
 → 단어 게임 / 짧은 문장 / 긴 문장 / 자유 대화 선택
-→ PracticeScreen 또는 ChatScreen
+→ WordGameScreen / PracticeScreen / ChatScreen
 → 녹음 시작
 → STT와 로컬 녹음 시작
 → 녹음 종료
@@ -123,6 +123,10 @@ HistoryScreen
 긴 문장 모드에서는 `CustomPracticeContentService`가 사용자가 등록한 긴 문장을 `SharedPreferences`에 저장하고, 기본 긴 문장과 합쳐서 연습 항목으로 제공한다.
 
 단어 게임에서는 `PracticeContentService.getFailedWordReviewItems()`가 연습 기록을 기준으로 복습 단어를 계산한다. 70점 미만 기록이 있는 단어는 복습 후보가 되고, 최근 2회가 모두 80점 이상이면 복습 목록에서 제외된다.
+
+또한 `PracticeContentService.pickWeightedWord()`가 단어 게임 난이도, 운동 음절 여부, 움직임 점수, 실패 기록을 반영해 다음 단어를 가중치 기반으로 선택한다. 대시보드는 `getDifficultSoundCounts()`를 통해 70점 미만 단어 기록에서 어려웠던 목표 발음군을 요약한다.
+
+단어 게임 UI는 `WordGameScreen` 전용 화면의 떨어지는 단어 보드로 전환되었다. `PracticeNotifier`가 `FallingWord` 목록과 `WordGameStatus`를 관리하고, 타이머로 단어 위치를 갱신한다. 목표 단어를 70점 이상으로 발음하면 해당 단어가 제거되고, 단어가 바닥에 닿으면 게임이 종료되어 성공 개수, 실패 개수, 평균 점수가 표시된다.
 
 ### 서비스 계층
 

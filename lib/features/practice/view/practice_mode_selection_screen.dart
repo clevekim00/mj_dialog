@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
 import 'package:speech_rehab/features/chat/view/chat_screen.dart';
+import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 
@@ -15,9 +16,26 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
-        title: const Text('연습 선택'),
+        title: const Text('오늘의 연습'),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: '히스토리',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            tooltip: '성과 대시보드',
+            onPressed: () => Navigator.pushNamed(context, '/dashboard'),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -30,7 +48,12 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
             title: '단어 게임',
             subtitle: '짧은 단어를 큰 글자로 보고 또렷하게 말해요.',
             color: Colors.greenAccent,
-            onTap: () => _openPractice(context, ref, PracticeMode.wordGame),
+            onTap: () {
+              ref
+                  .read(practiceProvider.notifier)
+                  .setMode(PracticeMode.wordGame);
+              Navigator.pushNamed(context, '/word_game');
+            },
           ),
           _buildModeCard(
             context: context,

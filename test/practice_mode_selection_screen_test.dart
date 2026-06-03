@@ -15,7 +15,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('연습 선택'), findsOneWidget);
+    expect(find.text('오늘의 연습'), findsOneWidget);
     expect(find.text('단어 게임'), findsOneWidget);
     expect(find.text('짧은 문장 읽기'), findsOneWidget);
     expect(find.text('긴 문장 읽기'), findsOneWidget);

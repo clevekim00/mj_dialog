@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -12,6 +13,31 @@ import '../../../services/practice_history_service.dart';
 import '../model/practice_mode.dart';
 
 enum PracticeState { idle, recording, analyzing, completed, error }
+
+enum WordGameStatus { ready, running, gameOver }
+
+class FallingWord {
+  const FallingWord({
+    required this.id,
+    required this.item,
+    required this.lane,
+    required this.progress,
+  });
+
+  final String id;
+  final PracticeContentItem item;
+  final int lane;
+  final double progress;
+
+  FallingWord copyWith({double? progress}) {
+    return FallingWord(
+      id: id,
+      item: item,
+      lane: lane,
+      progress: progress ?? this.progress,
+    );
+  }
+}
 
 class PracticeProgress {
   final PracticeState state;
@@ -34,6 +60,14 @@ class PracticeProgress {
   final int difficulty;
   final PracticeContentSource contentSource;
   final bool isReviewMode;
+  final int wordGameDifficulty;
+  final int movementScore;
+  final bool isExercisePattern;
+  final WordGameStatus wordGameStatus;
+  final List<FallingWord> fallingWords;
+  final int wordGameScore;
+  final int wordGameHits;
+  final int wordGameMisses;
 
   PracticeProgress({
     required this.state,
@@ -56,6 +90,14 @@ class PracticeProgress {
     this.difficulty = 1,
     this.contentSource = PracticeContentSource.builtIn,
     this.isReviewMode = false,
+    this.wordGameDifficulty = 1,
+    this.movementScore = 1,
+    this.isExercisePattern = false,
+    this.wordGameStatus = WordGameStatus.ready,
+    this.fallingWords = const [],
+    this.wordGameScore = 0,
+    this.wordGameHits = 0,
+    this.wordGameMisses = 0,
   });
 
   PracticeProgress copyWith({
@@ -83,6 +125,14 @@ class PracticeProgress {
     int? difficulty,
     PracticeContentSource? contentSource,
     bool? isReviewMode,
+    int? wordGameDifficulty,
+    int? movementScore,
+    bool? isExercisePattern,
+    WordGameStatus? wordGameStatus,
+    List<FallingWord>? fallingWords,
+    int? wordGameScore,
+    int? wordGameHits,
+    int? wordGameMisses,
   }) {
     return PracticeProgress(
       state: state ?? this.state,
@@ -109,6 +159,14 @@ class PracticeProgress {
       difficulty: difficulty ?? this.difficulty,
       contentSource: contentSource ?? this.contentSource,
       isReviewMode: isReviewMode ?? this.isReviewMode,
+      wordGameDifficulty: wordGameDifficulty ?? this.wordGameDifficulty,
+      movementScore: movementScore ?? this.movementScore,
+      isExercisePattern: isExercisePattern ?? this.isExercisePattern,
+      wordGameStatus: wordGameStatus ?? this.wordGameStatus,
+      fallingWords: fallingWords ?? this.fallingWords,
+      wordGameScore: wordGameScore ?? this.wordGameScore,
+      wordGameHits: wordGameHits ?? this.wordGameHits,
+      wordGameMisses: wordGameMisses ?? this.wordGameMisses,
     );
   }
 }
@@ -135,9 +193,16 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       ref.watch(customPracticeContentServiceProvider);
 
   List<PracticeContentItem> _currentItems = [];
+  Timer? _wordGameTimer;
+  int _wordGameTick = 0;
+  int _fallingWordSequence = 0;
+  final Random _wordGameRandom = Random();
 
   @override
   PracticeProgress build() {
+    ref.onDispose(() {
+      _wordGameTimer?.cancel();
+    });
     _init();
     return PracticeProgress(
       state: PracticeState.idle,
@@ -165,6 +230,12 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       contentSource: _currentItems.isNotEmpty
           ? _currentItems[0].source
           : PracticeContentSource.builtIn,
+      movementScore: _currentItems.isNotEmpty
+          ? _currentItems[0].movementScore
+          : 1,
+      isExercisePattern: _currentItems.isNotEmpty
+          ? _currentItems[0].isExercisePattern
+          : false,
       isReviewMode: false,
     );
   }
@@ -189,6 +260,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   void nextItem() {
     if (state.isFreeMode || _currentItems.isEmpty) return;
+    if (state.mode == PracticeMode.wordGame && !state.isReviewMode) {
+      _setWeightedWordItem();
+      return;
+    }
     final nextIndex = (state.currentItemIndex + 1) % _currentItems.length;
     _setCurrentItem(nextIndex);
   }
@@ -225,6 +300,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   Future<void> setMode(PracticeMode mode) async {
+    _wordGameTimer?.cancel();
     final isFreeSpeech = mode == PracticeMode.freeSpeech;
     _currentItems = isFreeSpeech ? [] : await _loadItemsForMode(mode);
     final firstItem = _currentItems.isEmpty ? null : _currentItems.first;
@@ -246,11 +322,68 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       category: isFreeSpeech ? '자유 말하기' : firstItem?.category ?? '일반',
       difficulty: firstItem?.difficulty ?? 1,
       contentSource: firstItem?.source ?? PracticeContentSource.builtIn,
+      movementScore: firstItem?.movementScore ?? 1,
+      isExercisePattern: firstItem?.isExercisePattern ?? false,
       isReviewMode: false,
+      wordGameStatus: WordGameStatus.ready,
+      fallingWords: const [],
+      wordGameScore: 0,
+      wordGameHits: 0,
+      wordGameMisses: 0,
+    );
+  }
+
+  void setWordGameDifficulty(int value) {
+    final nextDifficulty = value.clamp(1, 3);
+    state = state.copyWith(wordGameDifficulty: nextDifficulty);
+    if (state.mode == PracticeMode.wordGame &&
+        !state.isReviewMode &&
+        state.wordGameStatus != WordGameStatus.running) {
+      _setWeightedWordItem();
+    }
+  }
+
+  void startFallingWordGame() {
+    if (state.mode != PracticeMode.wordGame || _currentItems.isEmpty) {
+      return;
+    }
+
+    _wordGameTimer?.cancel();
+    _wordGameTick = 0;
+    _fallingWordSequence = 0;
+    state = state.copyWith(
+      wordGameStatus: WordGameStatus.running,
+      fallingWords: const [],
+      wordGameScore: 0,
+      wordGameHits: 0,
+      wordGameMisses: 0,
+      state: PracticeState.idle,
+      clearFeedback: true,
+      spokenText: '',
+    );
+    _spawnFallingWord();
+    _spawnFallingWord();
+    _wordGameTimer = Timer.periodic(const Duration(milliseconds: 650), (_) {
+      _tickFallingWordGame();
+    });
+  }
+
+  void resetFallingWordGame() {
+    _wordGameTimer?.cancel();
+    state = state.copyWith(
+      wordGameStatus: WordGameStatus.ready,
+      fallingWords: const [],
+      wordGameScore: 0,
+      wordGameHits: 0,
+      wordGameMisses: 0,
+      state: PracticeState.idle,
+      clearFeedback: true,
+      spokenText: '',
     );
   }
 
   bool startFailedWordReview() {
+    _wordGameTimer?.cancel();
     final reviewItems = contentService.getFailedWordReviewItems(state.history);
     if (reviewItems.isEmpty) {
       return false;
@@ -273,7 +406,14 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       category: firstItem.category,
       difficulty: firstItem.difficulty,
       contentSource: firstItem.source,
+      movementScore: firstItem.movementScore,
+      isExercisePattern: firstItem.isExercisePattern,
       isReviewMode: true,
+      wordGameStatus: WordGameStatus.ready,
+      fallingWords: const [],
+      wordGameScore: 0,
+      wordGameHits: 0,
+      wordGameMisses: 0,
     );
     return true;
   }
@@ -303,7 +443,162 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       category: item.category,
       difficulty: item.difficulty,
       contentSource: item.source,
+      movementScore: item.movementScore,
+      isExercisePattern: item.isExercisePattern,
     );
+  }
+
+  void _setWeightedWordItem() {
+    if (_currentItems.isEmpty) {
+      return;
+    }
+    final item = contentService.pickWeightedWord(
+      items: _currentItems,
+      history: state.history,
+      difficultyLevel: state.wordGameDifficulty,
+      currentContentId: state.contentId,
+    );
+    final index = _currentItems.indexWhere(
+      (candidate) => candidate.id == item.id,
+    );
+    _setCurrentItem(index == -1 ? 0 : index);
+  }
+
+  void _tickFallingWordGame() {
+    if (state.wordGameStatus != WordGameStatus.running) {
+      _wordGameTimer?.cancel();
+      return;
+    }
+
+    _wordGameTick += 1;
+    final speed = switch (state.wordGameDifficulty) {
+      1 => 0.035,
+      2 => 0.047,
+      _ => 0.06,
+    };
+
+    final movedWords = state.fallingWords
+        .map((word) => word.copyWith(progress: word.progress + speed))
+        .toList();
+    if (movedWords.any((word) => word.progress >= 1)) {
+      _wordGameTimer?.cancel();
+      state = state.copyWith(
+        wordGameStatus: WordGameStatus.gameOver,
+        fallingWords: movedWords,
+        state: PracticeState.idle,
+        wordGameMisses: state.wordGameMisses + 1,
+      );
+      return;
+    }
+
+    state = state.copyWith(fallingWords: movedWords);
+    final spawnInterval = switch (state.wordGameDifficulty) {
+      1 => 5,
+      2 => 4,
+      _ => 3,
+    };
+    if (_wordGameTick % spawnInterval == 0 && movedWords.length < 5) {
+      _spawnFallingWord();
+    }
+    _syncTargetToFirstFallingWord();
+  }
+
+  void _spawnFallingWord() {
+    if (_currentItems.isEmpty) {
+      return;
+    }
+
+    final item = state.isReviewMode
+        ? _currentItems[_fallingWordSequence % _currentItems.length]
+        : contentService.pickWeightedWord(
+            items: _currentItems,
+            history: state.history,
+            difficultyLevel: state.wordGameDifficulty,
+            currentContentId: state.contentId,
+            random: _wordGameRandom,
+          );
+    final occupiedLanes = state.fallingWords
+        .where((word) => word.progress < 0.18)
+        .map((word) => word.lane)
+        .toSet();
+    final availableLanes = [
+      0,
+      1,
+      2,
+    ].where((lane) => !occupiedLanes.contains(lane)).toList();
+    final lane = availableLanes.isEmpty
+        ? _wordGameRandom.nextInt(3)
+        : availableLanes[_wordGameRandom.nextInt(availableLanes.length)];
+    _fallingWordSequence += 1;
+
+    final word = FallingWord(
+      id: '${item.id}_${DateTime.now().microsecondsSinceEpoch}_$_fallingWordSequence',
+      item: item,
+      lane: lane,
+      progress: 0,
+    );
+    state = state.copyWith(fallingWords: [...state.fallingWords, word]);
+    _syncTargetToFirstFallingWord();
+  }
+
+  void _syncTargetToFirstFallingWord() {
+    if (state.fallingWords.isEmpty) {
+      state = state.copyWith(clearContentId: true, targetText: '');
+      return;
+    }
+
+    final first = state.fallingWords.reduce(
+      (a, b) => a.progress >= b.progress ? a : b,
+    );
+    final item = first.item;
+    state = state.copyWith(
+      targetText: item.text,
+      contentId: item.id,
+      category: item.category,
+      difficulty: item.difficulty,
+      contentSource: item.source,
+      movementScore: item.movementScore,
+      isExercisePattern: item.isExercisePattern,
+    );
+  }
+
+  void _handleFallingWordResult(int score) {
+    if (state.mode != PracticeMode.wordGame ||
+        state.wordGameStatus != WordGameStatus.running ||
+        state.contentId == null) {
+      return;
+    }
+
+    if (score < 70) {
+      state = state.copyWith(wordGameMisses: state.wordGameMisses + 1);
+      return;
+    }
+
+    final targetId = state.contentId;
+    final targetWord = state.fallingWords
+        .where((word) => word.item.id == targetId)
+        .fold<FallingWord?>(null, (best, word) {
+          if (best == null || word.progress > best.progress) {
+            return word;
+          }
+          return best;
+        });
+    if (targetWord == null) {
+      return;
+    }
+
+    final nextWords = state.fallingWords
+        .where((word) => word.id != targetWord.id)
+        .toList();
+    state = state.copyWith(
+      fallingWords: nextWords,
+      wordGameHits: state.wordGameHits + 1,
+      wordGameScore: state.wordGameScore + score,
+    );
+    if (nextWords.length < 2) {
+      _spawnFallingWord();
+    }
+    _syncTargetToFirstFallingWord();
   }
 
   Future<void> addCustomLongSentence({
@@ -372,6 +667,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   Future<void> startRecording() async {
     if (state.state == PracticeState.recording) return;
+    if (state.mode == PracticeMode.wordGame &&
+        state.wordGameStatus != WordGameStatus.running) {
+      return;
+    }
 
     final hasPermission = await audioRecorder.hasPermission();
     if (!hasPermission) {
@@ -506,14 +805,22 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       streakCount: nextStreakCount,
       previousBestScore: previousBestScore,
       contentSource: state.contentSource.storageValue,
+      movementScore: state.movementScore,
+      isExercisePattern: state.isExercisePattern,
     );
 
     debugPrint('Saving practice history...');
     await historyService.savePractice(session);
     final updatedHistory = await historyService.loadPractices();
 
+    _handleFallingWordResult(feedback.pronunciationScore);
+
+    final keepWordGameRunning =
+        state.mode == PracticeMode.wordGame &&
+        state.wordGameStatus == WordGameStatus.running;
+
     state = state.copyWith(
-      state: PracticeState.completed,
+      state: keepWordGameRunning ? PracticeState.idle : PracticeState.completed,
       feedback: feedback,
       lastAudioPath: audioFile,
       history: updatedHistory,

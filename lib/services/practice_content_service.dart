@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,6 +41,9 @@ class PracticeContentItem {
     required this.difficulty,
     this.targetSounds = const [],
     this.source = PracticeContentSource.builtIn,
+    this.movementScore = 1,
+    this.baseWeight = 10,
+    this.isExercisePattern = false,
   });
 
   final String id;
@@ -49,6 +53,9 @@ class PracticeContentItem {
   final int difficulty;
   final List<String> targetSounds;
   final PracticeContentSource source;
+  final int movementScore;
+  final int baseWeight;
+  final bool isExercisePattern;
 }
 
 class PracticeContentService {
@@ -60,6 +67,8 @@ class PracticeContentService {
       category: '일상',
       difficulty: 1,
       targetSounds: ['ㅁ', 'ㄹ'],
+      movementScore: 2,
+      baseWeight: 14,
     ),
     PracticeContentItem(
       id: 'word_medicine',
@@ -68,6 +77,8 @@ class PracticeContentService {
       category: '병원',
       difficulty: 1,
       targetSounds: ['ㅇ'],
+      movementScore: 1,
+      baseWeight: 12,
     ),
     PracticeContentItem(
       id: 'word_hospital',
@@ -76,6 +87,8 @@ class PracticeContentService {
       category: '병원',
       difficulty: 1,
       targetSounds: ['ㅂ', 'ㅇ'],
+      movementScore: 2,
+      baseWeight: 12,
     ),
     PracticeContentItem(
       id: 'word_restroom',
@@ -84,6 +97,8 @@ class PracticeContentService {
       category: '일상',
       difficulty: 2,
       targetSounds: ['ㅎ', 'ㅈ', 'ㅅ'],
+      movementScore: 3,
+      baseWeight: 10,
     ),
     PracticeContentItem(
       id: 'word_help',
@@ -92,6 +107,8 @@ class PracticeContentService {
       category: '가족',
       difficulty: 2,
       targetSounds: ['ㄷ', 'ㅈ'],
+      movementScore: 3,
+      baseWeight: 10,
     ),
     PracticeContentItem(
       id: 'word_slowly',
@@ -100,6 +117,103 @@ class PracticeContentService {
       category: '전화',
       difficulty: 2,
       targetSounds: ['ㅊ', 'ㅎ'],
+      movementScore: 3,
+      baseWeight: 10,
+    ),
+    PracticeContentItem(
+      id: 'word_puh_tuh_kuh',
+      mode: PracticeMode.wordGame,
+      text: '퍼터커',
+      category: '혀 운동',
+      difficulty: 3,
+      targetSounds: ['ㅍ', 'ㅌ', 'ㅋ'],
+      movementScore: 5,
+      baseWeight: 7,
+      isExercisePattern: true,
+    ),
+    PracticeContentItem(
+      id: 'word_pa_ta_ka',
+      mode: PracticeMode.wordGame,
+      text: '파타카',
+      category: '혀 운동',
+      difficulty: 3,
+      targetSounds: ['ㅍ', 'ㅌ', 'ㅋ'],
+      movementScore: 5,
+      baseWeight: 7,
+      isExercisePattern: true,
+    ),
+    PracticeContentItem(
+      id: 'word_pi_ti_ki',
+      mode: PracticeMode.wordGame,
+      text: '피티키',
+      category: '혀 운동',
+      difficulty: 3,
+      targetSounds: ['ㅍ', 'ㅌ', 'ㅋ'],
+      movementScore: 5,
+      baseWeight: 6,
+      isExercisePattern: true,
+    ),
+    PracticeContentItem(
+      id: 'word_buh_duh_guh',
+      mode: PracticeMode.wordGame,
+      text: '버더거',
+      category: '혀 운동',
+      difficulty: 3,
+      targetSounds: ['ㅂ', 'ㄷ', 'ㄱ'],
+      movementScore: 5,
+      baseWeight: 6,
+      isExercisePattern: true,
+    ),
+    PracticeContentItem(
+      id: 'word_ta_ra_ka',
+      mode: PracticeMode.wordGame,
+      text: '타라카',
+      category: '혀 운동',
+      difficulty: 3,
+      targetSounds: ['ㅌ', 'ㄹ', 'ㅋ'],
+      movementScore: 5,
+      baseWeight: 6,
+      isExercisePattern: true,
+    ),
+    PracticeContentItem(
+      id: 'word_do_to_ri',
+      mode: PracticeMode.wordGame,
+      text: '도토리',
+      category: '움직임 단어',
+      difficulty: 2,
+      targetSounds: ['ㄷ', 'ㅌ', 'ㄹ'],
+      movementScore: 4,
+      baseWeight: 8,
+    ),
+    PracticeContentItem(
+      id: 'word_tak_gu',
+      mode: PracticeMode.wordGame,
+      text: '탁구',
+      category: '움직임 단어',
+      difficulty: 2,
+      targetSounds: ['ㅌ', 'ㄱ'],
+      movementScore: 4,
+      baseWeight: 8,
+    ),
+    PracticeContentItem(
+      id: 'word_chi_gwa',
+      mode: PracticeMode.wordGame,
+      text: '치과',
+      category: '움직임 단어',
+      difficulty: 2,
+      targetSounds: ['ㅊ', 'ㄱ'],
+      movementScore: 4,
+      baseWeight: 8,
+    ),
+    PracticeContentItem(
+      id: 'word_gi_cha',
+      mode: PracticeMode.wordGame,
+      text: '기차',
+      category: '움직임 단어',
+      difficulty: 2,
+      targetSounds: ['ㄱ', 'ㅊ'],
+      movementScore: 4,
+      baseWeight: 8,
     ),
     PracticeContentItem(
       id: 'short_water',
@@ -244,6 +358,121 @@ class PracticeContentService {
     }
 
     return reviewItems;
+  }
+
+  PracticeContentItem pickWeightedWord({
+    required List<PracticeContentItem> items,
+    required List<PracticeSession> history,
+    required int difficultyLevel,
+    String? currentContentId,
+    Random? random,
+  }) {
+    final wordItems = items
+        .where((item) => item.mode == PracticeMode.wordGame)
+        .toList();
+    if (wordItems.isEmpty) {
+      throw StateError('No word practice items available.');
+    }
+
+    final rng = random ?? Random();
+    final weightedItems = wordItems
+        .map(
+          (item) => MapEntry(
+            item,
+            _wordWeight(
+              item: item,
+              history: history,
+              difficultyLevel: difficultyLevel,
+              currentContentId: currentContentId,
+            ),
+          ),
+        )
+        .where((entry) => entry.value > 0)
+        .toList();
+
+    final totalWeight = weightedItems.fold<int>(
+      0,
+      (sum, entry) => sum + entry.value,
+    );
+    var ticket = rng.nextInt(totalWeight);
+    for (final entry in weightedItems) {
+      ticket -= entry.value;
+      if (ticket < 0) {
+        return entry.key;
+      }
+    }
+
+    return weightedItems.last.key;
+  }
+
+  Map<String, int> getDifficultSoundCounts(List<PracticeSession> history) {
+    final counts = <String, int>{};
+    for (final session in history) {
+      if (session.mode != PracticeMode.wordGame.storageValue ||
+          session.score >= 70 ||
+          session.contentId == null) {
+        continue;
+      }
+
+      final item = getById(session.contentId!);
+      if (item == null) {
+        continue;
+      }
+
+      for (final sound in item.targetSounds) {
+        counts[sound] = (counts[sound] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  int _wordWeight({
+    required PracticeContentItem item,
+    required List<PracticeSession> history,
+    required int difficultyLevel,
+    String? currentContentId,
+  }) {
+    final clampedLevel = difficultyLevel.clamp(1, 3);
+    var weight = item.baseWeight;
+
+    if (item.isExercisePattern) {
+      weight += switch (clampedLevel) {
+        1 => -4,
+        2 => 5,
+        _ => 12,
+      };
+    } else if (item.movementScore >= 4) {
+      weight += switch (clampedLevel) {
+        1 => -1,
+        2 => 4,
+        _ => 8,
+      };
+    } else {
+      weight += switch (clampedLevel) {
+        1 => 6,
+        2 => 1,
+        _ => -2,
+      };
+    }
+
+    final itemHistory =
+        history.where((session) => session.contentId == item.id).toList()
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    if (itemHistory.any((session) => session.score < 70)) {
+      weight += 8;
+    }
+
+    final recentTwo = itemHistory.take(2).toList();
+    if (recentTwo.length == 2 &&
+        recentTwo.every((session) => session.score >= 85)) {
+      weight -= 5;
+    }
+
+    if (item.id == currentContentId && itemHistory.length > 1) {
+      weight -= 4;
+    }
+
+    return max(weight, 1);
   }
 }
 

@@ -27,6 +27,8 @@ void main() {
         streakCount: 2,
         previousBestScore: 90,
         contentSource: 'custom',
+        movementScore: 5,
+        isExercisePattern: true,
       );
 
       await service.savePractice(session);
@@ -39,6 +41,8 @@ void main() {
       expect(loaded.first.streakCount, 2);
       expect(loaded.first.previousBestScore, 90);
       expect(loaded.first.contentSource, 'custom');
+      expect(loaded.first.movementScore, 5);
+      expect(loaded.first.isExercisePattern, isTrue);
     });
 
     test('loads old practice sessions with default mode metadata', () {
@@ -60,6 +64,8 @@ void main() {
       expect(session.retryCount, 0);
       expect(session.streakCount, 0);
       expect(session.contentSource, 'builtIn');
+      expect(session.movementScore, 1);
+      expect(session.isExercisePattern, isFalse);
     });
   });
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:speech_rehab/features/chat/view/history_screen.dart';
+import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 
 class RehabOnboardingScreen extends StatefulWidget {
@@ -31,9 +31,9 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
       return;
     }
 
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HistoryScreen()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const PracticeModeSelectionScreen()),
+    );
   }
 
   @override

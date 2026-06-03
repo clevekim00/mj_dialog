@@ -23,6 +23,8 @@ class PracticeSession {
   final int streakCount;
   final int? previousBestScore;
   final String contentSource;
+  final int movementScore;
+  final bool isExercisePattern;
 
   PracticeSession({
     required this.id,
@@ -46,6 +48,8 @@ class PracticeSession {
     this.streakCount = 0,
     this.previousBestScore,
     this.contentSource = 'builtIn',
+    this.movementScore = 1,
+    this.isExercisePattern = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -70,6 +74,8 @@ class PracticeSession {
     'streakCount': streakCount,
     'previousBestScore': previousBestScore,
     'contentSource': contentSource,
+    'movementScore': movementScore,
+    'isExercisePattern': isExercisePattern,
   };
 
   factory PracticeSession.fromJson(Map<String, dynamic> json) =>
@@ -96,6 +102,8 @@ class PracticeSession {
         streakCount: json['streakCount'] as int? ?? 0,
         previousBestScore: json['previousBestScore'] as int?,
         contentSource: json['contentSource'] as String? ?? 'builtIn',
+        movementScore: json['movementScore'] as int? ?? 1,
+        isExercisePattern: json['isExercisePattern'] as bool? ?? false,
       );
 }
 

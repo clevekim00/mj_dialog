@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
-import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
+import 'package:speech_rehab/features/practice/view/word_game_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
@@ -65,6 +65,7 @@ class _AppView extends StatelessWidget {
       routes: {
         '/practice': (context) => const PracticeScreen(),
         '/practice_modes': (context) => const PracticeModeSelectionScreen(),
+        '/word_game': (context) => const WordGameScreen(),
         '/practice_history': (context) => const PracticeHistoryScreen(),
         '/dashboard': (context) => const DashboardScreen(),
       },
@@ -94,7 +95,8 @@ class StartupResolver extends StatelessWidget {
         return switch (snapshot.data ?? _StartupDestination.permission) {
           _StartupDestination.permission => const PermissionScreen(),
           _StartupDestination.onboarding => const RehabOnboardingScreen(),
-          _StartupDestination.history => const HistoryScreen(),
+          _StartupDestination.practiceModes =>
+            const PracticeModeSelectionScreen(),
         };
       },
     );
@@ -112,8 +114,8 @@ class StartupResolver extends StatelessWidget {
       return _StartupDestination.onboarding;
     }
 
-    return _StartupDestination.history;
+    return _StartupDestination.practiceModes;
   }
 }
 
-enum _StartupDestination { permission, onboarding, history }
+enum _StartupDestination { permission, onboarding, practiceModes }

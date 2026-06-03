@@ -15,12 +15,15 @@ class SttService {
   bool _sttEnabled = false;
 
   Future<bool> init() async {
-    // STT is unstable on some desktop platforms, but we enable it for macOS 26.4+
-    // to provide real evaluation support in this environment.
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && 
-                   defaultTargetPlatform != TargetPlatform.iOS &&
-                   defaultTargetPlatform != TargetPlatform.macOS)) {
-      debugPrint('STT is not supported on this platform. Avoiding initialization.');
+    // Desktop speech recognition can crash under macOS TCC when launched from
+    // Flutter tooling, even with the required usage description present.
+    // Keep desktop runs on the simulated transcription fallback.
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
+      debugPrint(
+        'STT is not supported on this platform. Avoiding initialization.',
+      );
       return false;
     }
 
@@ -52,9 +55,7 @@ class SttService {
     return _sttEnabled;
   }
 
-  Future<bool> startListening({
-    required SttResultCallback onResult,
-  }) async {
+  Future<bool> startListening({required SttResultCallback onResult}) async {
     if (!_sttEnabled) {
       final initialized = await init();
       if (!initialized) {

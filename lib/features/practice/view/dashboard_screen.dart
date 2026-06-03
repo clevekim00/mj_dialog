@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:speech_rehab/services/practice_content_service.dart';
 import '../provider/practice_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -9,6 +10,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final practice = ref.watch(practiceProvider);
+    final contentService = ref.watch(practiceContentServiceProvider);
     final history = practice.history;
 
     final totalPractices = history.length;
@@ -39,6 +41,10 @@ class DashboardScreen extends ConsumerWidget {
             _buildSummaryGrid(totalPractices, avgScore, bestScore),
             const SizedBox(height: 16),
             _buildModeSummary(history),
+            const SizedBox(height: 16),
+            _buildDifficultSoundsCard(
+              contentService.getDifficultSoundCounts(history),
+            ),
             const SizedBox(height: 16),
             _buildRehabConsistencyCard(activeDays, avgFatigue),
             const SizedBox(height: 32),
@@ -177,6 +183,60 @@ class DashboardScreen extends ConsumerWidget {
           fontSize: 12,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultSoundsCard(Map<String, int> soundCounts) {
+    final entries = soundCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final topEntries = entries.take(5).toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.greenAccent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.record_voice_over_outlined, color: Colors.greenAccent),
+              SizedBox(width: 8),
+              Text(
+                '어려웠던 발음군',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (topEntries.isEmpty)
+            const Text(
+              '아직 단어 게임 실패 기록이 없습니다.',
+              style: TextStyle(color: Colors.white54, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: topEntries
+                  .map(
+                    (entry) => _buildModeChip(
+                      entry.key,
+                      entry.value,
+                      Colors.greenAccent,
+                    ),
+                  )
+                  .toList(),
+            ),
+        ],
       ),
     );
   }

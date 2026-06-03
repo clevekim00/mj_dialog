@@ -2,7 +2,7 @@
 
 작성일: 2026-06-01
 
-구현 상태: 2026-06-01 기준 MVP 반영 완료
+구현 상태: 2026-06-02 기준 MVP 반영 완료 및 UX 개선 반영
 
 반영 파일:
 
@@ -10,6 +10,7 @@
 lib/features/practice/model/practice_mode.dart
 lib/services/practice_content_service.dart
 lib/features/practice/view/practice_mode_selection_screen.dart
+lib/features/practice/view/word_game_screen.dart
 lib/features/practice/provider/practice_provider.dart
 lib/features/practice/view/practice_screen.dart
 lib/features/practice/view/practice_history_screen.dart
@@ -97,20 +98,32 @@ flutter test
 - 연속 성공 횟수
 - 어려운 단어 누적 기록
 - 실패한 단어 복습 여부
+- 혀/입술 움직임이 많은 발음군 실패 빈도
 
 UI 성격:
 
-- 카드 넘기기 또는 게임 스테이지 방식
+- 떨어지는 단어 게임 방식
 - 큰 글자와 큰 녹음 버튼
 - 성공 시 별, 체크, 연속 성공 표시
 - 틀린 단어만 다시 도는 복습 진입 버튼
+- 쉬움/보통/집중 난이도 선택
+- 현재 단어의 움직임 점수와 운동 음절 여부 표시
 
 구현 결과:
 
+- 단어 게임은 `WordGameScreen` 전용 화면으로 분리했다.
+- 단어가 위에서 아래로 내려오는 게임 보드를 추가했다.
+- 현재 목표 단어를 발음해 70점 이상이면 해당 단어가 사라진다.
+- 단어가 바닥에 닿으면 게임이 종료되고 성공 개수, 실패 개수, 평균 점수를 보여준다.
+- 게임 중에는 `목표 단어`, 움직임 점수, 운동 음절 여부를 함께 표시한다.
 - `wordGame` 기록 중 70점 미만이 있었던 단어를 복습 후보로 계산한다.
 - 같은 단어의 최근 2회 기록이 모두 80점 이상이면 복습 목록에서 제외한다.
 - 단어 게임 화면에서 `틀린 단어 복습` 버튼으로 복습 목록을 시작한다.
 - 복습 중인 단어는 화면에 `복습` 칩으로 표시된다.
+- `퍼터커`, `파타카`, `피티키`, `버더거`, `타라카` 같은 운동 음절을 기본 단어에 추가했다.
+- `movementScore`, `baseWeight`, `isExercisePattern`으로 단어의 운동성 및 출현 가중치를 관리한다.
+- 쉬움은 일반 단어 비중을 높이고, 집중은 운동 음절과 움직임 점수가 높은 단어 비중을 높인다.
+- 실패한 단어와 같은 목표 발음군은 가중치가 올라가 다시 나올 확률이 높아진다.
 
 ### 3.2 짧은 문장 읽기
 
@@ -199,7 +212,7 @@ UI 성격:
 
 ### 4.1 연습 선택 화면 추가
 
-현재는 `HistoryScreen`에서 바로 읽기 연습으로 이동한다. 앞으로는 `연습 선택 화면`을 추가하는 것이 좋다.
+현재 앱은 온보딩 이후 `오늘의 연습` 홈에서 바로 연습을 선택하도록 구성한다. 히스토리는 홈 상단 액션으로 이동한다.
 
 추천 라우트:
 
@@ -217,13 +230,14 @@ UI 성격:
 자유 말하기
 ```
 
-처음에는 `HistoryScreen`의 읽기 연습 버튼이 `/practice_modes`로 이동하도록 바꾸고, 기존 `/practice`는 짧은 문장 읽기 기본 화면으로 유지한다.
+처음에는 온보딩 이후 `/practice_modes`로 이동하도록 바꾸고, 기존 `/practice`는 짧은 문장 읽기와 긴 문장 읽기 화면으로 유지한다.
 
 구현 결과:
 
-- `HistoryScreen`의 읽기 연습 버튼은 `/practice_modes`로 이동한다.
-- `PracticeModeSelectionScreen`에서 단어 게임, 짧은 문장 읽기, 긴 문장 읽기, 자유 대화를 선택한다.
-- 구조화 연습 모드는 기존 `/practice` 화면을 재사용한다.
+- 온보딩 이후 첫 화면은 `PracticeModeSelectionScreen`이다.
+- `PracticeModeSelectionScreen`은 `오늘의 연습` 홈 역할을 하며 히스토리와 대시보드 이동 버튼을 제공한다.
+- 단어 게임은 전용 `/word_game` 화면으로 이동한다.
+- 짧은 문장과 긴 문장 모드는 기존 `/practice` 화면을 재사용한다.
 - 자유 대화는 기존 `ChatScreen`으로 연결한다.
 
 ### 4.2 기존 PracticeScreen 재사용 전략
@@ -271,6 +285,9 @@ class PracticeContentItem {
   final String category;
   final int difficulty;
   final List<String> targetSounds;
+  final int movementScore;
+  final int baseWeight;
+  final bool isExercisePattern;
 }
 ```
 
@@ -293,7 +310,10 @@ class PracticeContentItem {
 - `PracticeContentService`를 추가했다.
 - 단어, 짧은 문장, 긴 문장 콘텐츠를 `PracticeContentItem`으로 관리한다.
 - 각 항목은 `id`, `mode`, `text`, `category`, `difficulty`, `targetSounds`, `source`를 가진다.
+- 단어 항목은 `movementScore`, `baseWeight`, `isExercisePattern`을 추가로 가진다.
 - `PracticeContentService.getFailedWordReviewItems()`로 틀린 단어 복습 목록을 계산한다.
+- `PracticeContentService.pickWeightedWord()`로 난이도와 기록 기반 가중치 선택을 수행한다.
+- `PracticeContentService.getDifficultSoundCounts()`로 실패 발음군을 집계한다.
 - 긴 문장은 기본 문장과 사용자가 저장한 `내 긴 문장`을 함께 불러온다.
 - `CustomPracticeContentService`가 `SharedPreferences`에 사용자 긴 문장을 저장한다.
 
@@ -589,6 +609,7 @@ MVP는 다음만 포함한다.
 
 - 단어 게임 전용 화면 분리
 - 틀린 단어 복습 성과 요약
+- 단어 낙하 속도와 출현 간격의 사용자 맞춤 조절
 - 콘텐츠 즐겨찾기
 - 문장별 이전 최고 점수 표시 강화
 - 긴 문장의 구간별 읽기 모드
