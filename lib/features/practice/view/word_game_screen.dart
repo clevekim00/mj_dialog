@@ -39,6 +39,8 @@ class WordGameScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             _buildDifficultyControls(ref, practice),
             const SizedBox(height: 14),
+            _buildFocusSoundControls(ref, practice),
+            const SizedBox(height: 14),
             _buildStats(practice),
             const SizedBox(height: 14),
             _buildArena(practice),
@@ -130,6 +132,161 @@ class WordGameScreen extends ConsumerWidget {
               color: isSelected ? Colors.greenAccent : Colors.white54,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFocusSoundControls(WidgetRef ref, PracticeProgress practice) {
+    final isLocked =
+        practice.wordGameStatus == WordGameStatus.running ||
+        practice.state == PracticeState.recording ||
+        practice.state == PracticeState.analyzing;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.tune_outlined, color: Colors.greenAccent),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  '중점 발음',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                isLocked ? '게임 중 변경 불가' : '선택 단어 확률 증가',
+                style: const TextStyle(color: Colors.white38, fontSize: 12),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildFocusChipRow(
+            label: '자음',
+            values: const [
+              'ㄱ',
+              'ㄴ',
+              'ㄷ',
+              'ㄹ',
+              'ㅁ',
+              'ㅂ',
+              'ㅅ',
+              'ㅈ',
+              'ㅊ',
+              'ㅋ',
+              'ㅌ',
+              'ㅍ',
+              'ㅎ',
+            ],
+            selected: practice.wordGameFocusConsonant,
+            enabled: !isLocked,
+            onSelected: (value) => ref
+                .read(practiceProvider.notifier)
+                .setWordGameFocusConsonant(value),
+          ),
+          const SizedBox(height: 10),
+          _buildFocusChipRow(
+            label: '모음',
+            values: const ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ', 'ㅚ', 'ㅟ'],
+            selected: practice.wordGameFocusVowel,
+            enabled: !isLocked,
+            onSelected: (value) => ref
+                .read(practiceProvider.notifier)
+                .setWordGameFocusVowel(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFocusChipRow({
+    required String label,
+    required List<String> values,
+    required String? selected,
+    required bool enabled,
+    required ValueChanged<String?> onSelected,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white54,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 7,
+          runSpacing: 7,
+          children: [
+            _buildFocusChip(
+              label: '전체',
+              selected: selected == null,
+              enabled: enabled,
+              onTap: () => onSelected(null),
+            ),
+            for (final value in values)
+              _buildFocusChip(
+                label: value,
+                selected: selected == value,
+                enabled: enabled,
+                onTap: () => onSelected(value),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFocusChip({
+    required String label,
+    required bool selected,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: enabled && !selected ? onTap : null,
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.greenAccent.withValues(alpha: enabled ? 0.22 : 0.1)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? Colors.greenAccent.withValues(alpha: enabled ? 0.55 : 0.25)
+                : Colors.white10,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected
+                ? Colors.greenAccent.withValues(alpha: enabled ? 1 : 0.5)
+                : Colors.white54,
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       ),
@@ -295,6 +452,16 @@ class WordGameScreen extends ConsumerWidget {
           _buildChip(Icons.fitness_center_outlined, '운동 음절'),
         if (practice.isReviewMode)
           _buildChip(Icons.replay_circle_filled_outlined, '복습'),
+        if (practice.wordGameFocusConsonant != null)
+          _buildChip(
+            Icons.center_focus_strong,
+            '자음 ${practice.wordGameFocusConsonant}',
+          ),
+        if (practice.wordGameFocusVowel != null)
+          _buildChip(
+            Icons.center_focus_weak,
+            '모음 ${practice.wordGameFocusVowel}',
+          ),
       ],
     );
   }

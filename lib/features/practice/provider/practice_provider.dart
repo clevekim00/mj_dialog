@@ -68,6 +68,8 @@ class PracticeProgress {
   final int wordGameScore;
   final int wordGameHits;
   final int wordGameMisses;
+  final String? wordGameFocusConsonant;
+  final String? wordGameFocusVowel;
 
   PracticeProgress({
     required this.state,
@@ -98,6 +100,8 @@ class PracticeProgress {
     this.wordGameScore = 0,
     this.wordGameHits = 0,
     this.wordGameMisses = 0,
+    this.wordGameFocusConsonant,
+    this.wordGameFocusVowel,
   });
 
   PracticeProgress copyWith({
@@ -133,6 +137,10 @@ class PracticeProgress {
     int? wordGameScore,
     int? wordGameHits,
     int? wordGameMisses,
+    String? wordGameFocusConsonant,
+    bool clearWordGameFocusConsonant = false,
+    String? wordGameFocusVowel,
+    bool clearWordGameFocusVowel = false,
   }) {
     return PracticeProgress(
       state: state ?? this.state,
@@ -167,6 +175,12 @@ class PracticeProgress {
       wordGameScore: wordGameScore ?? this.wordGameScore,
       wordGameHits: wordGameHits ?? this.wordGameHits,
       wordGameMisses: wordGameMisses ?? this.wordGameMisses,
+      wordGameFocusConsonant: clearWordGameFocusConsonant
+          ? null
+          : (wordGameFocusConsonant ?? this.wordGameFocusConsonant),
+      wordGameFocusVowel: clearWordGameFocusVowel
+          ? null
+          : (wordGameFocusVowel ?? this.wordGameFocusVowel),
     );
   }
 }
@@ -299,6 +313,41 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
+  void practiceAgainFromSession(PracticeSession session) {
+    _wordGameTimer?.cancel();
+    final mode = PracticeModeLabel.fromStorageValue(session.mode);
+    final isFreeSpeech = mode == PracticeMode.freeSpeech;
+
+    state = state.copyWith(
+      mode: mode,
+      isFreeMode: isFreeSpeech,
+      targetText: isFreeSpeech ? '' : session.targetText,
+      currentItemIndex: 0,
+      retryCount: session.retryCount,
+      streakCount: session.streakCount,
+      spokenText: '',
+      state: PracticeState.idle,
+      clearFeedback: true,
+      clearLastAudioPath: true,
+      clearFatigueAfter: true,
+      contentId: session.contentId,
+      clearContentId: session.contentId == null,
+      category: session.category,
+      difficulty: session.difficulty,
+      contentSource: PracticeContentSourceValue.fromStorageValue(
+        session.contentSource,
+      ),
+      movementScore: session.movementScore,
+      isExercisePattern: session.isExercisePattern,
+      isReviewMode: false,
+      wordGameStatus: WordGameStatus.ready,
+      fallingWords: const [],
+      wordGameScore: 0,
+      wordGameHits: 0,
+      wordGameMisses: 0,
+    );
+  }
+
   Future<void> setMode(PracticeMode mode) async {
     _wordGameTimer?.cancel();
     final isFreeSpeech = mode == PracticeMode.freeSpeech;
@@ -336,6 +385,30 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   void setWordGameDifficulty(int value) {
     final nextDifficulty = value.clamp(1, 3);
     state = state.copyWith(wordGameDifficulty: nextDifficulty);
+    if (state.mode == PracticeMode.wordGame &&
+        !state.isReviewMode &&
+        state.wordGameStatus != WordGameStatus.running) {
+      _setWeightedWordItem();
+    }
+  }
+
+  void setWordGameFocusConsonant(String? consonant) {
+    state = state.copyWith(
+      wordGameFocusConsonant: consonant,
+      clearWordGameFocusConsonant: consonant == null,
+    );
+    if (state.mode == PracticeMode.wordGame &&
+        !state.isReviewMode &&
+        state.wordGameStatus != WordGameStatus.running) {
+      _setWeightedWordItem();
+    }
+  }
+
+  void setWordGameFocusVowel(String? vowel) {
+    state = state.copyWith(
+      wordGameFocusVowel: vowel,
+      clearWordGameFocusVowel: vowel == null,
+    );
     if (state.mode == PracticeMode.wordGame &&
         !state.isReviewMode &&
         state.wordGameStatus != WordGameStatus.running) {
@@ -457,6 +530,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       history: state.history,
       difficultyLevel: state.wordGameDifficulty,
       currentContentId: state.contentId,
+      focusedConsonant: state.wordGameFocusConsonant,
+      focusedVowel: state.wordGameFocusVowel,
     );
     final index = _currentItems.indexWhere(
       (candidate) => candidate.id == item.id,
@@ -515,6 +590,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
             history: state.history,
             difficultyLevel: state.wordGameDifficulty,
             currentContentId: state.contentId,
+            focusedConsonant: state.wordGameFocusConsonant,
+            focusedVowel: state.wordGameFocusVowel,
             random: _wordGameRandom,
           );
     final occupiedLanes = state.fallingWords
@@ -689,16 +766,19 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     _recordingStartTime = DateTime.now();
     final fileName = 'practice_${DateTime.now().millisecondsSinceEpoch}';
 
-    // Start STT first to let it configure the audio session
-    await sttService.startListening(
+    // Start STT only on platforms where the speech plugin is stable with the
+    // recorder. iOS currently records audio and uses the fallback text below.
+    final sttStarted = await sttService.startListening(
       onResult: (text, isFinal) async {
         _tempSpokenText = text;
         state = state.copyWith(spokenText: text);
       },
     );
 
-    // Wait a bit for the audio session to stabilize before starting the high-quality recorder
-    await Future.delayed(const Duration(milliseconds: 400));
+    if (sttStarted) {
+      // Wait a bit for the audio session to stabilize before starting the high-quality recorder.
+      await Future.delayed(const Duration(milliseconds: 400));
+    }
 
     await audioRecorder.startRecording(fileName);
   }
@@ -728,12 +808,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     String finalSpokenText = _tempSpokenText;
     debugPrint('Final Transcription: "$finalSpokenText"');
 
-    // On macOS, STT simulation
-    if (defaultTargetPlatform == TargetPlatform.macOS &&
-        finalSpokenText.isEmpty) {
-      debugPrint('macOS detected: Simulating transcription for testing.');
+    if (finalSpokenText.isEmpty) {
+      debugPrint('No transcription available. Using practice fallback text.');
       finalSpokenText = state.isFreeMode
-          ? '오늘 날씨가 정말 정겹고 화창하네요.'
+          ? '오늘 있었던 일을 편하게 말했습니다.'
           : state.targetText;
     }
 

@@ -266,32 +266,36 @@ class PracticeContentService {
     PracticeContentItem(
       id: 'long_today',
       mode: PracticeMode.longSentence,
-      text: '오늘은 발음 연습을 천천히 하면서 또렷하게 말해 보겠습니다.',
-      category: '호흡 연습',
+      text:
+          '아침에 창문을 열자 차가운 공기가 방 안으로 천천히 들어왔습니다. 민수는 물 한 잔을 마시고 식탁 앞에 앉아 오늘 해야 할 일을 작은 수첩에 적었습니다. 첫 번째는 병원에 전화해서 진료 시간을 확인하는 일이었고, 두 번째는 가족에게 몸 상태를 차분하게 설명하는 일이었습니다. 민수는 급하게 말하면 숨이 가빠진다는 것을 알고 있었기 때문에, 문장을 한 번에 다 말하려고 하지 않았습니다. 대신 의미가 끊기는 곳마다 잠깐 쉬고, 입 모양을 또렷하게 만들며 한 문장씩 읽어 내려갔습니다. 처음에는 목소리가 작게 떨렸지만, 두 번 세 번 반복하자 말의 끝이 조금씩 분명해졌습니다. 그는 오늘의 연습이 아주 큰 변화는 아니어도 내일 다시 말할 힘을 만들어 준다고 생각했습니다.',
+      category: '단편 읽기',
       difficulty: 3,
       targetSounds: ['ㅊ', 'ㄹ', 'ㅂ'],
     ),
     PracticeContentItem(
       id: 'long_medicine',
       mode: PracticeMode.longSentence,
-      text: '병원에 가기 전에 약 먹는 시간을 가족과 함께 확인하겠습니다.',
-      category: '병원',
+      text:
+          '영희는 병원에 가기 전날 밤, 식탁 위에 약 봉투와 작은 달력을 나란히 놓았습니다. 약을 먹은 시간을 잊지 않기 위해 달력 한쪽에 동그라미를 치고, 불편했던 증상을 천천히 적었습니다. 아침에는 가족에게 “어제 저녁에는 기침이 조금 줄었고, 물을 마실 때 목이 덜 아팠어요”라고 말해 보기로 했습니다. 말이 중간에 막히면 다시 처음부터 시작하지 않고, 숨을 고른 뒤 멈춘 단어 다음부터 이어서 말하기로 마음먹었습니다. 병원에 도착하면 의사 선생님께 필요한 내용을 빠뜨리지 않고 전하고 싶었습니다. 그래서 영희는 거울 앞에서 입을 편안히 벌리고, 한 문장씩 소리 내어 읽었습니다. 짧은 연습이었지만 마음이 조금 놓였습니다.',
+      category: '단편 읽기',
       difficulty: 3,
       targetSounds: ['ㅂ', 'ㄱ', 'ㅎ'],
     ),
     PracticeContentItem(
       id: 'long_habit',
       mode: PracticeMode.longSentence,
-      text: '꾸준한 연습만이 올바른 언어 습관을 만드는 비결입니다.',
-      category: '어려운 발음',
+      text:
+          '동네 도서관에는 오후마다 조용한 햇빛이 길게 들어왔습니다. 준호는 가장 안쪽 책상에 앉아 좋아하는 짧은 이야기를 펼쳤습니다. 예전에는 긴 문장을 보면 마음이 먼저 급해졌고, 단어가 이어질수록 발음이 흐려졌습니다. 하지만 오늘은 다른 방법을 써 보기로 했습니다. 마침표가 나오기 전에도 뜻이 잠깐 쉬는 곳에서는 눈으로 표시를 하고, 그 지점에서 숨을 고르며 읽었습니다. “천천히 읽어도 괜찮다”는 말을 속으로 반복하자 어깨에 들어간 힘이 조금 빠졌습니다. 준호는 한 단락을 다 읽은 뒤 자신이 놓친 소리를 다시 확인했습니다. 완벽하지는 않았지만, 끝까지 읽었다는 사실이 다음 연습을 시작하게 하는 작은 용기가 되었습니다.',
+      category: '단편 읽기',
       difficulty: 3,
       targetSounds: ['ㄲ', 'ㄹ', 'ㅂ'],
     ),
     PracticeContentItem(
       id: 'long_phone',
       mode: PracticeMode.longSentence,
-      text: '전화로 말할 때는 숨을 고르고 천천히 또박또박 말하겠습니다.',
-      category: '전화',
+      text:
+          '전화벨이 울리자 수진은 잠시 숨을 고르고 통화 버튼을 눌렀습니다. 예전 같으면 상대방이 기다릴까 봐 서둘러 말했지만, 오늘은 천천히 말하기로 했습니다. 먼저 자신의 이름을 또렷하게 말하고, 필요한 내용을 한 가지씩 나누어 전했습니다. “오늘 오후 약속 시간을 확인하려고 전화했습니다. 가능하다면 세 시보다 조금 늦게 도착할 것 같습니다.” 문장이 길어질 때는 중간에 짧게 쉬었고, 마지막 단어를 흐리지 않으려고 입을 조금 더 분명히 움직였습니다. 상대방은 괜찮다고 답했고, 수진은 감사하다는 말을 천천히 덧붙였습니다. 전화를 끊은 뒤 그는 작은 성공을 기록했습니다. 짧은 통화였지만, 일상에서 다시 말할 수 있다는 자신감을 느꼈습니다.',
+      category: '단편 읽기',
       difficulty: 3,
       targetSounds: ['ㅈ', 'ㅊ', 'ㄸ'],
     ),
@@ -365,13 +369,24 @@ class PracticeContentService {
     required List<PracticeSession> history,
     required int difficultyLevel,
     String? currentContentId,
+    String? focusedConsonant,
+    String? focusedVowel,
     Random? random,
   }) {
-    final wordItems = items
+    var wordItems = items
         .where((item) => item.mode == PracticeMode.wordGame)
         .toList();
     if (wordItems.isEmpty) {
       throw StateError('No word practice items available.');
+    }
+
+    final focusedItems = _focusedWordItems(
+      wordItems,
+      focusedConsonant,
+      focusedVowel,
+    );
+    if (focusedItems.isNotEmpty) {
+      wordItems = focusedItems;
     }
 
     final rng = random ?? Random();
@@ -384,6 +399,8 @@ class PracticeContentService {
               history: history,
               difficultyLevel: difficultyLevel,
               currentContentId: currentContentId,
+              focusedConsonant: focusedConsonant,
+              focusedVowel: focusedVowel,
             ),
           ),
         )
@@ -431,6 +448,8 @@ class PracticeContentService {
     required List<PracticeSession> history,
     required int difficultyLevel,
     String? currentContentId,
+    String? focusedConsonant,
+    String? focusedVowel,
   }) {
     final clampedLevel = difficultyLevel.clamp(1, 3);
     var weight = item.baseWeight;
@@ -472,12 +491,188 @@ class PracticeContentService {
       weight -= 4;
     }
 
+    final matchesConsonant =
+        focusedConsonant != null &&
+        _matchesFocusedConsonant(item, focusedConsonant);
+    final matchesVowel =
+        focusedVowel != null && _containsHangulVowel(item.text, focusedVowel);
+    if (matchesConsonant) {
+      weight += 60;
+    }
+    if (matchesVowel) {
+      weight += 24;
+    }
+    if ((focusedConsonant != null || focusedVowel != null) &&
+        !matchesConsonant &&
+        !matchesVowel) {
+      weight -= 6;
+    }
+
     return max(weight, 1);
+  }
+
+  bool _matchesFocusedConsonant(
+    PracticeContentItem item,
+    String focusedConsonant,
+  ) {
+    return item.targetSounds.any(
+          (sound) => _isSameConsonantFamily(sound, focusedConsonant),
+        ) ||
+        _containsHangulConsonant(item.text, focusedConsonant);
+  }
+
+  List<PracticeContentItem> _focusedWordItems(
+    List<PracticeContentItem> items,
+    String? focusedConsonant,
+    String? focusedVowel,
+  ) {
+    if (focusedConsonant == null && focusedVowel == null) {
+      return const [];
+    }
+
+    return items.where((item) {
+      final matchesConsonant =
+          focusedConsonant == null ||
+          _matchesFocusedConsonant(item, focusedConsonant);
+      final matchesVowel =
+          focusedVowel == null || _containsHangulVowel(item.text, focusedVowel);
+      return matchesConsonant && matchesVowel;
+    }).toList();
+  }
+
+  bool _containsHangulConsonant(String text, String consonant) {
+    return _decomposeHangul(text).any(
+      (sound) =>
+          _isSameConsonantFamily(sound.initial, consonant) ||
+          (sound.finalConsonant != null &&
+              _isSameConsonantFamily(sound.finalConsonant!, consonant)),
+    );
+  }
+
+  bool _containsHangulVowel(String text, String vowel) {
+    return _decomposeHangul(
+      text,
+    ).any((sound) => _isSameVowelFamily(sound.vowel, vowel));
+  }
+
+  bool _isSameConsonantFamily(String sound, String focusedConsonant) {
+    return sound == focusedConsonant || sound.contains(focusedConsonant);
+  }
+
+  bool _isSameVowelFamily(String sound, String focusedVowel) {
+    const compoundVowels = {
+      'ㅘ': {'ㅗ', 'ㅏ'},
+      'ㅙ': {'ㅗ', 'ㅐ'},
+      'ㅚ': {'ㅗ', 'ㅣ'},
+      'ㅝ': {'ㅜ', 'ㅓ'},
+      'ㅞ': {'ㅜ', 'ㅔ'},
+      'ㅟ': {'ㅜ', 'ㅣ'},
+      'ㅢ': {'ㅡ', 'ㅣ'},
+    };
+    return sound == focusedVowel ||
+        (compoundVowels[sound]?.contains(focusedVowel) ?? false);
+  }
+
+  List<({String initial, String vowel, String? finalConsonant})>
+  _decomposeHangul(String text) {
+    const initials = [
+      'ㄱ',
+      'ㄲ',
+      'ㄴ',
+      'ㄷ',
+      'ㄸ',
+      'ㄹ',
+      'ㅁ',
+      'ㅂ',
+      'ㅃ',
+      'ㅅ',
+      'ㅆ',
+      'ㅇ',
+      'ㅈ',
+      'ㅉ',
+      'ㅊ',
+      'ㅋ',
+      'ㅌ',
+      'ㅍ',
+      'ㅎ',
+    ];
+    const vowels = [
+      'ㅏ',
+      'ㅐ',
+      'ㅑ',
+      'ㅒ',
+      'ㅓ',
+      'ㅔ',
+      'ㅕ',
+      'ㅖ',
+      'ㅗ',
+      'ㅘ',
+      'ㅙ',
+      'ㅚ',
+      'ㅛ',
+      'ㅜ',
+      'ㅝ',
+      'ㅞ',
+      'ㅟ',
+      'ㅠ',
+      'ㅡ',
+      'ㅢ',
+      'ㅣ',
+    ];
+    const finals = [
+      null,
+      'ㄱ',
+      'ㄲ',
+      'ㄳ',
+      'ㄴ',
+      'ㄵ',
+      'ㄶ',
+      'ㄷ',
+      'ㄹ',
+      'ㄺ',
+      'ㄻ',
+      'ㄼ',
+      'ㄽ',
+      'ㄾ',
+      'ㄿ',
+      'ㅀ',
+      'ㅁ',
+      'ㅂ',
+      'ㅄ',
+      'ㅅ',
+      'ㅆ',
+      'ㅇ',
+      'ㅈ',
+      'ㅊ',
+      'ㅋ',
+      'ㅌ',
+      'ㅍ',
+      'ㅎ',
+    ];
+
+    final sounds = <({String initial, String vowel, String? finalConsonant})>[];
+    for (final codeUnit in text.runes) {
+      if (codeUnit < 0xAC00 || codeUnit > 0xD7A3) {
+        continue;
+      }
+      final syllableIndex = codeUnit - 0xAC00;
+      final initialIndex = syllableIndex ~/ 588;
+      final vowelIndex = (syllableIndex % 588) ~/ 28;
+      final finalIndex = syllableIndex % 28;
+      sounds.add((
+        initial: initials[initialIndex],
+        vowel: vowels[vowelIndex],
+        finalConsonant: finals[finalIndex],
+      ));
+    }
+    return sounds;
   }
 }
 
 class CustomPracticeContentService {
   static const String _storageKey = 'custom_long_sentence_items';
+  static const int minStoryLength = 300;
+  static const int maxStoryLength = 1600;
 
   Future<List<PracticeContentItem>> loadLongSentences() async {
     final prefs = await SharedPreferences.getInstance();
@@ -547,10 +742,10 @@ class CustomPracticeContentService {
 
   static int estimateDifficulty(String text) {
     final length = _normalizeText(text).replaceAll(' ', '').length;
-    if (length <= 28) {
+    if (length <= 400) {
       return 1;
     }
-    if (length <= 56) {
+    if (length <= 800) {
       return 2;
     }
     return 3;

@@ -51,12 +51,16 @@ class PracticeScreen extends ConsumerWidget {
                 const SizedBox(height: 14),
                 _buildWordGameControls(ref, practice),
               ],
+              if (practice.mode == PracticeMode.longSentence) ...[
+                const SizedBox(height: 14),
+                _buildLongSentenceTools(context, ref),
+              ],
               const SizedBox(height: 20),
               _buildTargetCard(context, ref, practice),
               const SizedBox(height: 40),
               // Changed from Expanded to a fixed/min height for scrolling compatibility
               Container(
-                constraints: const BoxConstraints(minHeight: 250),
+                constraints: const BoxConstraints(minHeight: 210),
                 child: Center(
                   child: _buildInteractionArea(
                     context,
@@ -228,6 +232,79 @@ class PracticeScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildLongSentenceTools(BuildContext context, WidgetRef ref) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orangeAccent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.notes_outlined, color: Colors.orangeAccent),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '내 긴 문장으로 연습하기',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '자주 쓰는 문장이나 어려운 문장을 저장해 두고 반복해서 읽을 수 있습니다.',
+            style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showLongSentenceEditor(context, ref),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('문장 추가'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.orangeAccent,
+                    side: BorderSide(
+                      color: Colors.orangeAccent.withValues(alpha: 0.45),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showCustomLongSentenceManager(context, ref),
+                  icon: const Icon(Icons.folder_special_outlined),
+                  label: const Text('문장 관리'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDifficultyButton(
     WidgetRef ref,
     String label,
@@ -310,72 +387,79 @@ class PracticeScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                _targetLabel(practice.mode),
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  _targetLabel(practice.mode),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 14,
+                  ),
                 ),
               ),
               if (!practice.isFreeMode)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (practice.mode == PracticeMode.wordGame)
-                      IconButton(
-                        icon: const Icon(
-                          Icons.replay_circle_filled_outlined,
-                          color: Colors.greenAccent,
-                          size: 20,
+                Flexible(
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 2,
+                    runSpacing: 2,
+                    children: [
+                      if (practice.mode == PracticeMode.wordGame)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.replay_circle_filled_outlined,
+                            color: Colors.greenAccent,
+                            size: 20,
+                          ),
+                          onPressed: () => _startFailedWordReview(context, ref),
+                          tooltip: '틀린 단어 복습',
                         ),
-                        onPressed: () => _startFailedWordReview(context, ref),
-                        tooltip: '틀린 단어 복습',
-                      ),
-                    if (practice.mode == PracticeMode.longSentence) ...[
+                      if (practice.mode == PracticeMode.longSentence) ...[
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              _showLongSentenceEditor(context, ref),
+                          tooltip: '내 긴 문장 추가',
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.folder_special_outlined,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              _showCustomLongSentenceManager(context, ref),
+                          tooltip: '내 긴 문장 관리',
+                        ),
+                      ],
                       IconButton(
                         icon: const Icon(
-                          Icons.add_circle_outline,
+                          Icons.menu_book,
                           color: Colors.blueAccent,
                           size: 20,
                         ),
-                        onPressed: () => _showLongSentenceEditor(context, ref),
-                        tooltip: '내 긴 문장 추가',
+                        onPressed: () => _showTextInputDialog(context, ref),
+                        tooltip: practice.mode == PracticeMode.longSentence
+                            ? '이번만 연습할 문장 입력'
+                            : '연습할 문장 입력',
                       ),
                       IconButton(
                         icon: const Icon(
-                          Icons.folder_special_outlined,
+                          Icons.skip_next,
                           color: Colors.white54,
                           size: 20,
                         ),
                         onPressed: () =>
-                            _showCustomLongSentenceManager(context, ref),
-                        tooltip: '내 긴 문장 관리',
+                            ref.read(practiceProvider.notifier).nextItem(),
+                        tooltip: '다음 항목',
                       ),
                     ],
-                    IconButton(
-                      icon: const Icon(
-                        Icons.menu_book,
-                        color: Colors.blueAccent,
-                        size: 20,
-                      ),
-                      onPressed: () => _showTextInputDialog(context, ref),
-                      tooltip: practice.mode == PracticeMode.longSentence
-                          ? '이번만 연습할 문장 입력'
-                          : '연습할 문장 입력',
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.skip_next,
-                        color: Colors.white54,
-                        size: 20,
-                      ),
-                      onPressed: () =>
-                          ref.read(practiceProvider.notifier).nextItem(),
-                      tooltip: '다음 항목',
-                    ),
-                  ],
+                  ),
                 ),
             ],
           ),
@@ -386,13 +470,15 @@ class PracticeScreen extends ConsumerWidget {
                 : _formatTargetText(practice),
             style: TextStyle(
               color: practice.isFreeMode ? Colors.white54 : Colors.white,
-              fontSize: practice.mode == PracticeMode.wordGame
-                  ? 44
-                  : (practice.isFreeMode ? 18 : 22),
-              fontWeight: practice.isFreeMode
-                  ? FontWeight.normal
-                  : FontWeight.bold,
-              height: 1.4,
+              fontSize: switch (practice.mode) {
+                PracticeMode.wordGame => 44,
+                PracticeMode.longSentence => 17,
+                _ => practice.isFreeMode ? 18 : 22,
+              },
+              fontWeight: practice.mode == PracticeMode.longSentence
+                  ? FontWeight.w600
+                  : (practice.isFreeMode ? FontWeight.normal : FontWeight.bold),
+              height: practice.mode == PracticeMode.longSentence ? 1.6 : 1.4,
             ),
           ),
           if (!practice.isFreeMode) ...[
@@ -422,6 +508,11 @@ class PracticeScreen extends ConsumerWidget {
                   _buildSmallChip(
                     Icons.replay_outlined,
                     '재시도 ${practice.retryCount}',
+                  ),
+                if (practice.mode == PracticeMode.shortSentence)
+                  _buildSmallChip(
+                    Icons.repeat,
+                    '반복 ${_repeatCountForCurrent(practice)}회',
                   ),
                 if (practice.streakCount > 0)
                   _buildSmallChip(
@@ -677,7 +768,7 @@ class PracticeScreen extends ConsumerWidget {
     return switch (mode) {
       PracticeMode.wordGame => '단어를 또렷하게 말해보세요:',
       PracticeMode.shortSentence => '짧은 문장을 따라 읽어보세요:',
-      PracticeMode.longSentence => '긴 문장을 천천히 끊어 읽어보세요:',
+      PracticeMode.longSentence => '긴 문장을 의미 단위로 끊어 읽어보세요:',
       PracticeMode.freeSpeech => '다루고 싶은 주제로 말해보세요:',
     };
   }
@@ -687,6 +778,10 @@ class PracticeScreen extends ConsumerWidget {
       return practice.targetText;
     }
     return practice.targetText
+        .replaceAllMapped(
+          RegExp(r'([.!?。！？])\s+'),
+          (match) => '${match.group(1)}\n\n',
+        )
         .replaceAll(' 하면서 ', ' 하면서\n')
         .replaceAll(' 전에 ', ' 전에\n')
         .replaceAll(' 함께 ', ' 함께\n')
@@ -804,12 +899,14 @@ class PracticeScreen extends ConsumerWidget {
                 children: [
                   TextField(
                     controller: textController,
-                    maxLines: 4,
-                    maxLength: 160,
+                    minLines: 6,
+                    maxLines: 10,
+                    maxLength: CustomPracticeContentService.maxStoryLength,
                     style: const TextStyle(color: Colors.white),
                     onChanged: (_) => setState(() => errorText = null),
                     decoration: InputDecoration(
-                      hintText: '반복해서 연습하고 싶은 긴 문장을 입력하세요.',
+                      hintText:
+                          '반복해서 읽을 긴 문장을 입력하세요. ${CustomPracticeContentService.minStoryLength}자 이상이면 좋아요.',
                       hintStyle: const TextStyle(color: Colors.white24),
                       errorText: errorText,
                       enabledBorder: const UnderlineInputBorder(
@@ -837,7 +934,7 @@ class PracticeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '예상 난이도 $difficulty · 너무 길면 의미 단위로 끊어 표시됩니다.',
+                    '예상 난이도 $difficulty · 단편 소설처럼 긴 호흡으로 읽는 기준입니다.',
                     style: const TextStyle(color: Colors.white38, fontSize: 12),
                   ),
                 ],
@@ -854,8 +951,12 @@ class PracticeScreen extends ConsumerWidget {
               ElevatedButton(
                 onPressed: () async {
                   final sentence = textController.text.trim();
-                  if (sentence.length < 10) {
-                    setState(() => errorText = '긴 문장은 10자 이상 입력해 주세요.');
+                  if (sentence.length <
+                      CustomPracticeContentService.minStoryLength) {
+                    setState(
+                      () => errorText =
+                          '긴 문장은 ${CustomPracticeContentService.minStoryLength}자 이상 입력해 주세요.',
+                    );
                     return;
                   }
 
@@ -1102,7 +1203,7 @@ class PracticeScreen extends ConsumerWidget {
           },
           child: AnimatedOrb(state: orbState),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 18),
         Text(
           practice.state == PracticeState.recording
               ? '불편하면 즉시 멈추고 쉬어 주세요'
@@ -1114,16 +1215,49 @@ class PracticeScreen extends ConsumerWidget {
             fontSize: 16,
           ),
         ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: 220,
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              if (practice.state == PracticeState.recording) {
+                notifier.stopRecording();
+              } else {
+                notifier.startRecording();
+              }
+            },
+            icon: Icon(
+              practice.state == PracticeState.recording
+                  ? Icons.check_circle
+                  : Icons.mic,
+            ),
+            label: Text(
+              practice.state == PracticeState.recording ? '판정하기' : '녹음 시작',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: practice.state == PracticeState.recording
+                  ? Colors.blueAccent
+                  : Colors.white,
+              foregroundColor: practice.state == PracticeState.recording
+                  ? Colors.white
+                  : Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   String _idlePrompt(PracticeMode mode) {
     return switch (mode) {
-      PracticeMode.wordGame => '목표 단어를 보고 구슬을 터치하여 녹음',
-      PracticeMode.shortSentence => '구슬을 터치하여 짧은 문장 녹음',
-      PracticeMode.longSentence => '구슬을 터치하여 긴 문장 녹음',
-      PracticeMode.freeSpeech => '구슬을 터치하여 자유롭게 말하기',
+      PracticeMode.wordGame => '목표 단어를 보고 녹음하세요',
+      PracticeMode.shortSentence => '짧은 문장을 읽고 녹음하세요',
+      PracticeMode.longSentence => '긴 문장을 천천히 읽고 녹음하세요',
+      PracticeMode.freeSpeech => '편하게 말할 준비가 되면 녹음하세요',
     };
   }
 
@@ -1131,57 +1265,122 @@ class PracticeScreen extends ConsumerWidget {
     PracticeProgress practice,
     PracticeNotifier notifier,
   ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        ElevatedButton.icon(
-          onPressed: practice.isPlaying
-              ? () => notifier.stopPlayback()
-              : () => notifier.playRecording(null),
-          icon: Icon(practice.isPlaying ? Icons.stop : Icons.play_arrow),
-          label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: practice.isPlaying
-                ? Colors.redAccent.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.1),
-            foregroundColor: practice.isPlaying
-                ? Colors.redAccent
-                : Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+        if (practice.mode == PracticeMode.shortSentence) ...[
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () => notifier.resetPractice(),
+              icon: const Icon(Icons.repeat),
+              label: const Text('같은 문장 반복'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        ElevatedButton.icon(
-          onPressed: () => notifier.shareRecording(),
-          icon: const Icon(Icons.share, size: 20),
-          label: const Text('공유'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withValues(alpha: 0.1),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: () => notifier.nextItem(),
+              icon: const Icon(Icons.skip_next),
+              label: const Text('다음 짧은 문장'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white70,
+                side: const BorderSide(color: Colors.white24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        ElevatedButton.icon(
-          onPressed: () => notifier.resetPractice(),
-          icon: const Icon(Icons.refresh),
-          label: const Text('다시 하기'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white.withValues(alpha: 0.1),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+          const SizedBox(height: 12),
+        ],
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 10,
+          children: [
+            ElevatedButton.icon(
+              onPressed: practice.isPlaying
+                  ? () => notifier.stopPlayback()
+                  : () => notifier.playRecording(null),
+              icon: Icon(practice.isPlaying ? Icons.stop : Icons.play_arrow),
+              label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: practice.isPlaying
+                    ? Colors.redAccent.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.1),
+                foregroundColor: practice.isPlaying
+                    ? Colors.redAccent
+                    : Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
             ),
-          ),
+            ElevatedButton.icon(
+              onPressed: () => notifier.shareRecording(),
+              icon: const Icon(Icons.share, size: 20),
+              label: const Text('공유'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+            if (practice.mode != PracticeMode.shortSentence)
+              ElevatedButton.icon(
+                onPressed: () => notifier.resetPractice(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('다시 하기'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
+  }
+
+  int _repeatCountForCurrent(PracticeProgress practice) {
+    if (practice.contentId != null) {
+      return practice.history
+          .where((session) => session.contentId == practice.contentId)
+          .length;
+    }
+    return practice.history
+        .where(
+          (session) =>
+              session.mode == PracticeMode.shortSentence.storageValue &&
+              session.targetText == practice.targetText,
+        )
+        .length;
   }
 }

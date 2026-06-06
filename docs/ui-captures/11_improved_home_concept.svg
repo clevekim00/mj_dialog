@@ -1,0 +1,63 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="390" height="844" fill="#0B0D10"/>
+  <rect x="0" y="0" width="390" height="844" fill="#0B0D10"/>
+
+  <text x="20" y="36" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="23" font-weight="800">오늘의 연습</text>
+  <circle cx="319" cy="26" r="9" stroke="#CBD5E1" stroke-width="3"/>
+  <rect x="359" y="17" width="16" height="16" rx="3" stroke="#CBD5E1" stroke-width="3"/>
+
+  <rect x="20" y="64" width="350" height="54" rx="16" fill="#151A20" stroke="#2B333D"/>
+  <circle cx="48" cy="91" r="10" fill="#2563EB"/>
+  <text x="70" y="87" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="15" font-weight="700">오늘 0회 연습</text>
+  <text x="70" y="107" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">목표 5분 · 시작 전 피로도 1/5</text>
+  <text x="304" y="96" fill="#60A5FA" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12" font-weight="700">상태 양호</text>
+
+  <rect x="20" y="134" width="350" height="204" rx="20" fill="#0E251D" stroke="#1F8A5B"/>
+  <text x="42" y="164" fill="#86EFAC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="13" font-weight="800">오늘 추천 연습</text>
+  <text x="42" y="196" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="26" font-weight="850">짧은 문장 5분</text>
+  <text x="42" y="226" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="14">첫 연습은 부담이 적은 문장부터 시작해요.</text>
+  <text x="42" y="248" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="13">또렷하게 말하기 목표에 맞춰 천천히 읽습니다.</text>
+
+  <rect x="42" y="270" width="122" height="32" rx="10" fill="#143528" stroke="#2E8B63"/>
+  <text x="58" y="291" fill="#BBF7D0" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12" font-weight="700">일상 문장</text>
+  <rect x="174" y="270" width="94" height="32" rx="10" fill="#143528" stroke="#2E8B63"/>
+  <text x="190" y="291" fill="#BBF7D0" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12" font-weight="700">난이도 1</text>
+
+  <rect x="42" y="312" width="286" height="48" rx="14" fill="#35E58A"/>
+  <text x="128" y="342" fill="#04110B" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="16" font-weight="850">연습 시작하기</text>
+  <path d="M105 329L117 336L105 343V329Z" fill="#04110B"/>
+
+  <text x="20" y="389" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="18" font-weight="800">다른 연습 선택</text>
+
+  <rect x="20" y="408" width="168" height="94" rx="16" fill="#151A20" stroke="#2B333D"/>
+  <rect x="40" y="428" width="38" height="38" rx="12" fill="#12372C"/>
+  <text x="50" y="453" fill="#34D399" font-family="Arial, sans-serif" font-size="20" font-weight="800">□</text>
+  <text x="92" y="443" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="15" font-weight="800">단어 게임</text>
+  <text x="92" y="465" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">짧게 말하기</text>
+  <text x="40" y="488" fill="#64748B" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">틀린 단어 복습 가능</text>
+
+  <rect x="202" y="408" width="168" height="94" rx="16" fill="#151A20" stroke="#2B333D"/>
+  <rect x="222" y="428" width="38" height="38" rx="12" fill="#1A2E4F"/>
+  <text x="232" y="453" fill="#60A5FA" font-family="Arial, sans-serif" font-size="20" font-weight="800">□</text>
+  <text x="274" y="443" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="15" font-weight="800">긴 문장</text>
+  <text x="274" y="465" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">호흡 연습</text>
+  <text x="222" y="488" fill="#64748B" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">내 문장 관리</text>
+
+  <rect x="20" y="516" width="350" height="124" rx="18" fill="#111827" stroke="#263241"/>
+  <text x="42" y="548" fill="#F8FAFC" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="16" font-weight="800">이번 주 흐름</text>
+  <text x="42" y="574" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="13">최근 7일 중 3일 연습했습니다.</text>
+  <text x="42" y="596" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12">평균 점수 84점 · 피로도 2/5</text>
+  <rect x="42" y="610" width="286" height="8" rx="4" fill="#263241"/>
+  <rect x="42" y="610" width="176" height="8" rx="4" fill="#3B82F6"/>
+  <text x="254" y="548" fill="#60A5FA" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="12" font-weight="800">대시보드 보기</text>
+
+  <rect x="20" y="656" width="350" height="92" rx="18" fill="#171514" stroke="#4B3323"/>
+  <text x="42" y="687" fill="#FDBA74" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="15" font-weight="800">쉬어야 할 때</text>
+  <text x="42" y="713" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="13">사레, 호흡 불편, 갑작스러운 말 변화가 있으면</text>
+  <text x="42" y="733" fill="#94A3B8" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="13">연습을 멈추고 전문가에게 문의하세요.</text>
+
+  <rect x="20" y="766" width="350" height="52" rx="16" fill="#151A20" stroke="#2B333D"/>
+  <text x="47" y="798" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="14" font-weight="700">기록 보기</text>
+  <text x="167" y="798" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="14" font-weight="700">성과 보기</text>
+  <text x="288" y="798" fill="#CBD5E1" font-family="Apple SD Gothic Neo, Pretendard, Arial, sans-serif" font-size="14" font-weight="700">설정</text>
+</svg>

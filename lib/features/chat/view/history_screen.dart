@@ -216,7 +216,10 @@ class HistoryScreen extends ConsumerWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Row(
+      subtitle: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -234,7 +237,6 @@ class HistoryScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
           Text(
             '$dateStr • ${session.score}점',
             style: const TextStyle(color: Colors.white38, fontSize: 12),

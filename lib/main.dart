@@ -9,6 +9,7 @@ import 'package:speech_rehab/features/practice/view/practice_mode_selection_scre
 import 'package:speech_rehab/features/practice/view/word_game_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
+import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 import 'dart:io' show Platform;
@@ -68,6 +69,7 @@ class _AppView extends StatelessWidget {
         '/word_game': (context) => const WordGameScreen(),
         '/practice_history': (context) => const PracticeHistoryScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/tongue_exercise': (context) => const TongueExerciseScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

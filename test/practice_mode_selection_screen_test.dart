@@ -16,9 +16,19 @@ void main() {
     await tester.pump();
 
     expect(find.text('오늘의 연습'), findsOneWidget);
+    expect(find.text('오늘 추천 연습'), findsOneWidget);
+    expect(find.text('연습 전 준비운동'), findsOneWidget);
+    expect(find.text('혀운동 3분'), findsOneWidget);
+    expect(find.text('다른 연습 선택'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pump();
+
     expect(find.text('단어 게임'), findsOneWidget);
     expect(find.text('짧은 문장 읽기'), findsOneWidget);
     expect(find.text('긴 문장 읽기'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pump();
     expect(find.text('자유 대화'), findsOneWidget);
   });
 }

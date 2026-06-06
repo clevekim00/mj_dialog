@@ -42,7 +42,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
       backgroundColor: const Color(0xFF101010),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 120),
           children: [
             const Text(
               '말하기 연습을 안전하게 시작해요',
@@ -128,27 +128,41 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
                 style: TextStyle(color: Colors.white38, height: 1.4),
               ),
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 58,
-              child: ElevatedButton(
-                onPressed: _acceptedSafetyNotice ? _completeOnboarding : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  disabledBackgroundColor: Colors.white10,
-                  disabledForegroundColor: Colors.white38,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF101010).withValues(alpha: 0.96),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+          ),
+          child: SizedBox(
+            height: 58,
+            child: ElevatedButton(
+              onPressed: _acceptedSafetyNotice ? _completeOnboarding : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+                disabledBackgroundColor: Colors.white10,
+                disabledForegroundColor: Colors.white38,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  '말하기 연습 시작하기',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              child: Text(
+                _acceptedSafetyNotice ? '말하기 연습 시작하기' : '안전 안내 확인이 필요합니다',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

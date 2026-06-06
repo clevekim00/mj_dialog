@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
@@ -116,6 +118,97 @@ void main() {
       expect(items.map((item) => item.id), contains(picked.id));
     });
 
+    test('filters focused consonant words before applying vowel boost', () {
+      final service = PracticeContentService();
+      final items = service
+          .getItems(PracticeMode.wordGame)
+          .where(
+            (item) => item.id == 'word_medicine' || item.id == 'word_ta_ra_ka',
+          )
+          .toList();
+
+      for (var i = 0; i < 80; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          focusedConsonant: 'ㄹ',
+          focusedVowel: 'ㅏ',
+          random: Random(i),
+        );
+        expect(picked.id, 'word_ta_ra_ka');
+      }
+    });
+
+    test('filters focused consonant and vowel together', () {
+      final service = PracticeContentService();
+      final items = service
+          .getItems(PracticeMode.wordGame)
+          .where((item) => item.id == 'word_tak_gu' || item.id == 'word_gi_cha')
+          .toList();
+
+      for (var i = 0; i < 80; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          focusedConsonant: 'ㄱ',
+          focusedVowel: 'ㅣ',
+          random: Random(i),
+        );
+
+        expect(picked.id, 'word_gi_cha');
+      }
+    });
+
+    test('matches compound vowels when a base focused vowel is selected', () {
+      final service = PracticeContentService();
+      final items = service
+          .getItems(PracticeMode.wordGame)
+          .where(
+            (item) => item.id == 'word_medicine' || item.id == 'word_chi_gwa',
+          )
+          .toList();
+
+      for (var i = 0; i < 40; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          focusedConsonant: 'ㄱ',
+          focusedVowel: 'ㅏ',
+          random: Random(i),
+        );
+
+        expect(picked.id, 'word_chi_gwa');
+      }
+    });
+
+    test(
+      'does not substitute nearby consonants for exact focused consonant',
+      () {
+        final service = PracticeContentService();
+        final items = service
+            .getItems(PracticeMode.wordGame)
+            .where(
+              (item) =>
+                  item.id == 'word_puh_tuh_kuh' || item.id == 'word_tak_gu',
+            )
+            .toList();
+
+        for (var i = 0; i < 40; i += 1) {
+          final picked = service.pickWeightedWord(
+            items: items,
+            history: const [],
+            difficultyLevel: 3,
+            focusedConsonant: 'ㄱ',
+            random: Random(i),
+          );
+          expect(picked.id, 'word_tak_gu');
+        }
+      },
+    );
+
     test('counts difficult target sounds from failed word sessions', () {
       final service = PracticeContentService();
       final history = [
@@ -172,16 +265,21 @@ void main() {
     });
 
     test('estimates custom long sentence difficulty from text length', () {
-      expect(CustomPracticeContentService.estimateDifficulty('짧은 문장입니다.'), 1);
       expect(
         CustomPracticeContentService.estimateDifficulty(
-          '오늘은 전화로 가족에게 필요한 내용을 천천히 또박또박 설명해 보겠습니다.',
+          List.filled(400, '가').join(),
+        ),
+        1,
+      );
+      expect(
+        CustomPracticeContentService.estimateDifficulty(
+          List.filled(401, '가').join(),
         ),
         2,
       );
       expect(
         CustomPracticeContentService.estimateDifficulty(
-          '병원에 가기 전에 현재 몸 상태와 약을 먹은 시간 그리고 오늘 느낀 불편한 점을 가족에게 차분하게 정리해서 설명하고 필요한 도움을 부탁해 보겠습니다.',
+          List.filled(801, '가').join(),
         ),
         3,
       );

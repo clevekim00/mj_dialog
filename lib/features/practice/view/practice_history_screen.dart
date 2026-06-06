@@ -159,6 +159,31 @@ class PracticeHistoryScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                notifier.practiceAgainFromSession(session);
+                Navigator.pushNamed(
+                  context,
+                  session.mode == 'wordGame' ? '/word_game' : '/practice',
+                );
+              },
+              icon: const Icon(Icons.replay_outlined),
+              label: const Text('이 문장 다시 연습'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.blueAccent,
+                side: BorderSide(
+                  color: Colors.blueAccent.withValues(alpha: 0.45),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

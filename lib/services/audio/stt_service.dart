@@ -18,12 +18,8 @@ class SttService {
     // Desktop speech recognition can crash under macOS TCC when launched from
     // Flutter tooling, even with the required usage description present.
     // Keep desktop runs on the simulated transcription fallback.
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android &&
-            defaultTargetPlatform != TargetPlatform.iOS)) {
-      debugPrint(
-        'STT is not supported on this platform. Avoiding initialization.',
-      );
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      debugPrint('STT is disabled on this platform. Avoiding initialization.');
       return false;
     }
 
