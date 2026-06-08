@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:speech_rehab/features/practice/model/practice_mode.dart';
+import 'package:speech_rehab/features/tongue_exercise/provider/tongue_exercise_provider.dart';
+import 'package:speech_rehab/services/practice_content_service.dart';
 import '../provider/practice_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -9,6 +12,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final practice = ref.watch(practiceProvider);
+    final tongueExercise = ref.watch(tongueExerciseProvider);
+    final contentService = ref.watch(practiceContentServiceProvider);
     final history = practice.history;
 
     final totalPractices = history.length;
@@ -38,7 +43,17 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             _buildSummaryGrid(totalPractices, avgScore, bestScore),
             const SizedBox(height: 16),
+            _buildModeSummary(history),
+            const SizedBox(height: 16),
+            _buildDifficultSoundsCard(
+              contentService.getDifficultSoundCounts(history),
+            ),
+            const SizedBox(height: 16),
+            _buildRecommendedAction(context, ref, history),
+            const SizedBox(height: 16),
             _buildRehabConsistencyCard(activeDays, avgFatigue),
+            const SizedBox(height: 16),
+            _buildTongueRoutineCard(context, tongueExercise),
             const SizedBox(height: 32),
             _buildSectionTitle('최근 7일 연습 활동'),
             const SizedBox(height: 16),
@@ -106,6 +121,277 @@ class DashboardScreen extends ConsumerWidget {
           Text(
             avgFatigue == 0 ? '피로도 기록 없음' : '평균 피로도 $avgFatigue/5',
             style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTongueRoutineCard(
+    BuildContext context,
+    TongueExerciseProgress tongueExercise,
+  ) {
+    final completedDays = tongueExercise.completedDaysInLast7;
+    final averageDuration = tongueExercise.averageDurationLast7;
+    final durationLabel = averageDuration == 0
+        ? '평균 기록 없음'
+        : '평균 ${_formatDuration(averageDuration)}';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.tealAccent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.tealAccent.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.self_improvement, color: Colors.tealAccent),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '혀운동 루틴',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '최근 7일 중 $completedDays일 완료했습니다.',
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            durationLabel,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/tongue_exercise'),
+              icon: const Icon(Icons.play_arrow),
+              label: Text(
+                tongueExercise.isTodayCompleted ? '혀운동 다시 하기' : '오늘 혀운동 시작',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.tealAccent,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeSummary(List<dynamic> history) {
+    final wordCount = history.where((s) => s.mode == 'wordGame').length;
+    final shortCount = history
+        .where((s) => s.mode == 'shortSentence' || s.mode == null)
+        .length;
+    final longCount = history.where((s) => s.mode == 'longSentence').length;
+    final freeCount = history.where((s) => s.mode == 'freeSpeech').length;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.tune_outlined, color: Colors.white70),
+              SizedBox(width: 8),
+              Text(
+                '모드별 연습',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildModeChip('단어', wordCount, Colors.greenAccent),
+              _buildModeChip('짧은 문장', shortCount, Colors.blueAccent),
+              _buildModeChip('긴 문장', longCount, Colors.orangeAccent),
+              _buildModeChip('자유', freeCount, Colors.purpleAccent),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeChip(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Text(
+        '$label $count회',
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultSoundsCard(Map<String, int> soundCounts) {
+    final entries = soundCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final topEntries = entries.take(5).toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.greenAccent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.record_voice_over_outlined, color: Colors.greenAccent),
+              SizedBox(width: 8),
+              Text(
+                '어려웠던 발음군',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (topEntries.isEmpty)
+            const Text(
+              '아직 단어 게임 실패 기록이 없습니다.',
+              style: TextStyle(color: Colors.white54, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: topEntries
+                  .map(
+                    (entry) => _buildModeChip(
+                      entry.key,
+                      entry.value,
+                      Colors.greenAccent,
+                    ),
+                  )
+                  .toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecommendedAction(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> history,
+  ) {
+    final lowScoreCount = history.where((session) => session.score < 75).length;
+    final mode = lowScoreCount > 0
+        ? PracticeMode.wordGame
+        : PracticeMode.shortSentence;
+    final title = lowScoreCount > 0 ? '어려웠던 발음부터 다시 연습' : '짧은 문장으로 감각 유지';
+    final body = lowScoreCount > 0
+        ? '낮은 점수 기록이 있어 단어 게임으로 발음군을 좁혀보는 것이 좋습니다.'
+        : '최근 흐름이 안정적입니다. 짧은 문장으로 오늘 연습을 이어가세요.';
+    final color = mode == PracticeMode.wordGame
+        ? Colors.greenAccent
+        : Colors.blueAccent;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome_outlined, color: color),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            body,
+            style: const TextStyle(
+              color: Colors.white60,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                ref.read(practiceProvider.notifier).setMode(mode);
+                Navigator.pushNamed(
+                  context,
+                  mode == PracticeMode.wordGame ? '/word_game' : '/practice',
+                );
+              },
+              icon: const Icon(Icons.play_arrow),
+              label: Text('${mode.label} 시작'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -226,6 +512,13 @@ class DashboardScreen extends ConsumerWidget {
         }),
       ),
     );
+  }
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    if (minutes == 0) return '$remainingSeconds초';
+    return '$minutes분 ${remainingSeconds.toString().padLeft(2, '0')}초';
   }
 
   int _countActiveDays(List<dynamic> history) {

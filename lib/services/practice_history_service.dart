@@ -15,6 +15,16 @@ class PracticeSession {
   final int fatigueBefore;
   final int? fatigueAfter;
   final int durationSeconds;
+  final String mode;
+  final String? contentId;
+  final String category;
+  final int difficulty;
+  final int retryCount;
+  final int streakCount;
+  final int? previousBestScore;
+  final String contentSource;
+  final int movementScore;
+  final bool isExercisePattern;
 
   PracticeSession({
     required this.id,
@@ -30,6 +40,16 @@ class PracticeSession {
     this.fatigueBefore = 1,
     this.fatigueAfter,
     this.durationSeconds = 0,
+    this.mode = 'shortSentence',
+    this.contentId,
+    this.category = '일반',
+    this.difficulty = 1,
+    this.retryCount = 0,
+    this.streakCount = 0,
+    this.previousBestScore,
+    this.contentSource = 'builtIn',
+    this.movementScore = 1,
+    this.isExercisePattern = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -46,6 +66,16 @@ class PracticeSession {
     'fatigueBefore': fatigueBefore,
     'fatigueAfter': fatigueAfter,
     'durationSeconds': durationSeconds,
+    'mode': mode,
+    'contentId': contentId,
+    'category': category,
+    'difficulty': difficulty,
+    'retryCount': retryCount,
+    'streakCount': streakCount,
+    'previousBestScore': previousBestScore,
+    'contentSource': contentSource,
+    'movementScore': movementScore,
+    'isExercisePattern': isExercisePattern,
   };
 
   factory PracticeSession.fromJson(Map<String, dynamic> json) =>
@@ -64,6 +94,16 @@ class PracticeSession {
         fatigueBefore: json['fatigueBefore'] as int? ?? 1,
         fatigueAfter: json['fatigueAfter'] as int?,
         durationSeconds: json['durationSeconds'] as int? ?? 0,
+        mode: json['mode'] as String? ?? 'shortSentence',
+        contentId: json['contentId'] as String?,
+        category: json['category'] as String? ?? '일반',
+        difficulty: json['difficulty'] as int? ?? 1,
+        retryCount: json['retryCount'] as int? ?? 0,
+        streakCount: json['streakCount'] as int? ?? 0,
+        previousBestScore: json['previousBestScore'] as int?,
+        contentSource: json['contentSource'] as String? ?? 'builtIn',
+        movementScore: json['movementScore'] as int? ?? 1,
+        isExercisePattern: json['isExercisePattern'] as bool? ?? false,
       );
 }
 

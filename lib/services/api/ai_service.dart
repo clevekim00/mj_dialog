@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
   return AiService();
@@ -83,6 +84,48 @@ class AiService {
     } catch (error) {
       debugPrint('Free reading evaluation failed: $error');
       return _fallbackReadingEvaluation('', spokenText);
+    }
+  }
+
+  Future<AiResponse> evaluatePracticeByMode({
+    required PracticeMode mode,
+    required String targetText,
+    required String spokenText,
+    required int durationSeconds,
+  }) async {
+    if (mode == PracticeMode.freeSpeech) {
+      return getFreeReadingFeedback(spokenText);
+    }
+
+    try {
+      if (!FlutterGemma.hasActiveModel()) {
+        return _fallbackPracticeEvaluation(mode, targetText, spokenText);
+      }
+
+      final prompt = _buildModePrompt(
+        mode: mode,
+        targetText: targetText,
+        spokenText: spokenText,
+        durationSeconds: durationSeconds,
+      );
+      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
+      final chat = await model.createChat(temperature: 0.3);
+      await chat.addQuery(Message(text: prompt, isUser: true));
+      final modelResponse = await chat.generateChatResponse();
+
+      final responseText = switch (modelResponse) {
+        TextResponse() => modelResponse.token,
+        _ => '',
+      };
+
+      if (responseText.isEmpty) {
+        return _fallbackPracticeEvaluation(mode, targetText, spokenText);
+      }
+
+      return _parseResponse(responseText);
+    } catch (error) {
+      debugPrint('${mode.label} evaluation failed: $error');
+      return _fallbackPracticeEvaluation(mode, targetText, spokenText);
     }
   }
 
@@ -257,6 +300,29 @@ Respond ONLY as JSON with this exact shape:
     );
   }
 
+  AiResponse _fallbackPracticeEvaluation(
+    PracticeMode mode,
+    String targetText,
+    String spokenText,
+  ) {
+    final base = _fallbackReadingEvaluation(targetText, spokenText);
+    final feedback = switch (mode) {
+      PracticeMode.wordGame =>
+        '${base.pronunciationFeedback} 짧은 단어는 입 모양을 먼저 만들고 한 번에 또렷하게 말해 보세요.',
+      PracticeMode.shortSentence =>
+        '${base.pronunciationFeedback} 문장 끝을 흐리지 않도록 마지막 단어까지 천천히 읽어 보세요.',
+      PracticeMode.longSentence =>
+        '${base.pronunciationFeedback} 긴 문장은 의미 단위로 끊고 숨을 고른 뒤 이어서 읽어 보세요.',
+      PracticeMode.freeSpeech => base.pronunciationFeedback,
+    };
+
+    return AiResponse(
+      replyText: '${mode.label} 연습을 완료했습니다.',
+      pronunciationScore: base.pronunciationScore,
+      pronunciationFeedback: feedback,
+    );
+  }
+
   String _buildReadingPrompt(String targetText, String spokenText) {
     return '''
 You are '영은', a professional speech practice coach.
@@ -299,6 +365,51 @@ Respond ONLY as JSON with this exact shape:
   "replyText": "Feedback on the content and delivery in $_osLanguage",
   "pronunciationScore": 0-100,
   "pronunciationFeedback": "Specific tip for clearer speech in $_osLanguage"
+}
+''';
+  }
+
+  String _buildModePrompt({
+    required PracticeMode mode,
+    required String targetText,
+    required String spokenText,
+    required int durationSeconds,
+  }) {
+    final modeGoal = switch (mode) {
+      PracticeMode.wordGame =>
+        'Focus on whether the single target word was spoken clearly and completely.',
+      PracticeMode.shortSentence =>
+        'Focus on sentence clarity, omitted words, changed words, and speaking pace.',
+      PracticeMode.longSentence =>
+        'Focus on completion, breathing, pauses, phrasing, and rhythm across the longer sentence.',
+      PracticeMode.freeSpeech =>
+        'Focus on communication clarity and a helpful next practice suggestion.',
+    };
+
+    return '''
+You are '영은', a professional speech practice coach.
+The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
+The user is practicing in this mode: ${mode.label}.
+
+Target Text: "$targetText"
+User Spoke: "$spokenText"
+Duration Seconds: $durationSeconds
+
+Mode-specific goal:
+$modeGoal
+
+Goals:
+1. Compare the user speech with the target text when a target exists.
+2. Score objectively from 0 to 100. Do not overpraise.
+3. Provide one concrete, mode-specific pronunciation or speaking tip in $_osLanguage.
+4. For long sentences, mention breathing or phrase breaks when useful.
+5. For word practice, mention the target word and whether it was clear.
+
+Respond ONLY as JSON with this exact shape:
+{
+  "replyText": "Short result summary in $_osLanguage",
+  "pronunciationScore": 0-100,
+  "pronunciationFeedback": "Specific mode-aware tip in $_osLanguage"
 }
 ''';
   }

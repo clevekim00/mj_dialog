@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
+import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 
@@ -30,14 +30,14 @@ class _PermissionScreenState extends State<PermissionScreen> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => completedOnboarding
-                ? const HistoryScreen()
+                ? const PracticeModeSelectionScreen()
                 : const RehabOnboardingScreen(),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('원활한 대화를 위해 모든 권한을 허용해 주세요.'),
+            content: Text('발음 녹음과 평가를 위해 권한을 허용해 주세요.'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -88,7 +88,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               const SizedBox(height: 16),
 
               const Text(
-                'AI 코치와 원활한 상담을 위해\n아래 권한 허용이 필요합니다.',
+                '발음을 녹음하고 말한 내용을 확인하려면\n아래 권한이 필요합니다.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -103,7 +103,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               _PermissionItem(
                 icon: Icons.mic_rounded,
                 title: '마이크 사용',
-                description: '발음 인식 및 대화 진행을 위해 필요합니다.',
+                description: '연습 음성을 녹음하고 내 목소리를 다시 듣기 위해 필요합니다.',
                 color: Colors.blueAccent,
               ),
 
@@ -112,7 +112,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               _PermissionItem(
                 icon: Icons.graphic_eq_rounded,
                 title: '음성 인식',
-                description: '인공지능이 말씀을 텍스트로 이해하기 위해 필요합니다.',
+                description: '말한 내용을 문장과 비교해 발음 피드백을 만들기 위해 필요합니다.',
                 color: Colors.tealAccent,
               ),
 
