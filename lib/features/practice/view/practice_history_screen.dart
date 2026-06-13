@@ -222,7 +222,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF1A1A1A),
         title: const Text('기록 삭제', style: TextStyle(color: Colors.white)),
         content: const Text(
-          '이 연습 기록을 정말 삭제하시겠습니까?',
+          '이 연습 기록과 연결된 녹음 파일을 삭제할까요?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -236,7 +236,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
               Navigator.pop(context);
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('기록이 삭제되었습니다.')));
+              ).showSnackBar(const SnackBar(content: Text('기록과 녹음이 삭제되었습니다.')));
             },
             child: const Text('삭제', style: TextStyle(color: Colors.redAccent)),
           ),

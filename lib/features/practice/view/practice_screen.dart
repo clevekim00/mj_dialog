@@ -23,6 +23,13 @@ class PracticeScreen extends ConsumerWidget {
         elevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.library_music),
+            tooltip: '녹음 보관함',
+            onPressed: () {
+              Navigator.pushNamed(context, '/recording_library');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () {
               Navigator.pushNamed(context, '/dashboard');
@@ -78,8 +85,8 @@ class PracticeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
               ],
-              if (practice.state == PracticeState.completed)
-                _buildActionButtons(practice, notifier),
+              if (_shouldShowPostPracticeActions(practice))
+                _buildActionButtons(context, practice, notifier),
               const SizedBox(height: 40),
             ],
           ),
@@ -448,16 +455,17 @@ class PracticeScreen extends ConsumerWidget {
                             ? '이번만 연습할 문장 입력'
                             : '연습할 문장 입력',
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.skip_next,
-                          color: Colors.white54,
-                          size: 20,
+                      if (_canSkipFromTargetCard(practice))
+                        IconButton(
+                          icon: const Icon(
+                            Icons.skip_next,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
+                          onPressed: () =>
+                              ref.read(practiceProvider.notifier).nextItem(),
+                          tooltip: '다음 항목',
                         ),
-                        onPressed: () =>
-                            ref.read(practiceProvider.notifier).nextItem(),
-                        tooltip: '다음 항목',
-                      ),
                     ],
                   ),
                 ),
@@ -1262,12 +1270,99 @@ class PracticeScreen extends ConsumerWidget {
   }
 
   Widget _buildActionButtons(
+    BuildContext context,
     PracticeProgress practice,
     PracticeNotifier notifier,
   ) {
+    final isSentenceMode =
+        practice.mode == PracticeMode.shortSentence ||
+        practice.mode == PracticeMode.longSentence;
+    final nextLabel = practice.mode == PracticeMode.longSentence
+        ? '다음 긴 문장'
+        : '다음 짧은 문장';
+
     return Column(
       children: [
-        if (practice.mode == PracticeMode.shortSentence) ...[
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.fact_check_outlined,
+                    color: Colors.blueAccent,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isSentenceMode
+                          ? '평가를 확인하고 다음으로 넘어가세요'
+                          : '방금 녹음한 발음을 확인하세요',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  onPressed: practice.lastAudioPath == null
+                      ? null
+                      : () async {
+                          if (practice.isPlaying) {
+                            await notifier.stopPlayback();
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          final ok = await notifier.playRecording(null);
+                          if (!ok) {
+                            messenger
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                const SnackBar(
+                                  content: Text('녹음 파일을 재생할 수 없습니다.'),
+                                ),
+                              );
+                          }
+                        },
+                  icon: Icon(
+                    practice.isPlaying ? Icons.stop : Icons.play_arrow,
+                  ),
+                  label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: practice.isPlaying
+                        ? Colors.redAccent
+                        : Colors.white,
+                    foregroundColor: practice.isPlaying
+                        ? Colors.white
+                        : Colors.black,
+                    disabledBackgroundColor: Colors.white.withValues(
+                      alpha: 0.08,
+                    ),
+                    disabledForegroundColor: Colors.white30,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (isSentenceMode) ...[
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -1291,7 +1386,7 @@ class PracticeScreen extends ConsumerWidget {
             child: OutlinedButton.icon(
               onPressed: () => notifier.nextItem(),
               icon: const Icon(Icons.skip_next),
-              label: const Text('다음 짧은 문장'),
+              label: Text(nextLabel),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white70,
                 side: const BorderSide(color: Colors.white24),
@@ -1309,28 +1404,6 @@ class PracticeScreen extends ConsumerWidget {
           runSpacing: 10,
           children: [
             ElevatedButton.icon(
-              onPressed: practice.isPlaying
-                  ? () => notifier.stopPlayback()
-                  : () => notifier.playRecording(null),
-              icon: Icon(practice.isPlaying ? Icons.stop : Icons.play_arrow),
-              label: Text(practice.isPlaying ? '재생 중지' : '내 목소리 듣기'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: practice.isPlaying
-                    ? Colors.redAccent.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.1),
-                foregroundColor: practice.isPlaying
-                    ? Colors.redAccent
-                    : Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-            ElevatedButton.icon(
               onPressed: () => notifier.shareRecording(),
               icon: const Icon(Icons.share, size: 20),
               label: const Text('공유'),
@@ -1346,7 +1419,7 @@ class PracticeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            if (practice.mode != PracticeMode.shortSentence)
+            if (!isSentenceMode)
               ElevatedButton.icon(
                 onPressed: () => notifier.resetPractice(),
                 icon: const Icon(Icons.refresh),
@@ -1367,6 +1440,19 @@ class PracticeScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  bool _shouldShowPostPracticeActions(PracticeProgress practice) {
+    return practice.feedback != null &&
+        practice.state != PracticeState.recording;
+  }
+
+  bool _canSkipFromTargetCard(PracticeProgress practice) {
+    if (practice.mode == PracticeMode.shortSentence ||
+        practice.mode == PracticeMode.longSentence) {
+      return practice.feedback != null;
+    }
+    return true;
   }
 
   int _repeatCountForCurrent(PracticeProgress practice) {

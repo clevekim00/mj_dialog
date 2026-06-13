@@ -23,6 +23,11 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
         elevation: 0,
         actions: [
           IconButton(
+            icon: const Icon(Icons.library_music),
+            tooltip: '녹음 보관함',
+            onPressed: () => Navigator.pushNamed(context, '/recording_library'),
+          ),
+          IconButton(
             icon: const Icon(Icons.history),
             tooltip: '히스토리',
             onPressed: () {
@@ -47,6 +52,8 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           _buildRecommendedPractice(context, ref, practice),
           const SizedBox(height: 16),
           _buildTongueExerciseWarmupCard(context, practice, tongueExercise),
+          const SizedBox(height: 22),
+          _buildRecordingLibraryCard(context, practice),
           const SizedBox(height: 22),
           _buildSectionTitle('다른 연습 선택'),
           const SizedBox(height: 12),
@@ -119,6 +126,71 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRecordingLibraryCard(
+    BuildContext context,
+    PracticeProgress practice,
+  ) {
+    final recordingCount = practice.history
+        .where((session) => session.audioFilePath.trim().isNotEmpty)
+        .length;
+    final failedCount = practice.history
+        .where(
+          (session) =>
+              session.audioFilePath.trim().isNotEmpty && session.score < 70,
+        )
+        .length;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () => Navigator.pushNamed(context, '/recording_library'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.greenAccent.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.22)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.library_music, color: Colors.greenAccent),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '녹음 보관함',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    recordingCount == 0
+                        ? '연습한 녹음을 모아서 다시 들어보세요.'
+                        : '저장된 녹음 $recordingCount개 · 실패 녹음 $failedCount개',
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white38),
+          ],
+        ),
       ),
     );
   }

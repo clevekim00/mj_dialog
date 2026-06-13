@@ -101,12 +101,52 @@ class PracticeContentService {
       baseWeight: 10,
     ),
     PracticeContentItem(
+      id: 'word_meal',
+      mode: PracticeMode.wordGame,
+      text: '식사',
+      category: '일상',
+      difficulty: 1,
+      targetSounds: ['ㅅ'],
+      movementScore: 3,
+      baseWeight: 12,
+    ),
+    PracticeContentItem(
+      id: 'word_hand',
+      mode: PracticeMode.wordGame,
+      text: '손',
+      category: '일상',
+      difficulty: 1,
+      targetSounds: ['ㅅ', 'ㄴ'],
+      movementScore: 2,
+      baseWeight: 12,
+    ),
+    PracticeContentItem(
+      id: 'word_breath',
+      mode: PracticeMode.wordGame,
+      text: '숨쉬기',
+      category: '호흡',
+      difficulty: 2,
+      targetSounds: ['ㅅ', 'ㅁ', 'ㄱ'],
+      movementScore: 4,
+      baseWeight: 9,
+    ),
+    PracticeContentItem(
+      id: 'word_sound',
+      mode: PracticeMode.wordGame,
+      text: '소리',
+      category: '일상',
+      difficulty: 2,
+      targetSounds: ['ㅅ', 'ㄹ'],
+      movementScore: 3,
+      baseWeight: 10,
+    ),
+    PracticeContentItem(
       id: 'word_help',
       mode: PracticeMode.wordGame,
       text: '도와주세요',
       category: '가족',
       difficulty: 2,
-      targetSounds: ['ㄷ', 'ㅈ'],
+      targetSounds: ['ㄷ', 'ㅈ', 'ㅅ'],
       movementScore: 3,
       baseWeight: 10,
     ),
@@ -369,6 +409,7 @@ class PracticeContentService {
     required List<PracticeSession> history,
     required int difficultyLevel,
     String? currentContentId,
+    Set<String> excludedContentIds = const {},
     String? focusedConsonant,
     String? focusedVowel,
     Random? random,
@@ -387,6 +428,13 @@ class PracticeContentService {
     );
     if (focusedItems.isNotEmpty) {
       wordItems = focusedItems;
+    }
+
+    final excludedItems = wordItems
+        .where((item) => !excludedContentIds.contains(item.id))
+        .toList();
+    if (excludedItems.isNotEmpty) {
+      wordItems = excludedItems;
     }
 
     final rng = random ?? Random();

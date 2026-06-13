@@ -17,7 +17,16 @@ class TtsService {
   late final Future<void> _initFuture;
   Completer<void>? _speakCompleter;
 
+  bool get _isDisabledOnIos => defaultTargetPlatform == TargetPlatform.iOS;
+
   Future<void> _initTts() async {
+    if (_isDisabledOnIos) {
+      debugPrint(
+        'TTS is disabled on iOS because flutter_tts crashes during native plugin registration on device startup.',
+      );
+      return;
+    }
+
     await _flutterTts.awaitSpeakCompletion(true);
     await _flutterTts.setLanguage('ko-KR');
     await _flutterTts.setSpeechRate(0.5);
@@ -32,6 +41,10 @@ class TtsService {
   }
 
   Future<void> speak(String text) async {
+    if (_isDisabledOnIos) {
+      return;
+    }
+
     if (text.isEmpty) {
       return;
     }
@@ -54,6 +67,11 @@ class TtsService {
   }
 
   Future<void> stop() async {
+    if (_isDisabledOnIos) {
+      _completeSpeak();
+      return;
+    }
+
     await _initFuture;
     await _flutterTts.stop();
     _completeSpeak();

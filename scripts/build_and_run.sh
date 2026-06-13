@@ -176,7 +176,11 @@ run_platform() {
     exit 64
   fi
 
-  flutter run -d "$device" "$(mode_flag)" "${RUN_ARGS[@]}"
+  if [[ ${#RUN_ARGS[@]} -gt 0 ]]; then
+    flutter run -d "$device" "$(mode_flag)" "${RUN_ARGS[@]}"
+  else
+    flutter run -d "$device" "$(mode_flag)"
+  fi
 }
 
 cd "$PROJECT_ROOT"

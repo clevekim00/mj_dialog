@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_rehab/features/startup/view/startup_splash_screen.dart';
 import 'package:speech_rehab/main.dart';
 
 void main() {
@@ -11,7 +12,17 @@ void main() {
 
       await tester.pumpWidget(const MyApp());
       await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('Speech Rehab'), findsOneWidget);
+      expect(find.text('오늘의 한마디'), findsOneWidget);
+      expect(
+        startupMotivationMessages.any(
+          (message) => find.text(message).evaluate().isNotEmpty,
+        ),
+        isTrue,
+      );
+
+      await tester.pump(const Duration(milliseconds: 1300));
 
       expect(find.text('말하기 연습을 안전하게 시작해요'), findsOneWidget);
       expect(find.text('안전 안내'), findsOneWidget);

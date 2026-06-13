@@ -1,5 +1,4 @@
-import 'dart:ui';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final audioPlayerServiceProvider = Provider<AudioPlayerService>((ref) {
@@ -7,30 +6,39 @@ final audioPlayerServiceProvider = Provider<AudioPlayerService>((ref) {
 });
 
 class AudioPlayerService {
-  final AudioPlayer _player = AudioPlayer();
+  static const MethodChannel _channel = MethodChannel(
+    'speech_rehab/audio_player',
+  );
+  static const EventChannel _events = EventChannel(
+    'speech_rehab/audio_player/events',
+  );
+
+  Stream<dynamic>? _completionEvents;
 
   void onPlaybackComplete(VoidCallback callback) {
-    _player.onPlayerComplete.listen((_) => callback());
+    _completionEvents ??= _events.receiveBroadcastStream();
+    _completionEvents?.listen((event) {
+      if (event == 'complete') {
+        callback();
+      }
+    });
   }
 
   Future<void> playFile(String filePath) async {
-    await _player.stop(); // Hard reset to clear previous source/state
-    await _player.play(DeviceFileSource(filePath));
+    await _channel.invokeMethod<void>('playFile', {'path': filePath});
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    await _channel.invokeMethod<void>('stop');
   }
 
   Future<void> pause() async {
-    await _player.pause();
+    await _channel.invokeMethod<void>('pause');
   }
 
   Future<void> resume() async {
-    await _player.resume();
+    await _channel.invokeMethod<void>('resume');
   }
 
-  void dispose() {
-    _player.dispose();
-  }
+  void dispose() {}
 }

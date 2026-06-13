@@ -1,7 +1,4 @@
 PODS:
-  - audioplayers_darwin (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - background_downloader (0.0.1):
     - Flutter
   - CwlCatchException (2.2.1):
@@ -47,7 +44,6 @@ PODS:
   - TensorFlowLiteSwift/Privacy (0.0.1-nightly.20250619)
 
 DEPENDENCIES:
-  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/darwin`)
   - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
   - Flutter (from `Flutter`)
   - flutter_gemma (from `.symlinks/plugins/flutter_gemma/ios`)
@@ -70,8 +66,6 @@ SPEC REPOS:
     - TensorFlowLiteSwift
 
 EXTERNAL SOURCES:
-  audioplayers_darwin:
-    :path: ".symlinks/plugins/audioplayers_darwin/darwin"
   background_downloader:
     :path: ".symlinks/plugins/background_downloader/ios"
   Flutter:
@@ -94,7 +88,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/speech_to_text/darwin"
 
 SPEC CHECKSUMS:
-  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   background_downloader: 50e91d979067b82081aba359d7d916b3ba5fadad
   CwlCatchException: 7acc161b299a6de7f0a46a6ed741eae2c8b4d75a
   CwlCatchExceptionSupport: 54ccab8d8c78907b57f99717fb19d4cc3bce02dc
@@ -113,6 +106,6 @@ SPEC CHECKSUMS:
   TensorFlowLiteSelectTfOps: c71d7dcd063f5d66ae1b9a85cc5aa993f824eff9
   TensorFlowLiteSwift: 6de8da348de331778167a0f751ad74c41d8b0554
 
-PODFILE CHECKSUM: dfb8db1c6a7c63146643cc7717be35e88a5a6cd1
+PODFILE CHECKSUM: 67cb6094dcb50af2dee47d86d87ad90f66de0015
 
 COCOAPODS: 1.16.2
