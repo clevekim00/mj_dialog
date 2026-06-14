@@ -2,6 +2,17 @@
 
 작성일: 2026-06-01
 
+최근 업데이트: 2026-06-14
+
+현재 구현 요약:
+
+- 혀운동 전용 화면, 라우트, 홈 준비운동 카드, 대시보드 루틴 카드가 구현되어 있다.
+- 혀운동 기록은 `TongueExerciseSession`과 `TongueExerciseHistoryService`로 별도 저장한다.
+- 완료 화면에서 `추천 연습 시작`, `홈으로 돌아가기`, `혀운동 다시 하기`를 제공한다.
+- `model_viewer_plus`로 GLB 3D 혀/입 구조 미리보기를 표시한다.
+- 앱 기본 GLB asset은 `assets/models/tongue_exercise_preview.glb`이다.
+- Blender 4.x용 생성 스크립트는 `blender_tongue_exercise/create_tongue_exercise_animation.py`에 있다.
+
 ## 1. 목적
 
 혀 운동 기능은 사용자가 소리 내어 읽기나 자유 발화 연습을 시작하기 전에 입과 혀를 짧게 준비할 수 있도록 돕는 워밍업 모듈이다. 핵심 목적은 영상을 그대로 재현하는 것이 아니라, 사용자가 앱 안에서 안전하게 따라 할 수 있는 단계형 운동 가이드를 제공하는 데 있다.
@@ -240,7 +251,7 @@ SharedPreferences key: tongue_exercise_history
 구성:
 
 - 현재 운동 제목
-- 큰 아이콘
+- GLB 기반 3D 혀/입 구조 미리보기
 - 짧은 지시문
 - 남은 시간 또는 반복 횟수
 - 시작/일시정지 버튼
@@ -270,6 +281,45 @@ SharedPreferences key: tongue_exercise_history
 - `기록 보기`
 
 `읽기 연습으로 이동`은 `/practice`로 이동한다.
+
+## 8.5 3D 모델 미리보기
+
+혀운동 화면은 `model_viewer_plus` 패키지로 GLB asset을 렌더링한다.
+
+대상 파일:
+
+```text
+lib/features/tongue_exercise/view/tongue_exercise_screen.dart
+```
+
+Asset 등록:
+
+```yaml
+flutter:
+  assets:
+    - assets/models/tongue_exercise_preview.glb
+```
+
+기본 모델은 교육용 미리보기 수준의 경량 GLB이다. 실제 해부학 또는 애니메이션 모델을 사용할 때는 동일 경로의 파일을 교체한다.
+
+```text
+assets/models/tongue_exercise_preview.glb
+```
+
+Blender 4.x에서 교육용 모델을 다시 생성하려면 아래 스크립트를 사용한다.
+
+```text
+blender_tongue_exercise/create_tongue_exercise_animation.py
+```
+
+실행 명령:
+
+```bash
+cd /Users/youngwhankim/Project/mj_dialog/blender_tongue_exercise
+blender --background --python create_tongue_exercise_animation.py
+```
+
+생성된 `tongue_exercise_animation.glb`를 앱에 적용하려면 `assets/models/tongue_exercise_preview.glb`로 교체한다.
 
 ## 9. 대시보드/히스토리 반영
 

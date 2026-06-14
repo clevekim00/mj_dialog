@@ -42,6 +42,11 @@ PODS:
     - TensorFlowLiteC (= 0.0.1-nightly.20250619)
     - TensorFlowLiteSwift/Privacy (= 0.0.1-nightly.20250619)
   - TensorFlowLiteSwift/Privacy (0.0.1-nightly.20250619)
+  - url_launcher_ios (0.0.1):
+    - Flutter
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
@@ -54,6 +59,8 @@ DEPENDENCIES:
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -86,6 +93,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   speech_to_text:
     :path: ".symlinks/plugins/speech_to_text/darwin"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
   background_downloader: 50e91d979067b82081aba359d7d916b3ba5fadad
@@ -105,6 +116,8 @@ SPEC CHECKSUMS:
   TensorFlowLiteC: 215ef57653dd0fa09a474e7d94d79ae64a870b28
   TensorFlowLiteSelectTfOps: c71d7dcd063f5d66ae1b9a85cc5aa993f824eff9
   TensorFlowLiteSwift: 6de8da348de331778167a0f751ad74c41d8b0554
+  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
+  webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
 PODFILE CHECKSUM: 67cb6094dcb50af2dee47d86d87ad90f66de0015
 

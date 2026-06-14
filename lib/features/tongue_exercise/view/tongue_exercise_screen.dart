@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 import 'package:speech_rehab/features/tongue_exercise/model/tongue_exercise_step.dart';
@@ -51,6 +52,11 @@ class TongueExerciseScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _buildSafetyCard(),
+        const SizedBox(height: 16),
+        _buildTongueModelViewer(
+          title: '3D 혀 운동 미리보기',
+          subtitle: '손가락으로 돌려 입 안 구조와 혀 위치를 확인할 수 있어요.',
+        ),
         const SizedBox(height: 16),
         _buildFatigueSelector(
           title: '시작 전 피로도',
@@ -122,14 +128,10 @@ class TongueExerciseScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              Container(
-                width: 112,
-                height: 112,
-                decoration: BoxDecoration(
-                  color: Colors.tealAccent.withValues(alpha: 0.14),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(step.icon, color: Colors.tealAccent, size: 52),
+              _buildTongueModelViewer(
+                title: step.title,
+                subtitle: '3D 모델을 돌려 보며 현재 운동의 방향을 확인하세요.',
+                compact: true,
               ),
               const SizedBox(height: 18),
               Text(
@@ -281,6 +283,25 @@ class TongueExerciseScreen extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           height: 48,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              ref.read(tongueExerciseProvider.notifier).startRoutine();
+            },
+            icon: const Icon(Icons.replay),
+            label: const Text('혀운동 다시 하기'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
           child: TextButton(
             onPressed: () async {
               await ref
@@ -293,6 +314,79 @@ class TongueExerciseScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTongueModelViewer({
+    required String title,
+    required String subtitle,
+    bool compact = false,
+  }) {
+    final height = compact ? 210.0 : 260.0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 12 : 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: compact ? 0.04 : 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.view_in_ar, color: Colors.tealAccent, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: compact ? 14 : 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: compact ? 12 : 13,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: SizedBox(
+              height: height,
+              child: const ModelViewer(
+                src: 'assets/models/tongue_exercise_preview.glb',
+                alt: '혀 운동 3D 모델',
+                backgroundColor: Color(0xFF111111),
+                autoRotate: true,
+                cameraControls: true,
+                disableZoom: false,
+                interactionPrompt: InteractionPrompt.none,
+                exposure: 0.95,
+                shadowIntensity: 0.35,
+                cameraOrbit: '35deg 70deg 2.9m',
+                minCameraOrbit: 'auto auto 1.8m',
+                maxCameraOrbit: 'auto auto 4.5m',
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
