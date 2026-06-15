@@ -115,6 +115,35 @@ flutter run -d macos
 # iOS 실행 (권장)
 flutter run -d ios
 
+# iOS 실기기 release 실행 (홈 화면 단독 실행 확인용)
+scripts/run_ios_release_device.sh
+
 # Android 실행
 flutter run -d android
+```
+
+### iOS 실기기 release 실행 스크립트
+
+다음 긴 명령은 iOS debug 앱의 홈 화면 단독 실행 제한을 피하고, 실제 기기에서 release 빌드를 바로 설치/실행하기 위한 명령입니다.
+
+```bash
+flutter run --release -d 00008027-000849220A31002E --no-resident
+```
+
+항상 같은 방식으로 실행할 수 있도록 아래 스크립트로 고정했습니다.
+
+```bash
+scripts/run_ios_release_device.sh
+```
+
+다른 기기를 지정해야 할 때는 다음처럼 실행합니다.
+
+```bash
+scripts/run_ios_release_device.sh --device <device-id>
+```
+
+또는 환경 변수로 기본 기기를 바꿀 수 있습니다.
+
+```bash
+IOS_DEVICE_ID=<device-id> scripts/run_ios_release_device.sh
 ```
