@@ -1,8 +1,10 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
 import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
 import 'package:speech_rehab/features/chat/view/widgets/feedback_card.dart';
+import 'package:speech_rehab/features/practice/view/widgets/mouth_video_preview_sheet.dart';
 
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({super.key});
@@ -21,6 +23,7 @@ class ChatScreen extends ConsumerWidget {
     );
 
     final session = ref.watch(chatControllerProvider);
+    final notifier = ref.read(chatControllerProvider.notifier);
     final state = session.conversationState;
 
     return Scaffold(
@@ -37,7 +40,10 @@ class ChatScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white54),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white54,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                   Row(
@@ -59,7 +65,22 @@ class ChatScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(width: 48), // Spacer to balance back button
+                  IconButton(
+                    icon: Icon(
+                      session.mouthVideoEnabled
+                          ? Icons.videocam
+                          : Icons.videocam_outlined,
+                      color: session.mouthVideoEnabled
+                          ? Colors.greenAccent
+                          : Colors.white54,
+                    ),
+                    tooltip: '입모양 촬영',
+                    onPressed: state == ConversationState.listening
+                        ? null
+                        : () => notifier.setMouthVideoEnabled(
+                            !session.mouthVideoEnabled,
+                          ),
+                  ),
                 ],
               ),
             ),
@@ -81,6 +102,23 @@ class ChatScreen extends ConsumerWidget {
                       letterSpacing: 1.2,
                     ),
                   ),
+                  if (session.mouthVideoError != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      session.mouthVideoError!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.orangeAccent,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  if (session.mouthVideoEnabled &&
+                      session.isMouthVideoReady &&
+                      notifier.mouthVideoController != null) ...[
+                    const SizedBox(height: 16),
+                    _buildCameraPreview(notifier.mouthVideoController!),
+                  ],
                 ],
               ),
             ),
@@ -92,7 +130,8 @@ class ChatScreen extends ConsumerWidget {
               right: 32,
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 300),
-                opacity: session.liveText.isNotEmpty ||
+                opacity:
+                    session.liveText.isNotEmpty ||
                         state == ConversationState.listening
                     ? 1.0
                     : 0.0,
@@ -120,7 +159,9 @@ class ChatScreen extends ConsumerWidget {
                   ? FeedbackCard(
                       aiResponse: session.feedback!,
                       onDismiss: () {
-                        ref.read(chatControllerProvider.notifier).dismissFeedback();
+                        ref
+                            .read(chatControllerProvider.notifier)
+                            .dismissFeedback();
                       },
                     )
                   : const SizedBox.shrink(),
@@ -128,13 +169,37 @@ class ChatScreen extends ConsumerWidget {
 
             // Bottom Mic Button - Simplified, no text input
             Positioned(
-              bottom: 40,
+              bottom: session.lastMouthVideoPath == null ? 40 : 96,
               left: 0,
               right: 0,
-              child: Center(
-                child: _buildMicButton(ref, state),
-              ),
+              child: Center(child: _buildMicButton(ref, state)),
             ),
+            if (session.lastMouthVideoPath != null)
+              Positioned(
+                bottom: 32,
+                left: 32,
+                right: 32,
+                child: SizedBox(
+                  height: 46,
+                  child: OutlinedButton.icon(
+                    onPressed: () => MouthVideoPreviewSheet.show(
+                      context,
+                      session.lastMouthVideoPath!,
+                    ),
+                    icon: const Icon(Icons.video_library_outlined),
+                    label: const Text('입모양 영상 보기'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.greenAccent,
+                      side: BorderSide(
+                        color: Colors.greenAccent.withValues(alpha: 0.35),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -161,9 +226,9 @@ class ChatScreen extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        ref.read(chatControllerProvider.notifier).toggleVoiceInput(
-              isVoiceSupported: true,
-            );
+        ref
+            .read(chatControllerProvider.notifier)
+            .toggleVoiceInput(isVoiceSupported: true);
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -204,6 +269,19 @@ class ChatScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCameraPreview(CameraController controller) {
+    return SizedBox(
+      width: 180,
+      child: AspectRatio(
+        aspectRatio: controller.value.aspectRatio,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: CameraPreview(controller),
+        ),
       ),
     );
   }

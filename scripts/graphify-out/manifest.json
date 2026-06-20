@@ -1,0 +1,32 @@
+{
+  "build_and_run.sh": {
+    "mtime": 1780717956.9595594,
+    "ast_hash": "fee56f27799b1eceda63913d5381f27d",
+    "semantic_hash": "fee56f27799b1eceda63913d5381f27d"
+  },
+  "build_android_release.sh": {
+    "mtime": 1781059030.7423658,
+    "ast_hash": "97d2b64009767910ba98cef9b2eb7470",
+    "semantic_hash": "97d2b64009767910ba98cef9b2eb7470"
+  },
+  "diagnose_ios_build.sh": {
+    "mtime": 1781256527.1755621,
+    "ast_hash": "50cdf2955e4a138ef608ebfc6ce38883",
+    "semantic_hash": "50cdf2955e4a138ef608ebfc6ce38883"
+  },
+  "generate_store_icons.py": {
+    "mtime": 1781058611.064631,
+    "ast_hash": "1ab676b658f343d96e14276c2d833d6d",
+    "semantic_hash": "1ab676b658f343d96e14276c2d833d6d"
+  },
+  "patch_ios_generated_plugins.sh": {
+    "mtime": 1781313360.7900612,
+    "ast_hash": "bec66e08ae1d309f0259437b6d98ca2c",
+    "semantic_hash": "bec66e08ae1d309f0259437b6d98ca2c"
+  },
+  "run_ios_release_device.sh": {
+    "mtime": 1781851358.1665053,
+    "ast_hash": "834e11c8ae091cd8b3a0030021099342",
+    "semantic_hash": "834e11c8ae091cd8b3a0030021099342"
+  }
+}

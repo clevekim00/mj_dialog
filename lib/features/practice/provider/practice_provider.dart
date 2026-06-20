@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../../services/api/ai_service.dart';
 import '../../../services/audio/audio_player_service.dart';
@@ -11,6 +13,7 @@ import '../../../services/audio/audio_recorder_service.dart';
 import '../../../services/audio/stt_service.dart';
 import '../../../services/practice_content_service.dart';
 import '../../../services/practice_history_service.dart';
+import '../../../services/video/mouth_video_recorder_service.dart';
 import '../model/practice_mode.dart';
 
 enum PracticeState { idle, recording, analyzing, completed, error }
@@ -69,7 +72,14 @@ class PracticeProgress {
   final bool speechRecognitionUnavailable;
   final AiResponse? feedback;
   final String? lastAudioPath;
+  final String? previousAudioPath;
+  final String? lastMouthVideoPath;
+  final bool mouthVideoEnabled;
+  final bool isMouthVideoReady;
+  final bool isMouthVideoRecording;
+  final String? mouthVideoError;
   final List<PracticeSession> history;
+  final Set<String> savedReviewSessionIds;
   final bool isFreeMode;
   final bool isPlaying;
   final String sessionGoal;
@@ -102,7 +112,14 @@ class PracticeProgress {
     this.speechRecognitionUnavailable = false,
     this.feedback,
     this.lastAudioPath,
+    this.previousAudioPath,
+    this.lastMouthVideoPath,
+    this.mouthVideoEnabled = false,
+    this.isMouthVideoReady = false,
+    this.isMouthVideoRecording = false,
+    this.mouthVideoError,
     this.history = const [],
+    this.savedReviewSessionIds = const {},
     this.isFreeMode = false,
     this.isPlaying = false,
     this.sessionGoal = '또렷하게 말하기',
@@ -138,7 +155,17 @@ class PracticeProgress {
     bool clearFeedback = false,
     String? lastAudioPath,
     bool clearLastAudioPath = false,
+    String? previousAudioPath,
+    bool clearPreviousAudioPath = false,
+    String? lastMouthVideoPath,
+    bool clearLastMouthVideoPath = false,
+    bool? mouthVideoEnabled,
+    bool? isMouthVideoReady,
+    bool? isMouthVideoRecording,
+    String? mouthVideoError,
+    bool clearMouthVideoError = false,
     List<PracticeSession>? history,
+    Set<String>? savedReviewSessionIds,
     bool? isFreeMode,
     bool? isPlaying,
     String? sessionGoal,
@@ -178,7 +205,22 @@ class PracticeProgress {
       lastAudioPath: clearLastAudioPath
           ? null
           : (lastAudioPath ?? this.lastAudioPath),
+      previousAudioPath: clearPreviousAudioPath
+          ? null
+          : (previousAudioPath ?? this.previousAudioPath),
+      lastMouthVideoPath: clearLastMouthVideoPath
+          ? null
+          : (lastMouthVideoPath ?? this.lastMouthVideoPath),
+      mouthVideoEnabled: mouthVideoEnabled ?? this.mouthVideoEnabled,
+      isMouthVideoReady: isMouthVideoReady ?? this.isMouthVideoReady,
+      isMouthVideoRecording:
+          isMouthVideoRecording ?? this.isMouthVideoRecording,
+      mouthVideoError: clearMouthVideoError
+          ? null
+          : (mouthVideoError ?? this.mouthVideoError),
       history: history ?? this.history,
+      savedReviewSessionIds:
+          savedReviewSessionIds ?? this.savedReviewSessionIds,
       isFreeMode: isFreeMode ?? this.isFreeMode,
       isPlaying: isPlaying ?? this.isPlaying,
       sessionGoal: sessionGoal ?? this.sessionGoal,
@@ -222,6 +264,9 @@ final practiceProvider = NotifierProvider<PracticeNotifier, PracticeProgress>(
 );
 
 class PracticeNotifier extends Notifier<PracticeProgress> {
+  static const String _savedReviewSessionIdsKey =
+      'saved_low_score_review_session_ids';
+
   AudioRecorderService get audioRecorder =>
       ref.watch(audioRecorderServiceProvider);
   AudioPlayerService get audioPlayer => ref.watch(audioPlayerServiceProvider);
@@ -233,6 +278,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       ref.watch(practiceContentServiceProvider);
   CustomPracticeContentService get customContentService =>
       ref.watch(customPracticeContentServiceProvider);
+  MouthVideoRecorderService get mouthVideoRecorder =>
+      ref.watch(mouthVideoRecorderServiceProvider);
+  CameraController? get mouthVideoController => mouthVideoRecorder.controller;
 
   List<PracticeContentItem> _currentItems = [];
   Timer? _wordGameTimer;
@@ -242,8 +290,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   @override
   PracticeProgress build() {
+    final videoRecorder = mouthVideoRecorder;
     ref.onDispose(() {
       _wordGameTimer?.cancel();
+      unawaited(videoRecorder.dispose());
     });
     _init();
     return PracticeProgress(
@@ -255,6 +305,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   Future<void> _init() async {
     _currentItems = await _loadItemsForMode(PracticeMode.shortSentence);
     final history = await historyService.loadPractices();
+    final savedReviewSessionIds = await _loadSavedReviewSessionIds();
 
     // Listen for audio completion to reset isPlaying state
     audioPlayer.onPlaybackComplete(() {
@@ -263,6 +314,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     state = state.copyWith(
       history: history,
+      savedReviewSessionIds: savedReviewSessionIds,
       targetText: _currentItems.isNotEmpty
           ? _currentItems[0].text
           : state.targetText,
@@ -335,6 +387,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       speechRecognitionUnavailable: false,
       feedback: null,
       lastAudioPath: null,
+      previousAudioPath: null,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
       clearFatigueAfter: true,
       clearContentId: true,
       category: '직접 입력',
@@ -361,6 +416,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       clearFeedback: true,
       clearLastAudioPath: true,
+      clearPreviousAudioPath: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
       clearFatigueAfter: true,
       contentId: session.contentId,
       clearContentId: session.contentId == null,
@@ -398,6 +456,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       clearFeedback: true,
       clearLastAudioPath: true,
+      clearPreviousAudioPath: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
       clearFatigueAfter: true,
       contentId: firstItem?.id,
       clearContentId: firstItem == null,
@@ -510,6 +571,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       clearFeedback: true,
       clearLastAudioPath: true,
+      clearPreviousAudioPath: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
       clearFatigueAfter: true,
       contentId: firstItem.id,
       category: firstItem.category,
@@ -609,6 +673,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       clearFeedback: true,
       clearLastAudioPath: true,
+      clearPreviousAudioPath: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
       clearFatigueAfter: true,
       contentId: item.id,
       category: item.category,
@@ -967,6 +1034,33 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   String _tempSpokenText = '';
   DateTime? _recordingStartTime;
+  String? _mouthVideoFileName;
+
+  Future<void> setMouthVideoEnabled(bool enabled) async {
+    if (!enabled) {
+      if (mouthVideoRecorder.isRecording) {
+        await mouthVideoRecorder.stopRecording(
+          _mouthVideoFileName ??
+              'practice_${DateTime.now().millisecondsSinceEpoch}',
+        );
+      }
+      state = state.copyWith(
+        mouthVideoEnabled: false,
+        isMouthVideoRecording: false,
+        clearMouthVideoError: true,
+      );
+      return;
+    }
+
+    state = state.copyWith(clearMouthVideoError: true);
+    final ready = await mouthVideoRecorder.initialize();
+    state = state.copyWith(
+      mouthVideoEnabled: ready,
+      isMouthVideoReady: ready,
+      mouthVideoError: ready ? null : '카메라를 사용할 수 없습니다.',
+      clearMouthVideoError: ready,
+    );
+  }
 
   Future<void> startRecording() async {
     debugPrint(
@@ -1005,7 +1099,19 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     _tempSpokenText = '';
     _recordingStartTime = DateTime.now();
     final fileName = 'practice_${DateTime.now().millisecondsSinceEpoch}';
+    _mouthVideoFileName = fileName;
     debugPrint('[PracticeRecording] recording state entered: file=$fileName');
+
+    if (state.mouthVideoEnabled) {
+      final videoStarted = await mouthVideoRecorder.startRecording(fileName);
+      state = state.copyWith(
+        isMouthVideoReady: videoStarted || mouthVideoRecorder.isReady,
+        isMouthVideoRecording: videoStarted,
+        clearLastMouthVideoPath: true,
+        mouthVideoError: videoStarted ? null : '입모양 영상 녹화를 시작하지 못했습니다.',
+        clearMouthVideoError: videoStarted,
+      );
+    }
 
     // Start STT before the high-quality recorder so live transcription has the
     // first chance to claim the platform audio session.
@@ -1070,6 +1176,20 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     }
 
     // Stop the recorder and STT engine
+    String? mouthVideoPath;
+    if (state.isMouthVideoRecording || mouthVideoRecorder.isRecording) {
+      mouthVideoPath = await mouthVideoRecorder.stopRecording(
+        _mouthVideoFileName ??
+            'practice_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      state = state.copyWith(
+        isMouthVideoRecording: false,
+        lastMouthVideoPath: mouthVideoPath,
+        mouthVideoError: mouthVideoPath == null ? '입모양 영상 저장에 실패했습니다.' : null,
+        clearMouthVideoError: mouthVideoPath != null,
+      );
+    }
+
     final recorderStopWatch = Stopwatch()..start();
     final audioFile = await audioRecorder.stopRecording();
     recorderStopWatch.stop();
@@ -1157,6 +1277,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
 
     final previousBestScore = _previousBestScore();
+    final previousAudioPath = _previousComparableAudioPath();
     final nextRetryCount = feedback.pronunciationScore >= 70
         ? state.retryCount
         : state.retryCount + 1;
@@ -1169,6 +1290,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       targetText: state.isFreeMode ? '자유 읽기' : state.targetText,
       spokenText: finalSpokenText,
       audioFilePath: audioFile,
+      videoFilePath: mouthVideoPath,
       score: feedback.pronunciationScore,
       feedback: feedback.pronunciationFeedback,
       phonemeAccuracy: feedback.phonemeAccuracy
@@ -1210,6 +1332,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: keepWordGameRunning ? PracticeState.idle : PracticeState.completed,
       feedback: feedback,
       lastAudioPath: audioFile,
+      previousAudioPath: previousAudioPath,
+      lastMouthVideoPath: mouthVideoPath,
       history: updatedHistory,
       retryCount: nextRetryCount,
       streakCount: nextStreakCount,
@@ -1283,6 +1407,31 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     return matchingScores.last;
   }
 
+  String? _previousComparableAudioPath() {
+    Iterable<PracticeSession> matchingSessions;
+    final contentId = state.contentId;
+    if (contentId != null && contentId.isNotEmpty) {
+      matchingSessions = state.history.where(
+        (session) =>
+            session.contentId == contentId &&
+            session.audioFilePath.trim().isNotEmpty,
+      );
+    } else {
+      final targetText = state.isFreeMode ? '자유 읽기' : state.targetText;
+      matchingSessions = state.history.where(
+        (session) =>
+            session.targetText == targetText &&
+            session.mode == state.mode.storageValue &&
+            session.audioFilePath.trim().isNotEmpty,
+      );
+    }
+
+    if (matchingSessions.isEmpty) {
+      return null;
+    }
+    return matchingSessions.first.audioFilePath;
+  }
+
   Future<void> deleteSession(String id) async {
     final sessions = await historyService.loadPractices();
     PracticeSession? targetSession;
@@ -1294,9 +1443,78 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     }
 
     await _deleteAudioFile(targetSession?.audioFilePath);
+    await _deleteAudioFile(targetSession?.videoFilePath);
     await historyService.deletePractice(id);
     final updatedHistory = await historyService.loadPractices();
-    state = state.copyWith(history: updatedHistory);
+    final savedReviewSessionIds = {...state.savedReviewSessionIds}..remove(id);
+    await _saveSavedReviewSessionIds(savedReviewSessionIds);
+    state = state.copyWith(
+      history: updatedHistory,
+      savedReviewSessionIds: savedReviewSessionIds,
+    );
+  }
+
+  Future<int> deleteUnavailableRecordings() async {
+    if (kIsWeb) {
+      return 0;
+    }
+
+    final sessions = await historyService.loadPractices();
+    final unavailable = <PracticeSession>[];
+    for (final session in sessions) {
+      final path = session.audioFilePath.trim();
+      if (path.isEmpty) {
+        continue;
+      }
+      try {
+        if (!await File(path).exists()) {
+          unavailable.add(session);
+        }
+      } catch (_) {
+        unavailable.add(session);
+      }
+    }
+
+    for (final session in unavailable) {
+      await _deleteAudioFile(session.videoFilePath);
+      await historyService.deletePractice(session.id);
+    }
+
+    if (unavailable.isEmpty) {
+      return 0;
+    }
+
+    final updatedHistory = await historyService.loadPractices();
+    final deletedIds = unavailable.map((session) => session.id).toSet();
+    final savedReviewSessionIds = {...state.savedReviewSessionIds}
+      ..removeAll(deletedIds);
+    await _saveSavedReviewSessionIds(savedReviewSessionIds);
+    state = state.copyWith(
+      history: updatedHistory,
+      savedReviewSessionIds: savedReviewSessionIds,
+    );
+    return unavailable.length;
+  }
+
+  Future<void> toggleSavedReviewSession(PracticeSession session) async {
+    final nextIds = {...state.savedReviewSessionIds};
+    if (nextIds.contains(session.id)) {
+      nextIds.remove(session.id);
+    } else {
+      nextIds.add(session.id);
+    }
+    await _saveSavedReviewSessionIds(nextIds);
+    state = state.copyWith(savedReviewSessionIds: nextIds);
+  }
+
+  Future<Set<String>> _loadSavedReviewSessionIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_savedReviewSessionIdsKey)?.toSet() ?? {};
+  }
+
+  Future<void> _saveSavedReviewSessionIds(Set<String> ids) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_savedReviewSessionIdsKey, ids.toList());
   }
 
   Future<void> _deleteAudioFile(String? path) async {

@@ -1,22 +1,15 @@
+import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/services/api/ai_service.dart';
 import 'package:speech_rehab/services/audio/stt_service.dart';
 import 'package:speech_rehab/services/audio/tts_service.dart';
 import 'package:speech_rehab/services/history_service.dart';
+import 'package:speech_rehab/services/video/mouth_video_recorder_service.dart';
 import 'package:uuid/uuid.dart';
 
-enum ConversationState {
-  idle,
-  listening,
-  thinking,
-  speaking,
-  feedback,
-}
+enum ConversationState { idle, listening, thinking, speaking, feedback }
 
-enum ChatRole {
-  user,
-  assistant,
-}
+enum ChatRole { user, assistant }
 
 class ChatMessage {
   const ChatMessage({
@@ -25,6 +18,7 @@ class ChatMessage {
     required this.role,
     this.pronunciationScore,
     this.pronunciationFeedback,
+    this.mouthVideoPath,
   });
 
   final String id;
@@ -32,22 +26,25 @@ class ChatMessage {
   final ChatRole role;
   final int? pronunciationScore;
   final String? pronunciationFeedback;
+  final String? mouthVideoPath;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'text': text,
-        'role': role.name,
-        'pronunciationScore': pronunciationScore,
-        'pronunciationFeedback': pronunciationFeedback,
-      };
+    'id': id,
+    'text': text,
+    'role': role.name,
+    'pronunciationScore': pronunciationScore,
+    'pronunciationFeedback': pronunciationFeedback,
+    'mouthVideoPath': mouthVideoPath,
+  };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-        id: json['id'],
-        text: json['text'],
-        role: ChatRole.values.byName(json['role']),
-        pronunciationScore: json['pronunciationScore'],
-        pronunciationFeedback: json['pronunciationFeedback'],
-      );
+    id: json['id'],
+    text: json['text'],
+    role: ChatRole.values.byName(json['role']),
+    pronunciationScore: json['pronunciationScore'],
+    pronunciationFeedback: json['pronunciationFeedback'],
+    mouthVideoPath: json['mouthVideoPath'] as String?,
+  );
 }
 
 class ChatSession {
@@ -63,10 +60,7 @@ class ChatSession {
   final DateTime createdAt;
   final List<ChatMessage> messages;
 
-  ChatSession copyWith({
-    String? title,
-    List<ChatMessage>? messages,
-  }) {
+  ChatSession copyWith({String? title, List<ChatMessage>? messages}) {
     return ChatSession(
       id: id,
       title: title ?? this.title,
@@ -76,20 +70,20 @@ class ChatSession {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'createdAt': createdAt.toIso8601String(),
-        'messages': messages.map((m) => m.toJson()).toList(),
-      };
+    'id': id,
+    'title': title,
+    'createdAt': createdAt.toIso8601String(),
+    'messages': messages.map((m) => m.toJson()).toList(),
+  };
 
   factory ChatSession.fromJson(Map<String, dynamic> json) => ChatSession(
-        id: json['id'],
-        title: json['title'],
-        createdAt: DateTime.parse(json['createdAt']),
-        messages: (json['messages'] as List)
-            .map((m) => ChatMessage.fromJson(m))
-            .toList(),
-      );
+    id: json['id'],
+    title: json['title'],
+    createdAt: DateTime.parse(json['createdAt']),
+    messages: (json['messages'] as List)
+        .map((m) => ChatMessage.fromJson(m))
+        .toList(),
+  );
 }
 
 class ChatSessionState {
@@ -100,6 +94,11 @@ class ChatSessionState {
     this.liveText = '',
     this.feedback,
     this.errorMessage,
+    this.mouthVideoEnabled = false,
+    this.isMouthVideoReady = false,
+    this.isMouthVideoRecording = false,
+    this.lastMouthVideoPath,
+    this.mouthVideoError,
   });
 
   final String? currentSessionId;
@@ -108,6 +107,11 @@ class ChatSessionState {
   final String liveText;
   final AiResponse? feedback;
   final String? errorMessage;
+  final bool mouthVideoEnabled;
+  final bool isMouthVideoReady;
+  final bool isMouthVideoRecording;
+  final String? lastMouthVideoPath;
+  final String? mouthVideoError;
 
   ChatSession? get currentSession {
     if (currentSessionId == null) return null;
@@ -131,6 +135,13 @@ class ChatSessionState {
     bool clearFeedback = false,
     String? errorMessage,
     bool clearError = false,
+    bool? mouthVideoEnabled,
+    bool? isMouthVideoReady,
+    bool? isMouthVideoRecording,
+    String? lastMouthVideoPath,
+    bool clearLastMouthVideoPath = false,
+    String? mouthVideoError,
+    bool clearMouthVideoError = false,
   }) {
     return ChatSessionState(
       currentSessionId: currentSessionId ?? this.currentSessionId,
@@ -139,11 +150,23 @@ class ChatSessionState {
       liveText: liveText ?? this.liveText,
       feedback: clearFeedback ? null : (feedback ?? this.feedback),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      mouthVideoEnabled: mouthVideoEnabled ?? this.mouthVideoEnabled,
+      isMouthVideoReady: isMouthVideoReady ?? this.isMouthVideoReady,
+      isMouthVideoRecording:
+          isMouthVideoRecording ?? this.isMouthVideoRecording,
+      lastMouthVideoPath: clearLastMouthVideoPath
+          ? null
+          : (lastMouthVideoPath ?? this.lastMouthVideoPath),
+      mouthVideoError: clearMouthVideoError
+          ? null
+          : (mouthVideoError ?? this.mouthVideoError),
     );
   }
 }
 
-final historyServiceProvider = Provider<HistoryService>((ref) => HistoryService());
+final historyServiceProvider = Provider<HistoryService>(
+  (ref) => HistoryService(),
+);
 
 final chatControllerProvider =
     NotifierProvider<ChatController, ChatSessionState>(ChatController.new);
@@ -155,15 +178,22 @@ class ChatController extends Notifier<ChatSessionState> {
   SttService get _sttService => ref.read(sttServiceProvider);
   TtsService get _ttsService => ref.read(ttsServiceProvider);
   HistoryService get _historyService => ref.read(historyServiceProvider);
+  MouthVideoRecorderService get _mouthVideoRecorder =>
+      ref.read(mouthVideoRecorderServiceProvider);
+  CameraController? get mouthVideoController => _mouthVideoRecorder.controller;
+
+  String? _mouthVideoFileName;
 
   @override
   ChatSessionState build() {
     final sttService = _sttService;
     final ttsService = _ttsService;
+    final mouthVideoRecorder = _mouthVideoRecorder;
 
     ref.onDispose(() {
       sttService.dispose();
       ttsService.dispose();
+      mouthVideoRecorder.dispose();
     });
 
     // Load history on initialization
@@ -199,37 +229,66 @@ class ChatController extends Notifier<ChatSessionState> {
       conversationState: ConversationState.idle,
       liveText: '',
       clearFeedback: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
     );
     _historyService.saveSessions(updatedSessions);
   }
 
   void switchSession(String sessionId) {
     if (state.currentSessionId == sessionId) return;
-    
+
     state = state.copyWith(
       currentSessionId: sessionId,
       conversationState: ConversationState.idle,
       liveText: '',
       clearFeedback: true,
       clearError: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
+    );
+  }
+
+  Future<void> setMouthVideoEnabled(bool enabled) async {
+    if (!enabled) {
+      await _stopMouthVideoIfNeeded();
+      state = state.copyWith(
+        mouthVideoEnabled: false,
+        isMouthVideoRecording: false,
+        clearMouthVideoError: true,
+      );
+      return;
+    }
+
+    state = state.copyWith(clearMouthVideoError: true);
+    final ready = await _mouthVideoRecorder.initialize();
+    state = state.copyWith(
+      mouthVideoEnabled: ready,
+      isMouthVideoReady: ready,
+      mouthVideoError: ready ? null : '카메라를 사용할 수 없습니다.',
+      clearMouthVideoError: ready,
     );
   }
 
   void deleteSession(String sessionId) {
-    final updatedSessions = state.sessions.where((s) => s.id != sessionId).toList();
+    final updatedSessions = state.sessions
+        .where((s) => s.id != sessionId)
+        .toList();
     String? newCurrentId = state.currentSessionId;
-    
+
     if (newCurrentId == sessionId) {
-      newCurrentId = updatedSessions.isNotEmpty ? updatedSessions.first.id : null;
+      newCurrentId = updatedSessions.isNotEmpty
+          ? updatedSessions.first.id
+          : null;
     }
 
     state = state.copyWith(
       sessions: updatedSessions,
       currentSessionId: newCurrentId,
     );
-    
+
     _historyService.saveSessions(updatedSessions);
-    
+
     if (updatedSessions.isEmpty) {
       createNewSession();
     }
@@ -270,6 +329,7 @@ class ChatController extends Notifier<ChatSessionState> {
     await _sttService.stopListening();
 
     if (spokenText.isEmpty) {
+      await _stopMouthVideoIfNeeded();
       state = state.copyWith(
         conversationState: ConversationState.idle,
         liveText: '',
@@ -304,7 +364,22 @@ class ChatController extends Notifier<ChatSessionState> {
       liveText: '',
       clearFeedback: true,
       clearError: true,
+      clearLastMouthVideoPath: true,
+      clearMouthVideoError: true,
     );
+
+    if (state.mouthVideoEnabled) {
+      _mouthVideoFileName = 'chat_${DateTime.now().millisecondsSinceEpoch}';
+      final started = await _mouthVideoRecorder.startRecording(
+        _mouthVideoFileName!,
+      );
+      state = state.copyWith(
+        isMouthVideoReady: started || _mouthVideoRecorder.isReady,
+        isMouthVideoRecording: started,
+        mouthVideoError: started ? null : '입모양 영상 녹화를 시작하지 못했습니다.',
+        clearMouthVideoError: started,
+      );
+    }
 
     final initialized = await _sttService.init();
     if (!initialized) {
@@ -328,10 +403,7 @@ class ChatController extends Notifier<ChatSessionState> {
     }
   }
 
-  Future<void> _processInput(
-    String text, {
-    bool fromVoiceInput = false,
-  }) async {
+  Future<void> _processInput(String text, {bool fromVoiceInput = false}) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
       state = state.copyWith(
@@ -344,6 +416,7 @@ class ChatController extends Notifier<ChatSessionState> {
     if (fromVoiceInput) {
       await _sttService.stopListening();
     }
+    final mouthVideoPath = await _stopMouthVideoIfNeeded();
 
     final currentSession = state.currentSession;
     if (currentSession == null) return;
@@ -354,13 +427,16 @@ class ChatController extends Notifier<ChatSessionState> {
         id: _uuid.v4(),
         text: trimmed,
         role: ChatRole.user,
+        mouthVideoPath: mouthVideoPath,
       ),
     ];
 
     // Update session title if it's the first message
     String updatedTitle = currentSession.title;
     if (currentSession.messages.isEmpty) {
-      updatedTitle = trimmed.length > 20 ? '${trimmed.substring(0, 20)}...' : trimmed;
+      updatedTitle = trimmed.length > 20
+          ? '${trimmed.substring(0, 20)}...'
+          : trimmed;
     }
 
     final updatedSession = currentSession.copyWith(
@@ -368,7 +444,9 @@ class ChatController extends Notifier<ChatSessionState> {
       title: updatedTitle,
     );
 
-    final updatedSessions = state.sessions.map((s) => s.id == updatedSession.id ? updatedSession : s).toList();
+    final updatedSessions = state.sessions
+        .map((s) => s.id == updatedSession.id ? updatedSession : s)
+        .toList();
 
     state = state.copyWith(
       conversationState: ConversationState.thinking,
@@ -376,11 +454,13 @@ class ChatController extends Notifier<ChatSessionState> {
       sessions: updatedSessions,
       clearFeedback: true,
       clearError: true,
+      lastMouthVideoPath: mouthVideoPath,
+      clearLastMouthVideoPath: mouthVideoPath == null,
     );
 
     try {
       final aiResult = await _aiService.getResponseAndFeedback(trimmed);
-      
+
       final withReply = [
         ...updatedMessages,
         ChatMessage(
@@ -393,7 +473,9 @@ class ChatController extends Notifier<ChatSessionState> {
       ];
 
       final finalSession = updatedSession.copyWith(messages: withReply);
-      final finalSessions = state.sessions.map((s) => s.id == finalSession.id ? finalSession : s).toList();
+      final finalSessions = state.sessions
+          .map((s) => s.id == finalSession.id ? finalSession : s)
+          .toList();
 
       state = state.copyWith(
         conversationState: ConversationState.speaking,
@@ -409,9 +491,8 @@ class ChatController extends Notifier<ChatSessionState> {
         feedback: aiResult,
         sessions: finalSessions,
       );
-      
-      _historyService.saveSessions(finalSessions);
 
+      _historyService.saveSessions(finalSessions);
     } catch (_) {
       _setError('응답을 처리하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
       state = state.copyWith(conversationState: ConversationState.idle);
@@ -421,5 +502,21 @@ class ChatController extends Notifier<ChatSessionState> {
   void _setError(String message) {
     state = state.copyWith(errorMessage: message);
   }
-}
 
+  Future<String?> _stopMouthVideoIfNeeded() async {
+    if (!state.isMouthVideoRecording && !_mouthVideoRecorder.isRecording) {
+      return null;
+    }
+
+    final path = await _mouthVideoRecorder.stopRecording(
+      _mouthVideoFileName ?? 'chat_${DateTime.now().millisecondsSinceEpoch}',
+    );
+    state = state.copyWith(
+      isMouthVideoRecording: false,
+      lastMouthVideoPath: path,
+      mouthVideoError: path == null ? '입모양 영상 저장에 실패했습니다.' : null,
+      clearMouthVideoError: path != null,
+    );
+    return path;
+  }
+}

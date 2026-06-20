@@ -129,16 +129,87 @@ final class SafeFlutterViewController: FlutterViewController {
 
   private func playFile(path: String, result: FlutterResult) {
     do {
+      cancelSpeechRecognition()
+      audioRecorder?.stop()
+      audioRecorder = nil
+      audioRecorderPath = nil
+
+      let fileURL = URL(fileURLWithPath: path)
+      guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        result(
+          FlutterError(
+            code: "file_missing",
+            message: "Recording file does not exist.",
+            details: path
+          )
+        )
+        return
+      }
+
+      let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+      let fileSize = attributes[.size] as? NSNumber
+      guard fileSize?.intValue ?? 0 > 0 else {
+        result(
+          FlutterError(
+            code: "file_empty",
+            message: "Recording file is empty.",
+            details: path
+          )
+        )
+        return
+      }
+
       let session = AVAudioSession.sharedInstance()
-      try session.setCategory(.playback, mode: .default)
-      try session.setActive(true)
+      try session.setActive(false, options: .notifyOthersOnDeactivation)
+      try session.setCategory(
+        .playAndRecord,
+        mode: .default,
+        options: [.defaultToSpeaker, .allowBluetoothHFP, .allowBluetoothA2DP]
+      )
+      try session.setActive(true, options: .notifyOthersOnDeactivation)
+      try session.overrideOutputAudioPort(.speaker)
 
       audioPlayer?.stop()
-      let player = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
+      let player = try AVAudioPlayer(contentsOf: fileURL)
       player.delegate = self
+      player.volume = 1.0
+      player.numberOfLoops = 0
       audioPlayer = player
-      player.prepareToPlay()
-      player.play()
+      guard player.prepareToPlay(), player.duration > 0 else {
+        audioPlayer = nil
+        result(
+          FlutterError(
+            code: "playback_prepare_failed",
+            message: "Failed to prepare recording playback.",
+            details: [
+              "path": path,
+              "fileSize": fileSize?.intValue ?? 0,
+              "duration": player.duration,
+            ]
+          )
+        )
+        return
+      }
+
+      guard player.play() else {
+        audioPlayer = nil
+        result(
+          FlutterError(
+            code: "playback_start_failed",
+            message: "AVAudioPlayer did not start playback.",
+            details: [
+              "path": path,
+              "fileSize": fileSize?.intValue ?? 0,
+              "duration": player.duration,
+            ]
+          )
+        )
+        return
+      }
+
+      debugPrint(
+        "Playback started path=\(path) size=\(fileSize?.intValue ?? 0) duration=\(player.duration)"
+      )
       result(nil)
     } catch {
       result(
@@ -655,6 +726,10 @@ extension AppDelegate: FlutterStreamHandler {
 
 extension AppDelegate: AVAudioPlayerDelegate {
   func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+    if audioPlayer === player {
+      audioPlayer = nil
+    }
+    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     audioEventSink?("complete")
   }
 }

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
+import 'package:speech_rehab/features/practice/view/widgets/mouth_video_preview_sheet.dart';
 import 'package:speech_rehab/services/practice_history_service.dart';
 
-enum _RecordingFilter { all, word, short, long, failed }
+enum _RecordingFilter { all, word, short, long, failed, saved }
+
+enum _RecordingSort { newest, lowScore, highScore }
 
 class RecordingLibraryScreen extends ConsumerStatefulWidget {
   const RecordingLibraryScreen({super.key});
@@ -18,6 +21,7 @@ class RecordingLibraryScreen extends ConsumerStatefulWidget {
 class _RecordingLibraryScreenState
     extends ConsumerState<RecordingLibraryScreen> {
   _RecordingFilter _filter = _RecordingFilter.all;
+  _RecordingSort _sort = _RecordingSort.newest;
   final Set<String> _selectedSessionIds = {};
 
   bool get _isSelecting => _selectedSessionIds.isNotEmpty;
@@ -30,6 +34,7 @@ class _RecordingLibraryScreenState
         .where((session) => session.audioFilePath.trim().isNotEmpty)
         .where(_matchesFilter)
         .toList();
+    _sortRecordings(recordings);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
@@ -78,6 +83,8 @@ class _RecordingLibraryScreenState
           _buildSummary(practice.history),
           const SizedBox(height: 14),
           _buildFilterChips(),
+          const SizedBox(height: 10),
+          _buildLibraryTools(context, notifier),
           const SizedBox(height: 14),
           if (recordings.isEmpty)
             _buildEmptyState()
@@ -100,6 +107,14 @@ class _RecordingLibraryScreenState
         .where((session) => session.audioFilePath.trim().isNotEmpty)
         .toList();
     final failed = recordings.where((session) => session.score < 70).length;
+    final saved = recordings
+        .where(
+          (session) => ref
+              .watch(practiceProvider)
+              .savedReviewSessionIds
+              .contains(session.id),
+        )
+        .length;
     final latest = recordings.isEmpty
         ? null
         : DateFormat('MM.dd HH:mm').format(recordings.first.timestamp);
@@ -143,6 +158,17 @@ class _RecordingLibraryScreenState
                       : '최근 $latest · 실패 녹음 $failed개',
                   style: const TextStyle(color: Colors.white60, fontSize: 13),
                 ),
+                if (saved > 0) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    '반복 저장 $saved개',
+                    style: const TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -165,8 +191,75 @@ class _RecordingLibraryScreenState
           _buildFilterChip(_RecordingFilter.short, '짧은 문장', Icons.short_text),
           _buildFilterChip(_RecordingFilter.long, '긴 문장', Icons.notes_outlined),
           _buildFilterChip(_RecordingFilter.failed, '실패', Icons.error_outline),
+          _buildFilterChip(
+            _RecordingFilter.saved,
+            '반복 저장',
+            Icons.bookmark_added_outlined,
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLibraryTools(BuildContext context, PracticeNotifier notifier) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<_RecordingSort>(
+                value: _sort,
+                dropdownColor: const Color(0xFF202020),
+                iconEnabledColor: Colors.white54,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _sort = value);
+                },
+                items: const [
+                  DropdownMenuItem(
+                    value: _RecordingSort.newest,
+                    child: Text('최신순'),
+                  ),
+                  DropdownMenuItem(
+                    value: _RecordingSort.lowScore,
+                    child: Text('점수 낮은 순'),
+                  ),
+                  DropdownMenuItem(
+                    value: _RecordingSort.highScore,
+                    child: Text('점수 높은 순'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          height: 44,
+          child: OutlinedButton.icon(
+            onPressed: () => _deleteUnavailableRecordings(context, notifier),
+            icon: const Icon(Icons.cleaning_services_outlined, size: 18),
+            label: const Text('재생불가 삭제'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.orangeAccent,
+              side: BorderSide(
+                color: Colors.orangeAccent.withValues(alpha: 0.35),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -235,9 +328,13 @@ class _RecordingLibraryScreenState
     PracticeNotifier notifier, {
     required bool isSelected,
   }) {
+    final practice = ref.watch(practiceProvider);
     final modeColor = _modeColor(session.mode);
     final date = DateFormat('yyyy.MM.dd HH:mm').format(session.timestamp);
     final preview = session.targetText.replaceAll('\n', ' ');
+    final isSavedForReview = practice.savedReviewSessionIds.contains(
+      session.id,
+    );
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),
@@ -343,6 +440,10 @@ class _RecordingLibraryScreenState
                   ),
                 if (session.score < 70)
                   _buildMetaChip(Icons.error_outline, '다시 연습 추천'),
+                if (isSavedForReview)
+                  _buildMetaChip(Icons.bookmark_added_outlined, '반복 저장'),
+                if (session.videoFilePath?.trim().isNotEmpty ?? false)
+                  _buildMetaChip(Icons.videocam_outlined, '입모양 영상'),
               ],
             ),
             const SizedBox(height: 14),
@@ -382,6 +483,33 @@ class _RecordingLibraryScreenState
                   ),
                 ),
                 const SizedBox(width: 8),
+                if (session.videoFilePath?.trim().isNotEmpty ?? false) ...[
+                  IconButton(
+                    tooltip: '입모양 영상 보기',
+                    onPressed: _isSelecting
+                        ? null
+                        : () => MouthVideoPreviewSheet.show(
+                            context,
+                            session.videoFilePath!,
+                          ),
+                    icon: const Icon(Icons.video_library_outlined),
+                    color: Colors.greenAccent,
+                    disabledColor: Colors.white24,
+                  ),
+                ],
+                IconButton(
+                  tooltip: isSavedForReview ? '반복 저장 해제' : '반복연습 저장',
+                  onPressed: _isSelecting
+                      ? null
+                      : () => notifier.toggleSavedReviewSession(session),
+                  icon: Icon(
+                    isSavedForReview
+                        ? Icons.bookmark_added
+                        : Icons.bookmark_add_outlined,
+                  ),
+                  color: isSavedForReview ? Colors.greenAccent : Colors.white54,
+                  disabledColor: Colors.white24,
+                ),
                 IconButton(
                   tooltip: '다시 연습',
                   onPressed: _isSelecting
@@ -465,6 +593,27 @@ class _RecordingLibraryScreenState
       ..showSnackBar(SnackBar(content: Text('녹음 ${ids.length}개를 삭제했습니다.')));
   }
 
+  Future<void> _deleteUnavailableRecordings(
+    BuildContext context,
+    PracticeNotifier notifier,
+  ) async {
+    final deletedCount = await notifier.deleteUnavailableRecordings();
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            deletedCount == 0
+                ? '재생 불가능한 녹음이 없습니다.'
+                : '재생 불가능한 녹음 $deletedCount개를 삭제했습니다.',
+          ),
+        ),
+      );
+  }
+
   Widget _buildScoreBadge(int score) {
     final color = score >= 90
         ? Colors.greenAccent
@@ -521,7 +670,31 @@ class _RecordingLibraryScreenState
       _RecordingFilter.long =>
         session.mode == PracticeMode.longSentence.storageValue,
       _RecordingFilter.failed => session.score < 70,
+      _RecordingFilter.saved =>
+        ref.watch(practiceProvider).savedReviewSessionIds.contains(session.id),
     };
+  }
+
+  void _sortRecordings(List<PracticeSession> recordings) {
+    switch (_sort) {
+      case _RecordingSort.newest:
+        recordings.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        return;
+      case _RecordingSort.lowScore:
+        recordings.sort((a, b) {
+          final scoreCompare = a.score.compareTo(b.score);
+          if (scoreCompare != 0) return scoreCompare;
+          return b.timestamp.compareTo(a.timestamp);
+        });
+        return;
+      case _RecordingSort.highScore:
+        recordings.sort((a, b) {
+          final scoreCompare = b.score.compareTo(a.score);
+          if (scoreCompare != 0) return scoreCompare;
+          return b.timestamp.compareTo(a.timestamp);
+        });
+        return;
+    }
   }
 
   String _modeLabel(String mode) {

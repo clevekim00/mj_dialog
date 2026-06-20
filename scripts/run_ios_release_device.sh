@@ -80,7 +80,9 @@ RUN_CMD=(flutter run --release -d "$DEVICE_ID")
 if [[ "$NO_RESIDENT" == true ]]; then
   RUN_CMD+=(--no-resident)
 fi
-RUN_CMD+=("${EXTRA_ARGS[@]}")
+if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
+  RUN_CMD+=("${EXTRA_ARGS[@]}")
+fi
 
 printf '==> Command:'
 printf ' %q' "${RUN_CMD[@]}"

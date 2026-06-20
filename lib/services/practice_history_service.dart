@@ -6,6 +6,7 @@ class PracticeSession {
   final String targetText;
   final String spokenText;
   final String audioFilePath;
+  final String? videoFilePath;
   final int score;
   final String feedback;
   final List<Map<String, dynamic>>? phonemeAccuracy;
@@ -31,6 +32,7 @@ class PracticeSession {
     required this.targetText,
     required this.spokenText,
     required this.audioFilePath,
+    this.videoFilePath,
     required this.score,
     required this.feedback,
     this.phonemeAccuracy,
@@ -57,6 +59,7 @@ class PracticeSession {
     'targetText': targetText,
     'spokenText': spokenText,
     'audioFilePath': audioFilePath,
+    'videoFilePath': videoFilePath,
     'score': score,
     'feedback': feedback,
     'phonemeAccuracy': phonemeAccuracy,
@@ -84,6 +87,7 @@ class PracticeSession {
         targetText: json['targetText'] as String,
         spokenText: json['spokenText'] as String,
         audioFilePath: json['audioFilePath'] as String,
+        videoFilePath: json['videoFilePath'] as String?,
         score: json['score'] as int,
         feedback: json['feedback'] as String,
         phonemeAccuracy: (json['phonemeAccuracy'] as List?)

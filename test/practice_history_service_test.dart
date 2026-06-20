@@ -16,6 +16,7 @@ void main() {
         targetText: '물',
         spokenText: '물',
         audioFilePath: '/tmp/sample.m4a',
+        videoFilePath: '/tmp/sample-mouth.mp4',
         score: 95,
         feedback: '또렷하게 말했습니다.',
         timestamp: DateTime(2026, 6, 1, 9),
@@ -36,6 +37,7 @@ void main() {
 
       expect(loaded, hasLength(1));
       expect(loaded.first.mode, 'wordGame');
+      expect(loaded.first.videoFilePath, '/tmp/sample-mouth.mp4');
       expect(loaded.first.contentId, 'word_water');
       expect(loaded.first.category, '일상');
       expect(loaded.first.streakCount, 2);
@@ -66,6 +68,7 @@ void main() {
       expect(session.contentSource, 'builtIn');
       expect(session.movementScore, 1);
       expect(session.isExercisePattern, isFalse);
+      expect(session.videoFilePath, isNull);
     });
   });
 }
