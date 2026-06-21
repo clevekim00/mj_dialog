@@ -437,11 +437,11 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
         ? '오늘 완료'
         : isHighFatigue
         ? '피로도 높음 · 천천히'
-        : '3분 루틴';
+        : '운동 메뉴';
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, '/tongue_exercise'),
+      onTap: () => Navigator.pushNamed(context, '/exercise_menu'),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
@@ -476,7 +476,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                     children: [
                       const Expanded(
                         child: Text(
-                          '연습 전 준비운동',
+                          '운동',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -508,7 +508,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 7),
                   const Text(
-                    '혀운동 3분',
+                    '혀운동 · 얼굴운동',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -518,8 +518,8 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   const SizedBox(height: 5),
                   Text(
                     isCompleted
-                        ? '입과 혀를 이미 풀었어요. 필요하면 한 번 더 가볍게 해도 됩니다.'
-                        : '입과 혀를 천천히 풀고 발음 연습을 시작해요.',
+                        ? '혀운동은 오늘 완료했어요. 얼굴운동도 필요하면 이어서 해보세요.'
+                        : '혀와 얼굴을 천천히 풀고 발음 연습을 시작해요.',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:model_viewer_plus/model_viewer_plus.dart';
+import 'package:speech_rehab/features/exercise/widgets/animated_exercise_avatar.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 import 'package:speech_rehab/features/tongue_exercise/model/tongue_exercise_step.dart';
@@ -53,9 +53,9 @@ class TongueExerciseScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         _buildSafetyCard(),
         const SizedBox(height: 16),
-        _buildTongueModelViewer(
-          title: '3D 혀 운동 미리보기',
-          subtitle: '손가락으로 돌려 입 안 구조와 혀 위치를 확인할 수 있어요.',
+        _buildTongueMotionGuide(
+          title: '2D 혀 운동 가이드',
+          subtitle: '튜터의 입모양과 혀 방향을 보며 천천히 따라 해보세요.',
         ),
         const SizedBox(height: 16),
         _buildFatigueSelector(
@@ -128,9 +128,9 @@ class TongueExerciseScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              _buildTongueModelViewer(
+              _buildTongueMotionGuide(
                 title: step.title,
-                subtitle: '3D 모델을 돌려 보며 현재 운동의 방향을 확인하세요.',
+                subtitle: '2D 튜터의 입모양과 혀 움직임을 보며 현재 운동을 따라 해보세요.',
                 compact: true,
               ),
               const SizedBox(height: 18),
@@ -317,7 +317,7 @@ class TongueExerciseScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTongueModelViewer({
+  Widget _buildTongueMotionGuide({
     required String title,
     required String subtitle,
     bool compact = false,
@@ -337,7 +337,11 @@ class TongueExerciseScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.view_in_ar, color: Colors.tealAccent, size: 20),
+              const Icon(
+                Icons.record_voice_over_outlined,
+                color: Colors.tealAccent,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -369,19 +373,11 @@ class TongueExerciseScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(14),
             child: SizedBox(
               height: height,
-              child: const ModelViewer(
-                src: 'assets/models/tongue_exercise_preview.glb',
-                alt: '혀 운동 3D 모델',
-                backgroundColor: Color(0xFF111111),
-                autoRotate: true,
-                cameraControls: true,
-                disableZoom: false,
-                interactionPrompt: InteractionPrompt.none,
-                exposure: 0.95,
-                shadowIntensity: 0.35,
-                cameraOrbit: '35deg 70deg 2.9m',
-                minCameraOrbit: 'auto auto 1.8m',
-                maxCameraOrbit: 'auto auto 4.5m',
+              child: AnimatedExerciseAvatar(
+                stepId: compact ? 'tongue_out' : 'breath',
+                shape: compact ? 'tongueMove' : null,
+                pulse: compact ? 0.72 : 0.42,
+                accentColor: Colors.tealAccent,
               ),
             ),
           ),

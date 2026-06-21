@@ -2,7 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/features/breathing_training/view/breathing_training_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
+import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
+import 'package:speech_rehab/features/face_exercise/view/face_exercise_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
@@ -11,7 +14,9 @@ import 'package:speech_rehab/features/practice/view/practice_history_screen.dart
 import 'package:speech_rehab/features/practice/view/recording_library_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/features/startup/view/startup_splash_screen.dart';
+import 'package:speech_rehab/features/tongue_exercise/view/oral_alternating_exercise_screen.dart';
 import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_screen.dart';
+import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_menu_screen.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 
@@ -53,6 +58,12 @@ class _AppView extends StatelessWidget {
         '/practice_history': (context) => const PracticeHistoryScreen(),
         '/recording_library': (context) => const RecordingLibraryScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/exercise_menu': (context) => const ExerciseMenuScreen(),
+        '/face_exercise': (context) => const FaceExerciseScreen(),
+        '/breathing_training': (context) => const BreathingTrainingScreen(),
+        '/tongue_exercise_menu': (context) => const TongueExerciseMenuScreen(),
+        '/oral_alternating_exercise': (context) =>
+            const OralAlternatingExerciseScreen(),
         '/tongue_exercise': (context) => const TongueExerciseScreen(),
       },
       debugShowCheckedModeBanner: false,
