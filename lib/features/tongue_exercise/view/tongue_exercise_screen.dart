@@ -46,8 +46,8 @@ class TongueExerciseScreen extends ConsumerWidget {
       children: [
         _buildHeroHeader(
           icon: Icons.self_improvement,
-          title: '발음 연습 전 3분 준비',
-          body: '입과 혀를 천천히 풀고, 오늘 연습을 편안하게 시작해요.',
+          title: '발음 연습 전 혀운동',
+          body: '입과 혀를 천천히 풀고, 튜터의 혀 방향을 보며 오늘 연습을 편안하게 시작해요.',
           color: Colors.tealAccent,
         ),
         const SizedBox(height: 16),
@@ -55,7 +55,8 @@ class TongueExerciseScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         _buildTongueMotionGuide(
           title: '2D 혀 운동 가이드',
-          subtitle: '튜터의 입모양과 혀 방향을 보며 천천히 따라 해보세요.',
+          subtitle: '혀 내밀기, 좌우 이동, 위아래, 원 그리기, 볼 밀기를 단계별로 따라 해보세요.',
+          stepId: 'tongue_ready',
         ),
         const SizedBox(height: 16),
         _buildFatigueSelector(
@@ -74,7 +75,7 @@ class TongueExerciseScreen extends ConsumerWidget {
           child: ElevatedButton.icon(
             onPressed: ref.read(tongueExerciseProvider.notifier).startRoutine,
             icon: const Icon(Icons.play_arrow),
-            label: Text(progress.fatigueBefore >= 4 ? '천천히 루틴 시작' : '3분 루틴 시작'),
+            label: Text(progress.fatigueBefore >= 4 ? '천천히 루틴 시작' : '혀운동 시작'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.tealAccent,
               foregroundColor: Colors.black,
@@ -130,8 +131,9 @@ class TongueExerciseScreen extends ConsumerWidget {
             children: [
               _buildTongueMotionGuide(
                 title: step.title,
-                subtitle: '2D 튜터의 입모양과 혀 움직임을 보며 현재 운동을 따라 해보세요.',
+                subtitle: step.subtitle,
                 compact: true,
+                stepId: step.id,
               ),
               const SizedBox(height: 18),
               Text(
@@ -154,6 +156,8 @@ class TongueExerciseScreen extends ConsumerWidget {
                   height: 1.45,
                 ),
               ),
+              const SizedBox(height: 12),
+              _buildTipPill(step.tip),
               const SizedBox(height: 18),
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
@@ -320,9 +324,10 @@ class TongueExerciseScreen extends ConsumerWidget {
   Widget _buildTongueMotionGuide({
     required String title,
     required String subtitle,
+    required String stepId,
     bool compact = false,
   }) {
-    final height = compact ? 210.0 : 260.0;
+    final height = compact ? 260.0 : 340.0;
 
     return Container(
       width: double.infinity,
@@ -374,10 +379,43 @@ class TongueExerciseScreen extends ConsumerWidget {
             child: SizedBox(
               height: height,
               child: AnimatedExerciseAvatar(
-                stepId: compact ? 'tongue_out' : 'breath',
-                shape: compact ? 'tongueMove' : null,
+                stepId: stepId,
                 pulse: compact ? 0.72 : 0.42,
                 accentColor: Colors.tealAccent,
+                showChrome: false,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipPill(String tip) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.tips_and_updates_outlined,
+            color: Colors.tealAccent,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              tip,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                height: 1.4,
               ),
             ),
           ),

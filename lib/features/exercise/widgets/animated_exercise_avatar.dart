@@ -9,12 +9,14 @@ class AnimatedExerciseAvatar extends StatelessWidget {
     required this.stepId,
     this.shape,
     this.accentColor = Colors.pinkAccent,
+    this.showChrome = true,
   });
 
   final double pulse;
   final String stepId;
   final String? shape;
   final Color accentColor;
+  final bool showChrome;
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +41,15 @@ class AnimatedExerciseAvatar extends StatelessWidget {
                 Positioned.fill(
                   child: _ReferenceTutorBackdrop(
                     pulse: pulse,
-                    fallback: CustomPaint(
-                      painter: _TherapistScenePainter(
-                        pulse: pulse,
-                        stepId: stepId,
-                        shape: shape,
-                        accentColor: accentColor,
-                        compact: compact,
-                      ),
+                    stepId: stepId,
+                    shape: shape,
+                    accentColor: accentColor,
+                    fallback: _FallbackTutorScene(
+                      pulse: pulse,
+                      stepId: stepId,
+                      shape: shape,
+                      accentColor: accentColor,
+                      compact: compact,
                     ),
                   ),
                 ),
@@ -59,30 +62,32 @@ class AnimatedExerciseAvatar extends StatelessWidget {
                     compact: compact,
                   ),
                 ),
-                Positioned(
-                  right: 14,
-                  top: 14,
-                  bottom: compact ? 88 : 76,
-                  width: compact ? constraints.maxWidth * 0.34 : 150,
-                  child: _GuidePanel(compact: compact),
-                ),
+                if (showChrome)
+                  Positioned(
+                    right: 14,
+                    top: 14,
+                    bottom: compact ? 88 : 76,
+                    width: compact ? constraints.maxWidth * 0.34 : 150,
+                    child: _GuidePanel(compact: compact, activeId: stepId),
+                  ),
                 Positioned(
                   left: 18,
-                  right: compact ? 18 : 178,
+                  right: showChrome && !compact ? 178 : 18,
                   bottom: 58,
                   child: _SubtitleBar(text: spec.subtitle),
                 ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 14,
-                  child: _TimelineStrip(
-                    activeId: stepId,
-                    activeShape: shape,
-                    accentColor: accentColor,
-                    compact: compact,
+                if (showChrome)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 14,
+                    child: _TimelineStrip(
+                      activeId: stepId,
+                      activeShape: shape,
+                      accentColor: accentColor,
+                      compact: compact,
+                    ),
                   ),
-                ),
               ],
             );
           },
@@ -93,28 +98,45 @@ class AnimatedExerciseAvatar extends StatelessWidget {
 }
 
 class _ReferenceTutorBackdrop extends StatelessWidget {
-  const _ReferenceTutorBackdrop({required this.pulse, required this.fallback});
+  const _ReferenceTutorBackdrop({
+    required this.pulse,
+    required this.stepId,
+    required this.shape,
+    required this.accentColor,
+    required this.fallback,
+  });
 
   final double pulse;
+  final String stepId;
+  final String? shape;
+  final Color accentColor;
   final Widget fallback;
 
   @override
   Widget build(BuildContext context) {
-    final breath = math.sin(pulse * math.pi * 2) * 3;
+    final breath = math.sin(pulse * math.pi * 2) * 2;
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        fallback,
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF172230), Color(0xFF2E3E4C)],
+            ),
+          ),
+        ),
         Transform.translate(
           offset: Offset(0, breath),
           child: Transform.scale(
-            scale: 1.025,
+            scale: 0.96,
             child: Image.asset(
               'assets/images/ai_speech_2d_tutor.png',
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               alignment: Alignment.center,
-              filterQuality: FilterQuality.high,
+              filterQuality: FilterQuality.medium,
               errorBuilder: (context, error, stackTrace) => fallback,
             ),
           ),
@@ -132,8 +154,256 @@ class _ReferenceTutorBackdrop extends StatelessWidget {
             ),
           ),
         ),
+        CustomPaint(
+          painter: _TutorMouthOverlayPainter(
+            pulse: pulse,
+            stepId: stepId,
+            shape: shape,
+            accentColor: accentColor,
+          ),
+        ),
       ],
     );
+  }
+}
+
+class _FallbackTutorScene extends StatelessWidget {
+  const _FallbackTutorScene({
+    required this.pulse,
+    required this.stepId,
+    required this.shape,
+    required this.accentColor,
+    required this.compact,
+  });
+
+  final double pulse;
+  final String stepId;
+  final String? shape;
+  final Color accentColor;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _TherapistScenePainter(
+        pulse: pulse,
+        stepId: stepId,
+        shape: shape,
+        accentColor: accentColor,
+        compact: compact,
+      ),
+    );
+  }
+}
+
+class _TutorMouthOverlayPainter extends CustomPainter {
+  const _TutorMouthOverlayPainter({
+    required this.pulse,
+    required this.stepId,
+    required this.shape,
+    required this.accentColor,
+  });
+
+  final double pulse;
+  final String stepId;
+  final String? shape;
+  final Color accentColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!_isTongueStep(stepId)) return;
+
+    final eased = Curves.easeInOut.transform(pulse);
+    final swing = math.sin(pulse * math.pi * 2);
+    final morph = _AvatarMorph.from(
+      stepId: stepId,
+      shape: shape,
+      eased: eased,
+      swing: swing,
+    );
+    final scale = math.min(size.width, size.height) / 420;
+    final mouthCenter = Offset(size.width * 0.49, size.height * 0.56);
+
+    if (morph.cheekPuff > 0) {
+      final side = morph.cheekSide == 0 ? 1.0 : morph.cheekSide;
+      canvas.drawCircle(
+        mouthCenter.translate(side * 72 * scale, -10 * scale),
+        (18 + morph.cheekPuff * 12) * scale,
+        Paint()..color = accentColor.withValues(alpha: 0.18),
+      );
+    }
+
+    final open = morph.open.clamp(0.0, 1.0);
+    final isRestingMouth = stepId == 'tongue_ready' || stepId == 'rest';
+    final mouthWidth = (42 + morph.wide * 12 - morph.round * 8) * scale;
+    final mouthHeight = (4 + open * 30 + morph.round * 4) * scale;
+
+    if (isRestingMouth || open < 0.16) {
+      final lipLine = Path()
+        ..moveTo(mouthCenter.dx - 18 * scale, mouthCenter.dy)
+        ..quadraticBezierTo(
+          mouthCenter.dx,
+          mouthCenter.dy + 4 * scale,
+          mouthCenter.dx + 18 * scale,
+          mouthCenter.dy,
+        );
+      canvas.drawPath(
+        lipLine,
+        Paint()
+          ..color = const Color(0xFFD96A80)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4 * scale
+          ..strokeCap = StrokeCap.round,
+      );
+      return;
+    }
+
+    final outerLip = Path()
+      ..moveTo(mouthCenter.dx - mouthWidth * 0.54, mouthCenter.dy)
+      ..cubicTo(
+        mouthCenter.dx - mouthWidth * 0.34,
+        mouthCenter.dy - mouthHeight * 0.58,
+        mouthCenter.dx + mouthWidth * 0.34,
+        mouthCenter.dy - mouthHeight * 0.58,
+        mouthCenter.dx + mouthWidth * 0.54,
+        mouthCenter.dy,
+      )
+      ..cubicTo(
+        mouthCenter.dx + mouthWidth * 0.33,
+        mouthCenter.dy + mouthHeight * 0.62,
+        mouthCenter.dx - mouthWidth * 0.33,
+        mouthCenter.dy + mouthHeight * 0.62,
+        mouthCenter.dx - mouthWidth * 0.54,
+        mouthCenter.dy,
+      )
+      ..close();
+    canvas.drawPath(
+      outerLip,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF08BA0), Color(0xFFD95D76)],
+        ).createShader(outerLip.getBounds()),
+    );
+
+    final innerMouth = Path()
+      ..moveTo(mouthCenter.dx - mouthWidth * 0.42, mouthCenter.dy + 1 * scale)
+      ..cubicTo(
+        mouthCenter.dx - mouthWidth * 0.25,
+        mouthCenter.dy - mouthHeight * 0.38,
+        mouthCenter.dx + mouthWidth * 0.25,
+        mouthCenter.dy - mouthHeight * 0.38,
+        mouthCenter.dx + mouthWidth * 0.42,
+        mouthCenter.dy + 1 * scale,
+      )
+      ..cubicTo(
+        mouthCenter.dx + mouthWidth * 0.23,
+        mouthCenter.dy + mouthHeight * 0.38,
+        mouthCenter.dx - mouthWidth * 0.23,
+        mouthCenter.dy + mouthHeight * 0.38,
+        mouthCenter.dx - mouthWidth * 0.42,
+        mouthCenter.dy + 1 * scale,
+      )
+      ..close();
+    canvas.drawPath(
+      innerMouth,
+      Paint()..color = const Color(0xFF3A121C).withValues(alpha: 0.9),
+    );
+
+    if (open > 0.32) {
+      final teeth = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: mouthCenter.translate(0, -mouthHeight * 0.26),
+          width: mouthWidth * 0.42,
+          height: 5 * scale,
+        ),
+        Radius.circular(3 * scale),
+      );
+      canvas.drawRRect(teeth, Paint()..color = const Color(0xFFFFF7F1));
+    }
+
+    final tongueVisible = morph.tongueOut > 0.04 || open > 0.22;
+    if (!tongueVisible) return;
+
+    final tongueCenter = mouthCenter.translate(
+      (morph.tongueShift + morph.tongueCircleX) * 22 * scale,
+      mouthHeight * 0.18 +
+          morph.tongueOut * 13 * scale -
+          (morph.tongueLift + morph.tongueCircleY) * 16 * scale,
+    );
+    final tongueWidth = (18 + morph.tongueOut * 30) * scale;
+    final tongueHeight = (8 + morph.tongueOut * 17) * scale;
+    final tonguePath = Path()
+      ..moveTo(tongueCenter.dx - tongueWidth * 0.5, tongueCenter.dy)
+      ..cubicTo(
+        tongueCenter.dx - tongueWidth * 0.36,
+        tongueCenter.dy - tongueHeight * 0.48,
+        tongueCenter.dx + tongueWidth * 0.36,
+        tongueCenter.dy - tongueHeight * 0.48,
+        tongueCenter.dx + tongueWidth * 0.5,
+        tongueCenter.dy,
+      )
+      ..cubicTo(
+        tongueCenter.dx + tongueWidth * 0.42,
+        tongueCenter.dy + tongueHeight * 0.58,
+        tongueCenter.dx - tongueWidth * 0.42,
+        tongueCenter.dy + tongueHeight * 0.58,
+        tongueCenter.dx - tongueWidth * 0.5,
+        tongueCenter.dy,
+      )
+      ..close();
+    canvas.drawPath(
+      tonguePath,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFA9B4), Color(0xFFE66D83)],
+        ).createShader(tonguePath.getBounds()),
+    );
+    canvas.drawPath(
+      tonguePath,
+      Paint()
+        ..color = const Color(0xFFB94B61).withValues(alpha: 0.45)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4 * scale,
+    );
+    canvas.drawLine(
+      tongueCenter.translate(0, -tongueHeight * 0.22),
+      tongueCenter.translate(0, tongueHeight * 0.26),
+      Paint()
+        ..color = const Color(0xFFC9586C).withValues(alpha: 0.5)
+        ..strokeWidth = 1.2 * scale
+        ..strokeCap = StrokeCap.round,
+    );
+
+    if (stepId == 'tongue_circle') {
+      final circleRect = Rect.fromCenter(
+        center: mouthCenter.translate(0, 1 * scale),
+        width: mouthWidth * 1.18,
+        height: mouthHeight * 1.18,
+      );
+      canvas.drawArc(
+        circleRect,
+        -math.pi * 0.35,
+        math.pi * 1.65,
+        false,
+        Paint()
+          ..color = accentColor.withValues(alpha: 0.75)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4 * scale
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TutorMouthOverlayPainter oldDelegate) {
+    return oldDelegate.pulse != pulse ||
+        oldDelegate.stepId != stepId ||
+        oldDelegate.shape != shape ||
+        oldDelegate.accentColor != accentColor;
   }
 }
 
@@ -221,12 +491,14 @@ class _CurrentStepCard extends StatelessWidget {
 }
 
 class _GuidePanel extends StatelessWidget {
-  const _GuidePanel({required this.compact});
+  const _GuidePanel({required this.compact, required this.activeId});
 
   final bool compact;
+  final String activeId;
 
   @override
   Widget build(BuildContext context) {
+    final isTongueGuide = _isTongueStep(activeId);
     final expressions = const ['기본', '미소', '집중'];
 
     return DecoratedBox(
@@ -241,7 +513,7 @@ class _GuidePanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '입모양 가이드',
+              isTongueGuide ? '혀운동 가이드' : '입모양 가이드',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -253,19 +525,48 @@ class _GuidePanel extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               flex: 5,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  'assets/images/ai_speech_mouth_guide.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _MouthGuideImageFallback(compact: compact),
+              child: isTongueGuide
+                  ? _TongueGuideImageFallback(
+                      compact: compact,
+                      activeId: activeId,
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        'assets/images/ai_speech_mouth_guide.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        filterQuality: FilterQuality.high,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _MouthGuideImageFallback(compact: compact),
+                      ),
+                    ),
+            ),
+            if (!compact && isTongueGuide) ...[
+              const SizedBox(height: 10),
+              Text(
+                '구강운동 예시',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.86),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-            ),
-            if (!compact) ...[
+              const SizedBox(height: 6),
+              Expanded(
+                flex: 2,
+                child: Row(
+                  children: const [
+                    Expanded(child: _ExpressionChip(label: '천천히')),
+                    SizedBox(width: 4),
+                    Expanded(child: _ExpressionChip(label: '정확히')),
+                    SizedBox(width: 4),
+                    Expanded(child: _ExpressionChip(label: '편안히')),
+                  ],
+                ),
+              ),
+            ],
+            if (!compact && !isTongueGuide) ...[
               const SizedBox(height: 10),
               Text(
                 '표정',
@@ -324,6 +625,102 @@ class _MouthGuideImageFallback extends StatelessWidget {
         for (final item in mouthItems)
           _MouthGuideTile(item: item, compact: compact),
       ],
+    );
+  }
+}
+
+class _TongueGuideImageFallback extends StatelessWidget {
+  const _TongueGuideImageFallback({
+    required this.compact,
+    required this.activeId,
+  });
+
+  final bool compact;
+  final String activeId;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = const [
+      _TongueGuide('준비', 'tongue_ready', _TonguePreviewShape.ready),
+      _TongueGuide('내밀기', 'tongue_out', _TonguePreviewShape.out),
+      _TongueGuide('넣기', 'tongue_in', _TonguePreviewShape.inward),
+      _TongueGuide('왼쪽', 'tongue_left', _TonguePreviewShape.left),
+      _TongueGuide('오른쪽', 'tongue_right', _TonguePreviewShape.right),
+      _TongueGuide('위로', 'tongue_up', _TonguePreviewShape.up),
+      _TongueGuide('아래', 'tongue_down', _TonguePreviewShape.down),
+      _TongueGuide('원', 'tongue_circle', _TonguePreviewShape.circle),
+      _TongueGuide('볼 L', 'cheek_left', _TonguePreviewShape.cheekLeft),
+      _TongueGuide('볼 R', 'cheek_right', _TonguePreviewShape.cheekRight),
+      _TongueGuide('혀끝', 'tongue_tip_up', _TonguePreviewShape.tipUp),
+      _TongueGuide('휴식', 'rest', _TonguePreviewShape.rest),
+    ];
+
+    return GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 6,
+      mainAxisSpacing: 6,
+      childAspectRatio: compact ? 0.92 : 1.05,
+      children: [
+        for (final item in items)
+          _TongueGuideTile(
+            item: item,
+            selected: item.id == activeId,
+            compact: compact,
+          ),
+      ],
+    );
+  }
+}
+
+class _TongueGuideTile extends StatelessWidget {
+  const _TongueGuideTile({
+    required this.item,
+    required this.selected,
+    required this.compact,
+  });
+
+  final _TongueGuide item;
+  final bool selected;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: selected
+            ? Colors.white.withValues(alpha: 0.15)
+            : Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(
+          color: selected
+              ? Colors.tealAccent.withValues(alpha: 0.8)
+              : Colors.white.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: CustomPaint(
+              painter: _MiniTonguePainter(shape: item.shape),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.white70,
+                fontSize: compact ? 8 : 10,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -442,6 +839,53 @@ class _TimelineStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isTongueStep(activeId)) {
+      final tongueItems = const [
+        _GuideMouth('준비', '호흡', _MouthPreviewShape.closed),
+        _GuideMouth('내밀기', '혀', _MouthPreviewShape.open),
+        _GuideMouth('넣기', '혀', _MouthPreviewShape.closed),
+        _GuideMouth('왼쪽', '혀', _MouthPreviewShape.openSmall),
+        _GuideMouth('오른쪽', '혀', _MouthPreviewShape.openSmall),
+        _GuideMouth('위', '혀', _MouthPreviewShape.open),
+        _GuideMouth('아래', '혀', _MouthPreviewShape.open),
+        _GuideMouth('원', '혀', _MouthPreviewShape.round),
+        _GuideMouth('볼L', '혀', _MouthPreviewShape.closed),
+        _GuideMouth('볼R', '혀', _MouthPreviewShape.closed),
+        _GuideMouth('혀끝', '혀', _MouthPreviewShape.openSmall),
+        _GuideMouth('휴식', '쉼', _MouthPreviewShape.smile),
+      ];
+      final ids = const [
+        'tongue_ready',
+        'tongue_out',
+        'tongue_in',
+        'tongue_left',
+        'tongue_right',
+        'tongue_up',
+        'tongue_down',
+        'tongue_circle',
+        'cheek_left',
+        'cheek_right',
+        'tongue_tip_up',
+        'rest',
+      ];
+
+      return _TimelineContainer(
+        compact: compact,
+        children: [
+          for (var i = 0; i < tongueItems.length; i++)
+            Expanded(
+              child: _TimelineItem(
+                item: tongueItems[i],
+                selected: ids[i] == activeId,
+                index: i + 1,
+                accentColor: accentColor,
+                compact: compact,
+              ),
+            ),
+        ],
+      );
+    }
+
     final items = const [
       _GuideMouth('준비', '호흡', _MouthPreviewShape.closed),
       _GuideMouth('아', 'a', _MouthPreviewShape.open),
@@ -452,28 +896,20 @@ class _TimelineStrip extends StatelessWidget {
       _GuideMouth('카', 'ka', _MouthPreviewShape.openSmall),
     ];
 
-    return Container(
-      height: compact ? 44 : 54,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1D2B39).withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < items.length; i++)
-            Expanded(
-              child: _TimelineItem(
-                item: items[i],
-                selected: _isTimelineActive(items[i]),
-                index: i + 1,
-                accentColor: accentColor,
-                compact: compact,
-              ),
+    return _TimelineContainer(
+      compact: compact,
+      children: [
+        for (var i = 0; i < items.length; i++)
+          Expanded(
+            child: _TimelineItem(
+              item: items[i],
+              selected: _isTimelineActive(items[i]),
+              index: i + 1,
+              accentColor: accentColor,
+              compact: compact,
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -490,6 +926,27 @@ class _TimelineStrip extends StatelessWidget {
     if (activeId.contains('round') && item.ko == '우') return true;
     if (activeId.contains('breath') && item.ko == '준비') return true;
     return false;
+  }
+}
+
+class _TimelineContainer extends StatelessWidget {
+  const _TimelineContainer({required this.compact, required this.children});
+
+  final bool compact;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: compact ? 44 : 54,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1D2B39).withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(children: children),
+    );
   }
 }
 
@@ -963,13 +1420,26 @@ class _TherapistScenePainter extends CustomPainter {
       canvas.drawOval(
         Rect.fromCenter(
           center: mouthCenter.translate(
-            morph.tongueShift * 16 * scale,
-            mouthHeight * 0.18 + morph.tongueOut * 16 * scale,
+            (morph.tongueShift + morph.tongueCircleX) * 16 * scale,
+            mouthHeight * 0.18 +
+                morph.tongueOut * 16 * scale -
+                (morph.tongueLift + morph.tongueCircleY) * 13 * scale,
           ),
           width: (22 + morph.tongueOut * 18) * scale,
           height: (10 + morph.tongueOut * 18) * scale,
         ),
         Paint()..color = const Color(0xFFF48A95),
+      );
+    }
+    if (morph.cheekPuff > 0) {
+      final side = morph.cheekSide == 0 ? 1.0 : morph.cheekSide;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: faceCenter.translate(side * 48 * scale, 24 * scale),
+          width: (22 + morph.cheekPuff * 14) * scale,
+          height: (14 + morph.cheekPuff * 10) * scale,
+        ),
+        Paint()..color = const Color(0x66FF91A4),
       );
     }
   }
@@ -1029,6 +1499,105 @@ class _MiniMouthPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MiniMouthPainter oldDelegate) {
+    return oldDelegate.shape != shape;
+  }
+}
+
+class _MiniTonguePainter extends CustomPainter {
+  const _MiniTonguePainter({required this.shape});
+
+  final _TonguePreviewShape shape;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.45);
+    final scale = math.min(size.width, size.height) / 70;
+    final facePaint = Paint()..color = const Color(0xFFFFD2C2);
+    final lipPaint = Paint()..color = const Color(0xFFE17488);
+    final mouthPaint = Paint()..color = const Color(0xFF2A1018);
+    final tonguePaint = Paint()..color = const Color(0xFFFF8D9C);
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, -4 * scale),
+        width: 44 * scale,
+        height: 46 * scale,
+      ),
+      facePaint,
+    );
+
+    final closed =
+        shape == _TonguePreviewShape.ready ||
+        shape == _TonguePreviewShape.inward ||
+        shape == _TonguePreviewShape.cheekLeft ||
+        shape == _TonguePreviewShape.cheekRight ||
+        shape == _TonguePreviewShape.rest;
+    final mouthRect = Rect.fromCenter(
+      center: center.translate(0, 11 * scale),
+      width: (closed ? 25 : 29) * scale,
+      height: (closed ? 6 : 20) * scale,
+    );
+    canvas.drawOval(mouthRect.inflate(2 * scale), lipPaint);
+    canvas.drawOval(mouthRect, closed ? lipPaint : mouthPaint);
+
+    if (shape == _TonguePreviewShape.cheekLeft ||
+        shape == _TonguePreviewShape.cheekRight) {
+      final side = shape == _TonguePreviewShape.cheekLeft ? -1.0 : 1.0;
+      canvas.drawCircle(
+        center.translate(side * 18 * scale, 7 * scale),
+        8 * scale,
+        Paint()..color = const Color(0x55FF91A4),
+      );
+      canvas.drawCircle(
+        center.translate(side * 18 * scale, 7 * scale),
+        4 * scale,
+        Paint()..color = const Color(0x88FF8D9C),
+      );
+      return;
+    }
+
+    if (closed) return;
+
+    final tongueOffset = switch (shape) {
+      _TonguePreviewShape.left => Offset(-9 * scale, 3 * scale),
+      _TonguePreviewShape.right => Offset(9 * scale, 3 * scale),
+      _TonguePreviewShape.up ||
+      _TonguePreviewShape.tipUp => Offset(0, -5 * scale),
+      _TonguePreviewShape.down => Offset(0, 10 * scale),
+      _TonguePreviewShape.circle => Offset(
+        math.cos(math.pi * 0.25) * 8 * scale,
+        math.sin(math.pi * 0.25) * 8 * scale,
+      ),
+      _ => Offset(0, 8 * scale),
+    };
+    final tongueRect = Rect.fromCenter(
+      center: center.translate(tongueOffset.dx, 13 * scale + tongueOffset.dy),
+      width: (shape == _TonguePreviewShape.out ? 28 : 20) * scale,
+      height: (shape == _TonguePreviewShape.out ? 20 : 12) * scale,
+    );
+    canvas.drawOval(tongueRect, tonguePaint);
+
+    if (shape == _TonguePreviewShape.circle) {
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: center.translate(0, 12 * scale),
+          width: 35 * scale,
+          height: 31 * scale,
+        ),
+        -math.pi * 0.2,
+        math.pi * 1.45,
+        false,
+        Paint()
+          ..color = const Color(0xFF64EBD4)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.8 * scale
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniTonguePainter oldDelegate) {
     return oldDelegate.shape != shape;
   }
 }
@@ -1135,19 +1704,84 @@ class _ExerciseVisualSpec {
         subtitle: '말하기 전 호흡을 준비합니다.',
         timerHint: '04:00',
       ),
+      'tongue_ready' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '준비',
+        tip: '턱과 어깨 힘을 빼고 편안히 호흡합니다.',
+        subtitle: '혀운동을 시작하기 전 호흡을 고릅니다.',
+        timerHint: '00:08',
+      ),
       'tongue_out' => const _ExerciseVisualSpec(
         eyebrow: '혀운동',
         title: '혀 내밀기',
         tip: '혀를 천천히 앞으로 내밀고 돌아옵니다.',
         subtitle: '혀 전방 움직임을 연습합니다.',
-        timerHint: '03:00',
+        timerHint: '00:10',
       ),
-      'tongue_side' => const _ExerciseVisualSpec(
+      'tongue_in' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '혀 넣기',
+        tip: '입 안으로 천천히 되돌리고 입술은 편안히 둡니다.',
+        subtitle: '내민 혀를 부드럽게 안정 위치로 되돌립니다.',
+        timerHint: '00:08',
+      ),
+      'tongue_side' ||
+      'tongue_left' ||
+      'tongue_right' => const _ExerciseVisualSpec(
         eyebrow: '혀운동',
         title: '혀 좌우',
         tip: '혀를 좌우로 천천히 움직여주세요.',
         subtitle: '혀 측방 움직임을 연습합니다.',
-        timerHint: '03:00',
+        timerHint: '00:08',
+      ),
+      'tongue_up' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '혀 위로',
+        tip: '혀끝을 윗입술 방향으로 천천히 올립니다.',
+        subtitle: '혀끝의 위쪽 움직임을 연습합니다.',
+        timerHint: '00:08',
+      ),
+      'tongue_down' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '혀 아래',
+        tip: '혀끝을 아랫입술 방향으로 천천히 내립니다.',
+        subtitle: '혀끝의 아래쪽 움직임을 연습합니다.',
+        timerHint: '00:08',
+      ),
+      'tongue_circle' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '원 그리기',
+        tip: '작은 원부터 시작해 천천히 돌립니다.',
+        subtitle: '혀끝으로 입술 둘레를 따라 원을 그립니다.',
+        timerHint: '00:14',
+      ),
+      'cheek_left' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '왼쪽 볼',
+        tip: '혀로 왼쪽 볼 안쪽을 가볍게 밀어주세요.',
+        subtitle: '혀 측면 힘과 방향 조절을 연습합니다.',
+        timerHint: '00:08',
+      ),
+      'cheek_right' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '오른쪽 볼',
+        tip: '혀로 오른쪽 볼 안쪽을 가볍게 밀어주세요.',
+        subtitle: '혀 측면 힘과 방향 조절을 연습합니다.',
+        timerHint: '00:08',
+      ),
+      'tongue_tip_up' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '혀끝',
+        tip: '혀끝을 윗잇몸 뒤쪽에 가볍게 닿게 합니다.',
+        subtitle: 'ㄹ, ㄴ, ㄷ 소리를 위한 혀끝 준비 동작입니다.',
+        timerHint: '00:10',
+      ),
+      'rest' => const _ExerciseVisualSpec(
+        eyebrow: '혀운동',
+        title: '휴식',
+        tip: '입과 혀의 힘을 빼고 편안히 쉬어주세요.',
+        subtitle: '호흡을 고르며 혀운동을 마무리합니다.',
+        timerHint: '00:10',
       ),
       _ => const _ExerciseVisualSpec(
         eyebrow: '운동',
@@ -1170,6 +1804,45 @@ class _GuideMouth {
 
 enum _MouthPreviewShape { open, openSmall, wide, round, closed, smile }
 
+class _TongueGuide {
+  const _TongueGuide(this.label, this.id, this.shape);
+
+  final String label;
+  final String id;
+  final _TonguePreviewShape shape;
+}
+
+enum _TonguePreviewShape {
+  ready,
+  out,
+  inward,
+  left,
+  right,
+  up,
+  down,
+  circle,
+  cheekLeft,
+  cheekRight,
+  tipUp,
+  rest,
+}
+
+bool _isTongueStep(String stepId) {
+  return stepId == 'tongue_ready' ||
+      stepId == 'tongue_out' ||
+      stepId == 'tongue_in' ||
+      stepId == 'tongue_left' ||
+      stepId == 'tongue_right' ||
+      stepId == 'tongue_up' ||
+      stepId == 'tongue_down' ||
+      stepId == 'tongue_circle' ||
+      stepId == 'cheek_left' ||
+      stepId == 'cheek_right' ||
+      stepId == 'tongue_tip_up' ||
+      stepId == 'tongue_hold' ||
+      stepId == 'rest';
+}
+
 class _AvatarMorph {
   const _AvatarMorph({
     this.open = 0,
@@ -1178,8 +1851,12 @@ class _AvatarMorph {
     this.press = 0,
     this.jawShift = 0,
     this.cheekPuff = 0,
+    this.cheekSide = 0,
     this.tongueOut = 0,
     this.tongueShift = 0,
+    this.tongueLift = 0,
+    this.tongueCircleX = 0,
+    this.tongueCircleY = 0,
     this.breathLift = 0,
     this.blink = 0,
   });
@@ -1190,8 +1867,12 @@ class _AvatarMorph {
   final double press;
   final double jawShift;
   final double cheekPuff;
+  final double cheekSide;
   final double tongueOut;
   final double tongueShift;
+  final double tongueLift;
+  final double tongueCircleX;
+  final double tongueCircleY;
   final double breathLift;
   final double blink;
 
@@ -1237,12 +1918,58 @@ class _AvatarMorph {
       'cheek_puff' ||
       'cheek-puff' => _AvatarMorph(cheekPuff: 0.55 + eased * 0.45, round: 0.2),
       'breath' => _AvatarMorph(open: 0.12, breathLift: eased),
-      'tongue_out' => _AvatarMorph(open: 0.45, tongueOut: 0.5 + eased * 0.5),
+      'tongue_ready' => _AvatarMorph(open: 0.08, breathLift: eased),
+      'tongue_out' => _AvatarMorph(open: 0.45, tongueOut: 0.45 + eased * 0.55),
+      'tongue_in' => _AvatarMorph(open: 0.24, tongueOut: (1 - eased) * 0.45),
       'tongue_side' => _AvatarMorph(
         open: 0.38,
         tongueOut: 0.55,
         tongueShift: swing,
       ),
+      'tongue_left' => _AvatarMorph(
+        open: 0.38,
+        tongueOut: 0.48,
+        tongueShift: -0.85 * eased,
+      ),
+      'tongue_right' => _AvatarMorph(
+        open: 0.38,
+        tongueOut: 0.48,
+        tongueShift: 0.85 * eased,
+      ),
+      'tongue_up' => _AvatarMorph(
+        open: 0.42,
+        tongueOut: 0.38,
+        tongueLift: 0.75 * eased,
+      ),
+      'tongue_down' => _AvatarMorph(
+        open: 0.42,
+        tongueOut: 0.52,
+        tongueLift: -0.55 * eased,
+      ),
+      'tongue_circle' => _AvatarMorph(
+        open: 0.46,
+        tongueOut: 0.5,
+        tongueCircleX: math.cos(swing * math.pi) * 0.65,
+        tongueCircleY: math.sin(swing * math.pi) * 0.55,
+      ),
+      'cheek_left' => _AvatarMorph(
+        press: 0.2,
+        cheekPuff: 0.45 + eased * 0.45,
+        cheekSide: -1,
+        tongueShift: -0.8,
+      ),
+      'cheek_right' => _AvatarMorph(
+        press: 0.2,
+        cheekPuff: 0.45 + eased * 0.45,
+        cheekSide: 1,
+        tongueShift: 0.8,
+      ),
+      'tongue_tip_up' => _AvatarMorph(
+        open: 0.34,
+        tongueOut: 0.28,
+        tongueLift: 0.95 * eased,
+      ),
+      'rest' => _AvatarMorph(open: 0.08 * eased, breathLift: eased),
       'blink' => _AvatarMorph(blink: eased),
       _ => _AvatarMorph(open: 0.08 * eased),
     };

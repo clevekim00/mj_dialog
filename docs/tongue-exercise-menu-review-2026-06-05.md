@@ -7,14 +7,15 @@
 
 혀운동은 `단어 게임`, `짧은 문장 읽기`, `긴 문장 읽기`, `자유 말하기`와 같은 발화 평가 모드로 넣기보다, 발음 연습 전에 하는 `준비운동` 메뉴로 넣는 것이 좋다.
 
-2026-06-14 기준 구현 상태:
+2026-06-24 기준 구현 상태:
 
 - `lib/main.dart`에 `/tongue_exercise` 라우트가 연결되어 있다.
 - `오늘의 연습` 홈에는 `연습 전 준비운동 / 혀운동 3분` full-width 카드가 배치되어 있다.
 - 대시보드에는 `혀운동 루틴` 카드가 있고, 오늘 완료 후에는 `혀운동 다시 하기` CTA를 표시한다.
 - 혀운동 완료 화면에도 `혀운동 다시 하기` 버튼을 추가해 루틴을 같은 자리에서 여러 번 반복할 수 있다.
-- 혀운동 준비/진행 화면에는 `model_viewer_plus` 기반 GLB 3D 미리보기를 표시한다.
-- 현재 앱 asset 경로는 `assets/models/tongue_exercise_preview.glb`이다.
+- 혀운동 준비/진행 화면의 GLB 3D 미리보기는 제거되었다.
+- 현재 앱은 `model_viewer_plus`, GLB, WebView 기반 3D 뷰어를 사용하지 않는다.
+- 혀 모양은 Canvas 기반 2D 레이어로 처리하며, 입술/입 안쪽/치아/혀/볼 밀기 하이라이트를 단계별로 그린다.
 
 추천 배치는 다음 순서다.
 
@@ -268,32 +269,31 @@ _buildSectionTitle('다른 연습 선택')
 Navigator.pushNamed(context, '/tongue_exercise');
 ```
 
-### 3D 모델 미리보기
+### 2D 혀 애니메이션 가이드
 
 파일:
 
 ```text
-lib/features/tongue_exercise/view/tongue_exercise_screen.dart
+lib/features/exercise/widgets/animated_exercise_avatar.dart
 ```
 
-패키지:
+렌더링 방식:
 
 ```text
-model_viewer_plus
+Canvas 기반 2D 레이어
 ```
 
-Asset:
+레이어:
 
-```text
-assets/models/tongue_exercise_preview.glb
-```
+- 입술 외곽
+- 입 안쪽
+- 치아
+- 혀
+- 혀 중앙선
+- 볼 밀기 하이라이트
+- 원 그리기 방향 표시
 
-표시 위치:
-
-- 준비 화면: 안전 안내 아래, 피로도 선택 위
-- 진행 화면: 현재 운동 카드 상단
-
-기본 GLB는 앱 내 미리보기용 경량 모델이다. Blender에서 export한 실제 교육용 모델을 앱에 반영하려면 같은 파일명으로 `assets/models/tongue_exercise_preview.glb`를 교체한다.
+앱 런타임은 `model_viewer_plus`, GLB, WebView 기반 3D 뷰어를 사용하지 않는다.
 
 ### 신규 기능 디렉터리
 

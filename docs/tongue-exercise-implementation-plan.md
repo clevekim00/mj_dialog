@@ -2,16 +2,17 @@
 
 작성일: 2026-06-01
 
-최근 업데이트: 2026-06-14
+최근 업데이트: 2026-06-24
 
 현재 구현 요약:
 
 - 혀운동 전용 화면, 라우트, 홈 준비운동 카드, 대시보드 루틴 카드가 구현되어 있다.
 - 혀운동 기록은 `TongueExerciseSession`과 `TongueExerciseHistoryService`로 별도 저장한다.
 - 완료 화면에서 `추천 연습 시작`, `홈으로 돌아가기`, `혀운동 다시 하기`를 제공한다.
-- `model_viewer_plus`로 GLB 3D 혀/입 구조 미리보기를 표시한다.
-- 앱 기본 GLB asset은 `assets/models/tongue_exercise_preview.glb`이다.
-- Blender 4.x용 생성 스크립트는 `blender_tongue_exercise/create_tongue_exercise_animation.py`에 있다.
+- 과거 GLB 3D 혀/입 구조 미리보기는 제거했다.
+- 현재 앱 런타임은 `model_viewer_plus`, GLB, WebView 기반 3D 뷰어를 사용하지 않는다.
+- 혀 모양은 `AnimatedExerciseAvatar`의 Canvas 기반 2D 레이어로 처리한다. 입술 외곽, 입 안쪽, 치아, 혀, 혀 중앙선, 볼 밀기 하이라이트를 단계별 `animationType`에 맞춰 그린다.
+- 추후 Rive, Lottie, Live2D 또는 PNG 시퀀스 에셋으로 교체할 수 있도록 단계 데이터와 애니메이션 타입은 유지한다.
 
 ## 1. 목적
 
@@ -282,44 +283,27 @@ SharedPreferences key: tongue_exercise_history
 
 `읽기 연습으로 이동`은 `/practice`로 이동한다.
 
-## 8.5 3D 모델 미리보기
+## 8.5 2D 혀 애니메이션 가이드
 
-혀운동 화면은 `model_viewer_plus` 패키지로 GLB asset을 렌더링한다.
+혀운동 화면은 GLB/3D 모델을 렌더링하지 않는다. 현재 앱은 `AnimatedExerciseAvatar`의 Canvas 기반 2D 레이어로 혀 모양을 표시한다.
 
 대상 파일:
 
 ```text
-lib/features/tongue_exercise/view/tongue_exercise_screen.dart
+lib/features/exercise/widgets/animated_exercise_avatar.dart
 ```
 
-Asset 등록:
+2D 레이어 구성:
 
-```yaml
-flutter:
-  assets:
-    - assets/models/tongue_exercise_preview.glb
-```
+- 입술 외곽 Path
+- 입 안쪽 Path
+- 치아 하이라이트
+- 혀 Path
+- 혀 중앙선
+- 볼 밀기 하이라이트
+- 원 그리기 방향 Arc
 
-기본 모델은 교육용 미리보기 수준의 경량 GLB이다. 실제 해부학 또는 애니메이션 모델을 사용할 때는 동일 경로의 파일을 교체한다.
-
-```text
-assets/models/tongue_exercise_preview.glb
-```
-
-Blender 4.x에서 교육용 모델을 다시 생성하려면 아래 스크립트를 사용한다.
-
-```text
-blender_tongue_exercise/create_tongue_exercise_animation.py
-```
-
-실행 명령:
-
-```bash
-cd /Users/youngwhankim/Project/mj_dialog/blender_tongue_exercise
-blender --background --python create_tongue_exercise_animation.py
-```
-
-생성된 `tongue_exercise_animation.glb`를 앱에 적용하려면 `assets/models/tongue_exercise_preview.glb`로 교체한다.
+추후 고품질 리소스가 필요하면 같은 `animationType` 값에 Rive, Lottie, Live2D, PNG 시퀀스 레이어를 연결한다.
 
 ## 9. 대시보드/히스토리 반영
 

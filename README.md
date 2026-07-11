@@ -79,6 +79,7 @@ lib/
 - 혀운동 화면에 시작 전/후 피로도, 안전 안내, 단계별 타이머, 일시정지/다음/중단, 완료 기록 저장 흐름을 추가했습니다.
 - 완료 화면에 `혀운동 다시 하기` 버튼을 추가해 같은 세션에서 루틴을 여러 번 반복할 수 있습니다.
 - 혀운동 준비 화면과 진행 화면의 3D GLB 미리보기는 제거하고, 첨부 레퍼런스 방향의 2D 튜터 가이드로 교체했습니다.
+- 혀 모양은 3D 모델이 아니라 Canvas 기반 2D 레이어로 처리합니다. 입술 외곽, 입 안쪽, 치아, 혀, 혀 중앙선, 볼 밀기 하이라이트를 단계별 `animationType`에 맞춰 그립니다.
 - `model_viewer_plus` 의존성과 `assets/models/tongue_exercise_preview.glb` asset 선언을 제거했습니다.
 - 2D 튜터/발음 mouth-shape/운동 라이브러리 장기 설계는 `docs/ai-speech-therapy-avatar-platform.md`에 정리했습니다.
 
