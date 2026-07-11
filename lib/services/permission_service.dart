@@ -4,7 +4,9 @@ import 'dart:io' show Platform;
 
 class PermissionService {
   static Future<bool> hasAllPermissions() async {
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
       return true;
     }
 
@@ -22,7 +24,9 @@ class PermissionService {
   }
 
   static Future<bool> requestAllPermissions() async {
-    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
       return true;
     }
 

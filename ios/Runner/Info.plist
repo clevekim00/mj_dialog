@@ -45,8 +45,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Speech Rehab requires microphone access to record your voice for pronunciation feedback.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Speech Rehab uses the camera only when you choose to record your mouth shape during practice.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speech Rehab requires speech recognition access to transcribe your spoken words.</string>
 </dict>

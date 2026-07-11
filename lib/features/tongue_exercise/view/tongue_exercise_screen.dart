@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/features/exercise/widgets/animated_exercise_avatar.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 import 'package:speech_rehab/features/tongue_exercise/model/tongue_exercise_step.dart';
@@ -45,12 +46,18 @@ class TongueExerciseScreen extends ConsumerWidget {
       children: [
         _buildHeroHeader(
           icon: Icons.self_improvement,
-          title: '발음 연습 전 3분 준비',
-          body: '입과 혀를 천천히 풀고, 오늘 연습을 편안하게 시작해요.',
+          title: '발음 연습 전 혀운동',
+          body: '입과 혀를 천천히 풀고, 튜터의 혀 방향을 보며 오늘 연습을 편안하게 시작해요.',
           color: Colors.tealAccent,
         ),
         const SizedBox(height: 16),
         _buildSafetyCard(),
+        const SizedBox(height: 16),
+        _buildTongueMotionGuide(
+          title: '2D 혀 운동 가이드',
+          subtitle: '혀 내밀기, 좌우 이동, 위아래, 원 그리기, 볼 밀기를 단계별로 따라 해보세요.',
+          stepId: 'tongue_ready',
+        ),
         const SizedBox(height: 16),
         _buildFatigueSelector(
           title: '시작 전 피로도',
@@ -68,7 +75,7 @@ class TongueExerciseScreen extends ConsumerWidget {
           child: ElevatedButton.icon(
             onPressed: ref.read(tongueExerciseProvider.notifier).startRoutine,
             icon: const Icon(Icons.play_arrow),
-            label: Text(progress.fatigueBefore >= 4 ? '천천히 루틴 시작' : '3분 루틴 시작'),
+            label: Text(progress.fatigueBefore >= 4 ? '천천히 루틴 시작' : '혀운동 시작'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.tealAccent,
               foregroundColor: Colors.black,
@@ -122,14 +129,11 @@ class TongueExerciseScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              Container(
-                width: 112,
-                height: 112,
-                decoration: BoxDecoration(
-                  color: Colors.tealAccent.withValues(alpha: 0.14),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(step.icon, color: Colors.tealAccent, size: 52),
+              _buildTongueMotionGuide(
+                title: step.title,
+                subtitle: step.subtitle,
+                compact: true,
+                stepId: step.id,
               ),
               const SizedBox(height: 18),
               Text(
@@ -152,6 +156,8 @@ class TongueExerciseScreen extends ConsumerWidget {
                   height: 1.45,
                 ),
               ),
+              const SizedBox(height: 12),
+              _buildTipPill(step.tip),
               const SizedBox(height: 18),
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
@@ -281,6 +287,25 @@ class TongueExerciseScreen extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           height: 48,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              ref.read(tongueExerciseProvider.notifier).startRoutine();
+            },
+            icon: const Icon(Icons.replay),
+            label: const Text('혀운동 다시 하기'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
           child: TextButton(
             onPressed: () async {
               await ref
@@ -293,6 +318,109 @@ class TongueExerciseScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTongueMotionGuide({
+    required String title,
+    required String subtitle,
+    required String stepId,
+    bool compact = false,
+  }) {
+    final height = compact ? 260.0 : 340.0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 12 : 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: compact ? 0.04 : 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.record_voice_over_outlined,
+                color: Colors.tealAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: compact ? 14 : 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white60,
+              fontSize: compact ? 12 : 13,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: SizedBox(
+              height: height,
+              child: AnimatedExerciseAvatar(
+                stepId: stepId,
+                pulse: compact ? 0.72 : 0.42,
+                accentColor: Colors.tealAccent,
+                showChrome: false,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipPill(String tip) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.tips_and_updates_outlined,
+            color: Colors.tealAccent,
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              tip,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

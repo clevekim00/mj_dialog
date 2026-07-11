@@ -2,6 +2,18 @@
 
 작성일: 2026-06-01
 
+최근 업데이트: 2026-06-24
+
+현재 구현 요약:
+
+- 혀운동 전용 화면, 라우트, 홈 준비운동 카드, 대시보드 루틴 카드가 구현되어 있다.
+- 혀운동 기록은 `TongueExerciseSession`과 `TongueExerciseHistoryService`로 별도 저장한다.
+- 완료 화면에서 `추천 연습 시작`, `홈으로 돌아가기`, `혀운동 다시 하기`를 제공한다.
+- 과거 GLB 3D 혀/입 구조 미리보기는 제거했다.
+- 현재 앱 런타임은 `model_viewer_plus`, GLB, WebView 기반 3D 뷰어를 사용하지 않는다.
+- 혀 모양은 `AnimatedExerciseAvatar`의 Canvas 기반 2D 레이어로 처리한다. 입술 외곽, 입 안쪽, 치아, 혀, 혀 중앙선, 볼 밀기 하이라이트를 단계별 `animationType`에 맞춰 그린다.
+- 추후 Rive, Lottie, Live2D 또는 PNG 시퀀스 에셋으로 교체할 수 있도록 단계 데이터와 애니메이션 타입은 유지한다.
+
 ## 1. 목적
 
 혀 운동 기능은 사용자가 소리 내어 읽기나 자유 발화 연습을 시작하기 전에 입과 혀를 짧게 준비할 수 있도록 돕는 워밍업 모듈이다. 핵심 목적은 영상을 그대로 재현하는 것이 아니라, 사용자가 앱 안에서 안전하게 따라 할 수 있는 단계형 운동 가이드를 제공하는 데 있다.
@@ -240,7 +252,7 @@ SharedPreferences key: tongue_exercise_history
 구성:
 
 - 현재 운동 제목
-- 큰 아이콘
+- GLB 기반 3D 혀/입 구조 미리보기
 - 짧은 지시문
 - 남은 시간 또는 반복 횟수
 - 시작/일시정지 버튼
@@ -270,6 +282,28 @@ SharedPreferences key: tongue_exercise_history
 - `기록 보기`
 
 `읽기 연습으로 이동`은 `/practice`로 이동한다.
+
+## 8.5 2D 혀 애니메이션 가이드
+
+혀운동 화면은 GLB/3D 모델을 렌더링하지 않는다. 현재 앱은 `AnimatedExerciseAvatar`의 Canvas 기반 2D 레이어로 혀 모양을 표시한다.
+
+대상 파일:
+
+```text
+lib/features/exercise/widgets/animated_exercise_avatar.dart
+```
+
+2D 레이어 구성:
+
+- 입술 외곽 Path
+- 입 안쪽 Path
+- 치아 하이라이트
+- 혀 Path
+- 혀 중앙선
+- 볼 밀기 하이라이트
+- 원 그리기 방향 Arc
+
+추후 고품질 리소스가 필요하면 같은 `animationType` 값에 Rive, Lottie, Live2D, PNG 시퀀스 레이어를 연결한다.
 
 ## 9. 대시보드/히스토리 반영
 

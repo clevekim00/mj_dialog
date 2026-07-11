@@ -1,0 +1,124 @@
+{
+  "communities": {
+    "0": [
+      "generate_store_icons",
+      "generate_store_icons_gradient",
+      "generate_store_icons_lerp",
+      "generate_store_icons_main",
+      "generate_store_icons_radial_glow",
+      "generate_store_icons_render_icon",
+      "generate_store_icons_rounded_mask",
+      "generate_store_icons_save_resized",
+      "image",
+      "path"
+    ],
+    "1": [
+      "build_and_run",
+      "build_and_run_build_platform",
+      "build_and_run_default_device_for_platform",
+      "build_and_run_mode_flag",
+      "build_and_run_run_platform",
+      "build_and_run_usage",
+      "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry"
+    ],
+    "2": [
+      "run_ios_release_device",
+      "run_ios_release_device_usage",
+      "users_youngwhankim_project_mj_dialog_scripts_run_ios_release_device_sh__entry"
+    ],
+    "3": [
+      "build_android_release",
+      "users_youngwhankim_project_mj_dialog_scripts_build_android_release_sh__entry"
+    ],
+    "4": [
+      "diagnose_ios_build",
+      "users_youngwhankim_project_mj_dialog_scripts_diagnose_ios_build_sh__entry"
+    ],
+    "5": [
+      "generate_store_icons_draw_wave",
+      "imagedraw"
+    ],
+    "6": [
+      "patch_ios_generated_plugins",
+      "users_youngwhankim_project_mj_dialog_scripts_patch_ios_generated_plugins_sh__entry"
+    ]
+  },
+  "cohesion": {
+    "0": 0.4,
+    "1": 0.47619047619047616,
+    "2": 1.0,
+    "3": 1.0,
+    "4": 1.0,
+    "5": 1.0,
+    "6": 1.0
+  },
+  "gods": [
+    {
+      "id": "generate_store_icons_render_icon",
+      "label": "render_icon()",
+      "degree": 6
+    },
+    {
+      "id": "image",
+      "label": "Image",
+      "degree": 5
+    },
+    {
+      "id": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "label": "build_and_run.sh script",
+      "degree": 4
+    },
+    {
+      "id": "generate_store_icons_gradient",
+      "label": "gradient()",
+      "degree": 4
+    },
+    {
+      "id": "generate_store_icons_save_resized",
+      "label": "save_resized()",
+      "degree": 4
+    },
+    {
+      "id": "build_and_run_usage",
+      "label": "usage()",
+      "degree": 3
+    },
+    {
+      "id": "build_and_run_build_platform",
+      "label": "build_platform()",
+      "degree": 3
+    },
+    {
+      "id": "generate_store_icons_radial_glow",
+      "label": "radial_glow()",
+      "degree": 3
+    },
+    {
+      "id": "generate_store_icons_draw_wave",
+      "label": "draw_wave()",
+      "degree": 3
+    },
+    {
+      "id": "generate_store_icons_main",
+      "label": "main()",
+      "degree": 3
+    }
+  ],
+  "surprises": [
+    {
+      "source": "render_icon()",
+      "target": "draw_wave()",
+      "source_files": [
+        "generate_store_icons.py",
+        "generate_store_icons.py"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "note": "Bridges community 5 \u2192 community 0"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

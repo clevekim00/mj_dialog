@@ -118,6 +118,74 @@ void main() {
       expect(items.map((item) => item.id), contains(picked.id));
     });
 
+    test('excludes words that are already active in the falling game', () {
+      final service = PracticeContentService();
+      final items = service
+          .getItems(PracticeMode.wordGame)
+          .where(
+            (item) => item.id == 'word_water' || item.id == 'word_medicine',
+          )
+          .toList();
+
+      for (var i = 0; i < 40; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          excludedContentIds: const {'word_water'},
+          random: Random(i),
+        );
+
+        expect(picked.id, 'word_medicine');
+      }
+    });
+
+    test('keeps focused consonant candidates before active word exclusion', () {
+      final service = PracticeContentService();
+      final items = service
+          .getItems(PracticeMode.wordGame)
+          .where((item) => item.id == 'word_water' || item.id == 'word_hand')
+          .toList();
+
+      for (var i = 0; i < 40; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          excludedContentIds: const {'word_hand'},
+          focusedConsonant: 'ㅅ',
+          random: Random(i),
+        );
+
+        expect(picked.id, 'word_hand');
+      }
+    });
+
+    test('selects sibilant words when focused consonant is siot', () {
+      final service = PracticeContentService();
+      final items = service.getItems(PracticeMode.wordGame);
+      const siotWordIds = {
+        'word_restroom',
+        'word_meal',
+        'word_hand',
+        'word_breath',
+        'word_sound',
+        'word_help',
+      };
+
+      for (var i = 0; i < 80; i += 1) {
+        final picked = service.pickWeightedWord(
+          items: items,
+          history: const [],
+          difficultyLevel: 2,
+          focusedConsonant: 'ㅅ',
+          random: Random(i),
+        );
+
+        expect(siotWordIds, contains(picked.id));
+      }
+    });
+
     test('filters focused consonant words before applying vowel boost', () {
       final service = PracticeContentService();
       final items = service

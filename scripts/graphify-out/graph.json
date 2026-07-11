@@ -1,0 +1,743 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "build_and_run.sh",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "build_and_run",
+      "community": 1,
+      "norm_label": "build_and_run.sh"
+    },
+    {
+      "label": "build_and_run.sh script",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "community": 1,
+      "norm_label": "build_and_run.sh script"
+    },
+    {
+      "label": "usage()",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L7",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "build_and_run_usage",
+      "community": 1,
+      "norm_label": "usage()"
+    },
+    {
+      "label": "mode_flag()",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L87",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "build_and_run_mode_flag",
+      "community": 1,
+      "norm_label": "mode_flag()"
+    },
+    {
+      "label": "default_device_for_platform()",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L101",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "build_and_run_default_device_for_platform",
+      "community": 1,
+      "norm_label": "default_device_for_platform()"
+    },
+    {
+      "label": "build_platform()",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L127",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "build_and_run_build_platform",
+      "community": 1,
+      "norm_label": "build_platform()"
+    },
+    {
+      "label": "run_platform()",
+      "file_type": "code",
+      "source_file": "build_and_run.sh",
+      "source_location": "L172",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "build_and_run_run_platform",
+      "community": 1,
+      "norm_label": "run_platform()"
+    },
+    {
+      "label": "build_android_release.sh",
+      "file_type": "code",
+      "source_file": "build_android_release.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "build_android_release",
+      "community": 3,
+      "norm_label": "build_android_release.sh"
+    },
+    {
+      "label": "build_android_release.sh script",
+      "file_type": "code",
+      "source_file": "build_android_release.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "users_youngwhankim_project_mj_dialog_scripts_build_android_release_sh__entry",
+      "community": 3,
+      "norm_label": "build_android_release.sh script"
+    },
+    {
+      "label": "diagnose_ios_build.sh",
+      "file_type": "code",
+      "source_file": "diagnose_ios_build.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "diagnose_ios_build",
+      "community": 4,
+      "norm_label": "diagnose_ios_build.sh"
+    },
+    {
+      "label": "diagnose_ios_build.sh script",
+      "file_type": "code",
+      "source_file": "diagnose_ios_build.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "users_youngwhankim_project_mj_dialog_scripts_diagnose_ios_build_sh__entry",
+      "community": 4,
+      "norm_label": "diagnose_ios_build.sh script"
+    },
+    {
+      "label": "generate_store_icons.py",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "generate_store_icons",
+      "community": 0,
+      "norm_label": "generate_store_icons.py"
+    },
+    {
+      "label": "lerp()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "generate_store_icons_lerp",
+      "community": 0,
+      "norm_label": "lerp()"
+    },
+    {
+      "label": "gradient()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "generate_store_icons_gradient",
+      "community": 0,
+      "norm_label": "gradient()"
+    },
+    {
+      "label": "Image",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "image",
+      "community": 0,
+      "norm_label": "image"
+    },
+    {
+      "label": "radial_glow()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "generate_store_icons_radial_glow",
+      "community": 0,
+      "norm_label": "radial_glow()"
+    },
+    {
+      "label": "rounded_mask()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "generate_store_icons_rounded_mask",
+      "community": 0,
+      "norm_label": "rounded_mask()"
+    },
+    {
+      "label": "draw_wave()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "generate_store_icons_draw_wave",
+      "community": 5,
+      "norm_label": "draw_wave()"
+    },
+    {
+      "label": "ImageDraw",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "imagedraw",
+      "community": 5,
+      "norm_label": "imagedraw"
+    },
+    {
+      "label": "render_icon()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "generate_store_icons_render_icon",
+      "community": 0,
+      "norm_label": "render_icon()"
+    },
+    {
+      "label": "save_resized()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "generate_store_icons_save_resized",
+      "community": 0,
+      "norm_label": "save_resized()"
+    },
+    {
+      "label": "Path",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "path",
+      "community": 0,
+      "norm_label": "path"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L205",
+      "_origin": "ast",
+      "id": "generate_store_icons_main",
+      "community": 0,
+      "norm_label": "main()"
+    },
+    {
+      "label": "patch_ios_generated_plugins.sh",
+      "file_type": "code",
+      "source_file": "patch_ios_generated_plugins.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "patch_ios_generated_plugins",
+      "community": 6,
+      "norm_label": "patch_ios_generated_plugins.sh"
+    },
+    {
+      "label": "patch_ios_generated_plugins.sh script",
+      "file_type": "code",
+      "source_file": "patch_ios_generated_plugins.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "users_youngwhankim_project_mj_dialog_scripts_patch_ios_generated_plugins_sh__entry",
+      "community": 6,
+      "norm_label": "patch_ios_generated_plugins.sh script"
+    },
+    {
+      "label": "run_ios_release_device.sh",
+      "file_type": "code",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "run_ios_release_device",
+      "community": 2,
+      "norm_label": "run_ios_release_device.sh"
+    },
+    {
+      "label": "run_ios_release_device.sh script",
+      "file_type": "code",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "users_youngwhankim_project_mj_dialog_scripts_run_ios_release_device_sh__entry",
+      "community": 2,
+      "norm_label": "run_ios_release_device.sh script"
+    },
+    {
+      "label": "usage()",
+      "file_type": "code",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L18",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "run_ios_release_device_usage",
+      "community": 2,
+      "norm_label": "usage()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L127",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "build_and_run_build_platform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L101",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "build_and_run_default_device_for_platform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L87",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "build_and_run_mode_flag",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L172",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "build_and_run_run_platform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "build_and_run_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "build_and_run",
+      "target": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L189",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "target": "build_and_run_build_platform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L192",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "target": "build_and_run_run_platform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L29",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_youngwhankim_project_mj_dialog_scripts_build_and_run_sh__entry",
+      "target": "build_and_run_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "build_and_run.sh",
+      "source_location": "L166",
+      "weight": 1.0,
+      "context": "call",
+      "source": "build_and_run_build_platform",
+      "target": "build_and_run_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "build_android_release.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "build_android_release",
+      "target": "users_youngwhankim_project_mj_dialog_scripts_build_android_release_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "diagnose_ios_build.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "diagnose_ios_build",
+      "target": "users_youngwhankim_project_mj_dialog_scripts_diagnose_ios_build_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_draw_wave",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_gradient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_lerp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_radial_glow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_render_icon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_rounded_mask",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "generate_store_icons",
+      "target": "generate_store_icons_save_resized",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "generate_store_icons_gradient",
+      "target": "generate_store_icons_lerp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "generate_store_icons_gradient",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "generate_store_icons_render_icon",
+      "target": "generate_store_icons_gradient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "generate_store_icons_radial_glow",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "generate_store_icons_render_icon",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "generate_store_icons_rounded_mask",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "generate_store_icons_save_resized",
+      "target": "image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "generate_store_icons_render_icon",
+      "target": "generate_store_icons_radial_glow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "generate_store_icons_draw_wave",
+      "target": "imagedraw",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L135",
+      "weight": 1.0,
+      "source": "generate_store_icons_render_icon",
+      "target": "generate_store_icons_draw_wave",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L206",
+      "weight": 1.0,
+      "source": "generate_store_icons_main",
+      "target": "generate_store_icons_render_icon",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L209",
+      "weight": 1.0,
+      "source": "generate_store_icons_main",
+      "target": "generate_store_icons_save_resized",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "generate_store_icons.py",
+      "source_location": "L195",
+      "weight": 1.0,
+      "source": "generate_store_icons_save_resized",
+      "target": "path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patch_ios_generated_plugins.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "patch_ios_generated_plugins",
+      "target": "users_youngwhankim_project_mj_dialog_scripts_patch_ios_generated_plugins_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "run_ios_release_device",
+      "target": "run_ios_release_device_usage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "run_ios_release_device",
+      "target": "users_youngwhankim_project_mj_dialog_scripts_run_ios_release_device_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "run_ios_release_device.sh",
+      "source_location": "L54",
+      "weight": 1.0,
+      "context": "call",
+      "source": "users_youngwhankim_project_mj_dialog_scripts_run_ios_release_device_sh__entry",
+      "target": "run_ios_release_device_usage",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "9d4599dfc7cfc3162dce18b2efb4f551d433797f"
+}

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
+import 'package:synchronized/synchronized.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
   return AiService();
@@ -11,6 +12,9 @@ final aiServiceProvider = Provider<AiService>((ref) {
 
 class AiService {
   const AiService();
+
+  static final Lock _gemmaLock = Lock();
+  static bool _gemmaReady = false;
 
   String get _osLanguage {
     final locale = PlatformDispatcher.instance.locale;
@@ -28,7 +32,7 @@ class AiService {
     String spokenText,
   ) async {
     try {
-      if (!FlutterGemma.hasActiveModel()) {
+      if (!await _ensureGemmaReady()) {
         debugPrint(
           'Gemma model is not active. Falling back to simple evaluation.',
         );
@@ -36,17 +40,11 @@ class AiService {
       }
 
       final prompt = _buildReadingPrompt(targetText, spokenText);
-      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
-      final chat = await model.createChat(
+      final responseText = await _generateGemmaText(
+        prompt: prompt,
         temperature: 0.3,
-      ); // Lower temperature for objective evaluation
-      await chat.addQuery(Message(text: prompt, isUser: true));
-      final modelResponse = await chat.generateChatResponse();
-
-      final responseText = switch (modelResponse) {
-        TextResponse() => modelResponse.token,
-        _ => '',
-      };
+        label: 'reading',
+      );
 
       if (responseText.isEmpty) {
         return _fallbackReadingEvaluation(targetText, spokenText);
@@ -61,20 +59,16 @@ class AiService {
 
   Future<AiResponse> getFreeReadingFeedback(String spokenText) async {
     try {
-      if (!FlutterGemma.hasActiveModel()) {
+      if (!await _ensureGemmaReady()) {
         return _fallbackReadingEvaluation('', spokenText);
       }
 
       final prompt = _buildFreeReadingPrompt(spokenText);
-      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
-      final chat = await model.createChat(temperature: 0.3);
-      await chat.addQuery(Message(text: prompt, isUser: true));
-      final modelResponse = await chat.generateChatResponse();
-
-      final responseText = switch (modelResponse) {
-        TextResponse() => modelResponse.token,
-        _ => '',
-      };
+      final responseText = await _generateGemmaText(
+        prompt: prompt,
+        temperature: 0.3,
+        label: 'freeReading',
+      );
 
       if (responseText.isEmpty) {
         return _fallbackReadingEvaluation('', spokenText);
@@ -93,12 +87,16 @@ class AiService {
     required String spokenText,
     required int durationSeconds,
   }) async {
+    if (mode == PracticeMode.wordGame) {
+      return _wordGameEvaluation(targetText, spokenText);
+    }
+
     if (mode == PracticeMode.freeSpeech) {
       return getFreeReadingFeedback(spokenText);
     }
 
     try {
-      if (!FlutterGemma.hasActiveModel()) {
+      if (!await _ensureGemmaReady()) {
         return _fallbackPracticeEvaluation(mode, targetText, spokenText);
       }
 
@@ -108,15 +106,11 @@ class AiService {
         spokenText: spokenText,
         durationSeconds: durationSeconds,
       );
-      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
-      final chat = await model.createChat(temperature: 0.3);
-      await chat.addQuery(Message(text: prompt, isUser: true));
-      final modelResponse = await chat.generateChatResponse();
-
-      final responseText = switch (modelResponse) {
-        TextResponse() => modelResponse.token,
-        _ => '',
-      };
+      final responseText = await _generateGemmaText(
+        prompt: prompt,
+        temperature: 0.3,
+        label: mode.storageValue,
+      );
 
       if (responseText.isEmpty) {
         return _fallbackPracticeEvaluation(mode, targetText, spokenText);
@@ -131,7 +125,7 @@ class AiService {
 
   Future<AiResponse> getResponseAndFeedback(String userText) async {
     try {
-      if (!FlutterGemma.hasActiveModel()) {
+      if (!await _ensureGemmaReady()) {
         debugPrint(
           'Gemma model is not active. Falling back to canned response.',
         );
@@ -139,15 +133,11 @@ class AiService {
       }
 
       final prompt = _buildPrompt(userText);
-      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
-      final chat = await model.createChat(temperature: 0.7);
-      await chat.addQuery(Message(text: prompt, isUser: true));
-      final modelResponse = await chat.generateChatResponse();
-
-      final responseText = switch (modelResponse) {
-        TextResponse() => modelResponse.token,
-        _ => '',
-      };
+      final responseText = await _generateGemmaText(
+        prompt: prompt,
+        temperature: 0.7,
+        label: 'chat',
+      );
 
       if (responseText.isEmpty) {
         debugPrint('Gemma returned an empty response. Falling back.');
@@ -159,6 +149,61 @@ class AiService {
       debugPrint('On-device Gemma evaluation failed: $error');
       return _fallbackParse(userText);
     }
+  }
+
+  Future<bool> _ensureGemmaReady() async {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      debugPrint(
+        'Gemma is disabled on iOS because flutter_gemma crashes during native plugin registration on device startup.',
+      );
+      return false;
+    }
+
+    return _gemmaLock.synchronized(() async {
+      if (_gemmaReady) {
+        return true;
+      }
+
+      try {
+        await FlutterGemma.initialize();
+        if (!FlutterGemma.hasActiveModel()) {
+          await FlutterGemma.installModel(
+            modelType: ModelType.gemmaIt,
+            fileType: ModelFileType.binary,
+          ).fromAsset('assets/gemma-2b-it-gpu-int4.bin').install();
+        }
+        _gemmaReady = FlutterGemma.hasActiveModel();
+        return _gemmaReady;
+      } catch (error) {
+        debugPrint('Gemma init failed or no model loaded: $error');
+        return false;
+      }
+    });
+  }
+
+  Future<String> _generateGemmaText({
+    required String prompt,
+    required double temperature,
+    required String label,
+  }) async {
+    return _gemmaLock.synchronized(() async {
+      final watch = Stopwatch()..start();
+      debugPrint('[Gemma] queued request started: $label');
+      final model = await FlutterGemma.getActiveModel(maxTokens: 512);
+      final chat = await model.createChat(temperature: temperature);
+      await chat.addQuery(Message(text: prompt, isUser: true));
+      final modelResponse = await chat.generateChatResponse();
+      watch.stop();
+      debugPrint(
+        '[Gemma] request completed: $label '
+        'elapsed=${watch.elapsedMilliseconds}ms',
+      );
+
+      return switch (modelResponse) {
+        TextResponse() => modelResponse.token,
+        _ => '',
+      };
+    });
   }
 
   String _buildPrompt(String userText) {
@@ -321,6 +366,36 @@ Respond ONLY as JSON with this exact shape:
       pronunciationScore: base.pronunciationScore,
       pronunciationFeedback: feedback,
     );
+  }
+
+  AiResponse _wordGameEvaluation(String targetText, String spokenText) {
+    final target = _normalizeShortAnswer(targetText);
+    final spoken = _normalizeShortAnswer(spokenText);
+    final isEmpty = spoken.isEmpty;
+    final isExactMatch = target.isNotEmpty && target == spoken;
+    final score = isEmpty
+        ? 0
+        : isExactMatch
+        ? 100
+        : 40;
+
+    return AiResponse(
+      replyText: isExactMatch ? '목표 단어를 정확히 말했습니다.' : '다른 단어로 인식되었습니다.',
+      pronunciationScore: score,
+      pronunciationFeedback: isEmpty
+          ? '음성이 인식되지 않았습니다. 목표 단어 "$targetText"를 조금 더 크게 말해 보세요.'
+          : isExactMatch
+          ? '목표 단어 "$targetText"가 정확히 인식되었습니다.'
+          : '목표 단어 "$targetText"로 인식되지 않았습니다. 인식된 말은 "$spokenText"입니다. 입 모양을 다시 만들고 한 번 더 또렷하게 말해 보세요.',
+    );
+  }
+
+  String _normalizeShortAnswer(String value) {
+    return value
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '')
+        .replaceAll(RegExp(r'[^\uAC00-\uD7A3a-zA-Z0-9]'), '')
+        .toLowerCase();
   }
 
   String _buildReadingPrompt(String targetText, String spokenText) {
