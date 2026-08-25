@@ -43,6 +43,15 @@ class ExerciseMenuScreen extends StatelessWidget {
             color: Colors.lightBlueAccent,
             routeName: '/breathing_training',
           ),
+          const SizedBox(height: 14),
+          _buildExerciseCard(
+            context,
+            title: '발성 훈련 · 음성 도구',
+            subtitle: '목소리 높이, 크기, 목표음, 음파와 10초 녹음 분석',
+            icon: Icons.multiline_chart,
+            color: Colors.blueAccent,
+            routeName: '/voice_analysis_menu',
+          ),
           const SizedBox(height: 18),
           const Text(
             'This is a general exercise guide, not medical advice.',

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/features/exercise/widgets/animated_exercise_avatar.dart';
 import 'package:speech_rehab/features/face_exercise/model/face_exercise_step.dart';
+import 'package:speech_rehab/features/training_video/model/training_video_spec.dart';
+import 'package:speech_rehab/features/training_video/view/training_video_player.dart';
 
 class FaceExerciseScreen extends StatefulWidget {
   const FaceExerciseScreen({super.key});
@@ -96,6 +98,7 @@ class _FaceExerciseScreenState extends State<FaceExerciseScreen>
 
   @override
   Widget build(BuildContext context) {
+    final videoSpec = trainingVideoFor(_step.id);
     return Scaffold(
       backgroundColor: const Color(0xFF101010),
       appBar: AppBar(
@@ -111,14 +114,19 @@ class _FaceExerciseScreenState extends State<FaceExerciseScreen>
             const SizedBox(height: 16),
             AspectRatio(
               aspectRatio: 1,
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, _) => AnimatedExerciseAvatar(
-                  stepId: _step.id,
-                  pulse: _animationController.value,
-                  accentColor: Colors.pinkAccent,
-                ),
-              ),
+              child: videoSpec != null
+                  ? TrainingVideoPlayer(
+                      key: ValueKey(videoSpec.id),
+                      spec: videoSpec,
+                    )
+                  : AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, _) => AnimatedExerciseAvatar(
+                        stepId: _step.id,
+                        pulse: _animationController.value,
+                        accentColor: Colors.pinkAccent,
+                      ),
+                    ),
             ),
             const SizedBox(height: 16),
             _buildControls(),

@@ -3,7 +3,6 @@ import Flutter
 import permission_handler_apple
 import Speech
 import UIKit
-import webview_flutter_wkwebview
 
 @objc(SafeFlutterViewController)
 final class SafeFlutterViewController: FlutterViewController {
@@ -33,9 +32,6 @@ final class SafeFlutterViewController: FlutterViewController {
   ) -> Bool {
     if let permissionRegistrar = registrar(forPlugin: "PermissionHandlerPlugin") {
       PermissionHandlerPlugin.register(with: permissionRegistrar)
-    }
-    if let webViewRegistrar = registrar(forPlugin: "WebViewFlutterPlugin") {
-      WebViewFlutterPlugin.register(with: webViewRegistrar)
     }
     let didFinishLaunching = super.application(
       application,

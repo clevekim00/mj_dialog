@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/features/exercise/widgets/animated_exercise_avatar.dart';
 import 'package:speech_rehab/features/tongue_exercise/model/tongue_exercise_step.dart';
+import 'package:speech_rehab/features/training_video/model/training_video_spec.dart';
+import 'package:speech_rehab/features/training_video/view/training_video_player.dart';
 
 class TongueExerciseScenePlayerScreen extends StatefulWidget {
   const TongueExerciseScenePlayerScreen({super.key, required this.step});
@@ -98,6 +100,7 @@ class _TongueExerciseScenePlayerScreenState
         : (_elapsedSeconds / _durationSeconds).clamp(0.0, 1.0);
     final viewport = MediaQuery.sizeOf(context);
     final animationHeight = (viewport.height * 0.42).clamp(260.0, 360.0);
+    final videoSpec = trainingVideoFor(_step.id);
 
     return Scaffold(
       backgroundColor: const Color(0xFF101820),
@@ -114,17 +117,13 @@ class _TongueExerciseScenePlayerScreenState
             const SizedBox(height: 14),
             SizedBox(
               height: animationHeight,
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, _) {
-                  return AnimatedExerciseAvatar(
-                    stepId: _step.id,
-                    pulse: _pulseController.value,
-                    accentColor: Colors.tealAccent,
-                    showChrome: false,
-                  );
-                },
-              ),
+              child: videoSpec != null
+                  ? TrainingVideoPlayer(
+                      key: ValueKey(videoSpec.id),
+                      spec: videoSpec,
+                      fallback: _buildAnimatedFallback(),
+                    )
+                  : _buildAnimatedFallback(),
             ),
             const SizedBox(height: 16),
             _buildInstructionCard(),
@@ -135,6 +134,20 @@ class _TongueExerciseScenePlayerScreenState
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAnimatedFallback() {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, _) {
+        return AnimatedExerciseAvatar(
+          stepId: _step.id,
+          pulse: _pulseController.value,
+          accentColor: Colors.tealAccent,
+          showChrome: false,
+        );
+      },
     );
   }
 

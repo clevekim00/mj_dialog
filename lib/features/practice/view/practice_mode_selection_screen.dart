@@ -23,6 +23,23 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          if (MediaQuery.sizeOf(context).width >= 700)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: TextButton.icon(
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/voice_analysis_menu'),
+                icon: const Icon(Icons.graphic_eq),
+                label: const Text('음성도구'),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.graphic_eq),
+              tooltip: '음성도구',
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/voice_analysis_menu'),
+            ),
           IconButton(
             icon: const Icon(Icons.library_music),
             tooltip: '녹음 보관함',
@@ -54,6 +71,10 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildTongueExerciseWarmupCard(context, practice, tongueExercise),
           const SizedBox(height: 22),
+          _buildSectionTitle('다른 연습 선택'),
+          const SizedBox(height: 12),
+          _buildCompactModeGrid(context, ref),
+          const SizedBox(height: 22),
           _buildRecordingLibraryCard(context, practice),
           if (_latestRepeatCandidate(practice) != null) ...[
             const SizedBox(height: 16),
@@ -63,10 +84,6 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
               _latestRepeatCandidate(practice)!,
             ),
           ],
-          const SizedBox(height: 22),
-          _buildSectionTitle('다른 연습 선택'),
-          const SizedBox(height: 12),
-          _buildCompactModeGrid(context, ref),
           const SizedBox(height: 16),
           _buildWeeklyProgress(context, practice),
           const SizedBox(height: 16),
@@ -476,7 +493,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                     children: [
                       const Expanded(
                         child: Text(
-                          '운동',
+                          '연습 전 준비운동',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -508,7 +525,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 7),
                   const Text(
-                    '혀운동 · 얼굴운동',
+                    '혀운동 3분',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,

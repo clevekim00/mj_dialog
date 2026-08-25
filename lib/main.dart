@@ -7,6 +7,7 @@ import 'package:speech_rehab/features/chat/view/permission_screen.dart';
 import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
 import 'package:speech_rehab/features/face_exercise/view/face_exercise_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
+import 'package:speech_rehab/features/navigation/view/adaptive_app_shell.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/features/practice/view/word_game_screen.dart';
@@ -17,6 +18,8 @@ import 'package:speech_rehab/features/startup/view/startup_splash_screen.dart';
 import 'package:speech_rehab/features/tongue_exercise/view/oral_alternating_exercise_screen.dart';
 import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_screen.dart';
 import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_menu_screen.dart';
+import 'package:speech_rehab/features/training_video/view/training_settings_screen.dart';
+import 'package:speech_rehab/features/voice_analysis/view/voice_analysis_screens.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 
@@ -54,6 +57,8 @@ class _AppView extends StatelessWidget {
       routes: {
         '/practice': (context) => const PracticeScreen(),
         '/practice_modes': (context) => const PracticeModeSelectionScreen(),
+        '/app': (context) => const AdaptiveAppShell(),
+        '/onboarding': (context) => const RehabOnboardingScreen(),
         '/word_game': (context) => const WordGameScreen(),
         '/practice_history': (context) => const PracticeHistoryScreen(),
         '/recording_library': (context) => const RecordingLibraryScreen(),
@@ -65,6 +70,20 @@ class _AppView extends StatelessWidget {
         '/oral_alternating_exercise': (context) =>
             const OralAlternatingExerciseScreen(),
         '/tongue_exercise': (context) => const TongueExerciseScreen(),
+        '/voice_analysis_menu': (context) => const VoiceAnalysisMenuScreen(),
+        '/voice_pitch': (context) => const PitchTrainingScreen(),
+        '/target_tone': (context) => const TargetToneScreen(),
+        '/voice_volume': (context) => const VolumeTrainingScreen(),
+        '/voice_spectrogram': (context) => const SpectrogramTrainingScreen(),
+        '/balanced_sentences': (context) => const BalancedSentenceScreen(),
+        '/quick_voice_recording': (context) => const QuickRecordingScreen(),
+        '/voice_analysis_result': (context) =>
+            const VoiceAnalysisResultScreen(),
+        '/voice_bank': (context) => const VoiceBankScreen(),
+        '/voice_analysis_history': (context) =>
+            const VoiceAnalysisHistoryScreen(),
+        '/microphone_check': (context) => const MicrophoneCheckScreen(),
+        '/training_settings': (context) => const TrainingSettingsScreen(),
       },
       debugShowCheckedModeBanner: false,
     );
@@ -104,8 +123,7 @@ class _StartupResolverState extends State<StartupResolver> {
         return switch (snapshot.data ?? _StartupDestination.permission) {
           _StartupDestination.permission => const PermissionScreen(),
           _StartupDestination.onboarding => const RehabOnboardingScreen(),
-          _StartupDestination.practiceModes =>
-            const PracticeModeSelectionScreen(),
+          _StartupDestination.practiceModes => const AdaptiveAppShell(),
         };
       },
     );

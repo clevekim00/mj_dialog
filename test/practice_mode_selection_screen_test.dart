@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 
+class _VoiceToolsStub extends StatelessWidget {
+  const _VoiceToolsStub();
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(body: Text('음성도구 화면'));
+}
+
 void main() {
   testWidgets('shows all structured practice mode choices', (tester) async {
     SharedPreferences.setMockInitialValues({});
@@ -30,5 +37,29 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -300));
     await tester.pump();
     expect(find.text('자유 대화'), findsOneWidget);
+  });
+
+  testWidgets('opens voice tools from the top menu', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: const PracticeModeSelectionScreen(),
+          routes: {'/voice_analysis_menu': (_) => const _VoiceToolsStub()},
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('음성도구'), findsOneWidget);
+    await tester.tap(find.text('음성도구'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('음성도구 화면'), findsOneWidget);
   });
 }
