@@ -48,6 +48,41 @@ void main() {
     expect(result.phonemes.single.expectedPhone, 'k');
     expect(adapter.statusReads, 2);
   });
+
+  test('MFA 정렬 결과는 점수 없이 음소 구간으로 파싱한다', () {
+    final result = PronunciationAnalysisResult.fromJson({
+      'jobId': 'mfa-job',
+      'status': 'completed',
+      'modelVersion': 'mfa-korean-v3.0.0',
+      'contentVersion': '1.0.0',
+      'overallPracticeScore': null,
+      'confidence': 0.0,
+      'signalQuality': {'accepted': true},
+      'phonemes': [
+        {
+          'expected': 'kf',
+          'alignedPhone': 'k̚',
+          'observedCandidates': [],
+          'position': 'coda',
+          'startMs': 520,
+          'endMs': 700,
+          'gop': null,
+          'practiceScore': null,
+          'scoreAvailable': false,
+          'confidence': 0.0,
+          'status': 'aligned',
+        },
+      ],
+      'disclaimer': 'test',
+    });
+
+    expect(result.overallPracticeScore, isNull);
+    expect(result.phonemes.single.practiceScore, isNull);
+    expect(result.phonemes.single.rawGop, isNull);
+    expect(result.phonemes.single.status, PhonemeFeedbackStatus.aligned);
+    expect(result.phonemes.single.alignedPhone, 'k̚');
+    expect(result.phonemes.single.startMs, 520);
+  });
 }
 
 class _AnalysisAdapter implements HttpClientAdapter {

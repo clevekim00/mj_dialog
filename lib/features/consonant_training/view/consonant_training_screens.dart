@@ -554,7 +554,11 @@ class _AnalysisCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            score == null ? '음소 분석을 사용할 수 없어요' : '연습 점수 $score점',
+            score == null && result.phonemes.isNotEmpty
+                ? '음소 구간 정렬 완료'
+                : score == null
+                ? '음소 분석을 사용할 수 없어요'
+                : '연습 점수 $score점',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
@@ -564,8 +568,9 @@ class _AnalysisCard extends StatelessWidget {
                     ? '녹음은 저장되었습니다. 분석 서버 설정을 확인해 주세요.'
                     : result.phonemes
                           .map(
-                            (phone) =>
-                                '${phone.expectedPhone}: ${phone.practiceScore}점 (${phone.status.name})',
+                            (phone) => phone.practiceScore == null
+                                ? '${phone.expectedPhone}${phone.alignedPhone == null ? '' : ' → ${phone.alignedPhone}'}: ${phone.startMs}–${phone.endMs}ms 구간'
+                                : '${phone.expectedPhone}: ${phone.practiceScore}점 (${phone.status.name})',
                           )
                           .join('\n')),
             style: const TextStyle(color: Colors.white70),

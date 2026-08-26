@@ -13,9 +13,10 @@ except (ImportError, RuntimeError):
 
 class FakeBackend:
     model_version = "validated-test-model"
+    ready = True
 
-    def analyze(self, wav_path, target_phone, position):
-        return {
+    def analyze(self, wav_path, text, target_phone, position):
+        return [{
             "expected": target_phone,
             "observedCandidates": [{"phone": target_phone, "probability": 0.9}],
             "position": position,
@@ -26,7 +27,28 @@ class FakeBackend:
             "confidence": 0.9,
             "status": "accurate",
             "errorType": None,
-        }
+        }]
+
+
+class FakeMfaBackend:
+    model_version = "mfa-korean-test"
+    ready = True
+
+    def analyze(self, wav_path, text, target_phone, position):
+        return [{
+            "expected": target_phone,
+            "alignedPhone": "k",
+            "observedCandidates": [],
+            "position": position,
+            "startMs": 40,
+            "endMs": 160,
+            "gop": None,
+            "practiceScore": None,
+            "scoreAvailable": False,
+            "confidence": 0.0,
+            "status": "aligned",
+            "errorType": None,
+        }]
 
 
 def make_wav():
@@ -62,6 +84,22 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result.json()["status"], "completed")
         self.assertEqual(result.json()["overallPracticeScore"], 88)
         self.assertEqual(result.json()["baselineDelta"], 8)
+
+    def test_mfa_alignment_returns_timing_without_score(self):
+        configure_backend(FakeMfaBackend())
+        response = self.client.post(
+            "/v1/analysis/jobs",
+            files={"audio": ("sample.wav", make_wav(), "audio/wav")},
+            data={
+                "text": "가", "target_phone": "k", "position": "onset",
+                "content_version": "1.0.0",
+            },
+        )
+        result = self.client.get(f"/v1/analysis/jobs/{response.json()['jobId']}").json()
+        self.assertEqual(result["status"], "completed")
+        self.assertIsNone(result["overallPracticeScore"])
+        self.assertEqual(result["phonemes"][0]["status"], "aligned")
+        self.assertIn("MFA 음소 정렬", result["message"])
 
 
 if __name__ == "__main__":

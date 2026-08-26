@@ -15,14 +15,20 @@ class BackendUnavailable(RuntimeError):
 
 class AcousticBackend(Protocol):
     model_version: str
+    ready: bool
 
-    def analyze(self, wav_path: Path, target_phone: str, position: str) -> dict: ...
+    def analyze(
+        self, wav_path: Path, text: str, target_phone: str, position: str
+    ) -> list[dict]: ...
 
 
 class UnavailableBackend:
     model_version = "not-configured"
+    ready = False
 
-    def analyze(self, wav_path: Path, target_phone: str, position: str) -> dict:
+    def analyze(
+        self, wav_path: Path, text: str, target_phone: str, position: str
+    ) -> list[dict]:
         raise BackendUnavailable("검증된 한국어 음소 모델이 서버에 설정되지 않았습니다.")
 
 
@@ -39,8 +45,11 @@ class TransformersCtcBackend:
         self.processor = AutoProcessor.from_pretrained(model_id)
         self.model = AutoModelForCTC.from_pretrained(model_id).eval()
         self.model_version = model_id
+        self.ready = True
 
-    def analyze(self, wav_path: Path, target_phone: str, position: str) -> dict:
+    def analyze(
+        self, wav_path: Path, text: str, target_phone: str, position: str
+    ) -> list[dict]:
         with wave.open(str(wav_path), "rb") as reader:
             rate = reader.getframerate()
             samples = self.np.frombuffer(reader.readframes(reader.getnframes()), dtype="<i2").astype("float32") / 32768
@@ -66,7 +75,7 @@ class TransformersCtcBackend:
         gop = math.log(max(probability, 1e-8)) - math.log(max(float(top_values[0]), 1e-8))
         score = max(0, min(100, round(probability * 100)))
         confidence = max(0.0, min(1.0, probability))
-        return {
+        return [{
             "expected": target_phone,
             "observedCandidates": candidates,
             "position": position,
@@ -77,9 +86,16 @@ class TransformersCtcBackend:
             "confidence": confidence,
             "status": "accurate" if score >= 75 else "caution" if score >= 55 else "retry",
             "errorType": None,
-        }
+        }]
 
 
 def backend_from_environment() -> AcousticBackend:
+    backend = os.getenv("PRONUNCIATION_BACKEND", "mfa").strip().lower()
+    if backend == "mfa":
+        from .mfa_backend import backend_from_environment as mfa_from_environment
+
+        return mfa_from_environment()
+    if backend not in {"ctc", "transformers"}:
+        return UnavailableBackend()
     model_id = os.getenv("PRONUNCIATION_MODEL_ID", "").strip()
     return TransformersCtcBackend(model_id) if model_id else UnavailableBackend()

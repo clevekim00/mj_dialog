@@ -28,7 +28,7 @@ def health() -> dict:
 
 @app.get("/ready")
 def ready() -> dict:
-    return {"ready": _backend.model_version != "not-configured", "modelVersion": _backend.model_version}
+    return {"ready": _backend.ready, "modelVersion": _backend.model_version}
 
 
 @app.post("/v1/analysis/jobs", status_code=202)
@@ -77,14 +77,18 @@ def _analyze_job(job_id: str, payload: bytes, filename: str, text: str, target_p
                     "disclaimer": "훈련 참고용 자동 분석이며 임상 진단이 아닙니다.",
                 }
             else:
-                phoneme = _backend.analyze(wav_path, target_phone, position)
-                score = phoneme["practiceScore"]
+                phonemes = _backend.analyze(wav_path, text, target_phone, position)
+                scores = [item["practiceScore"] for item in phonemes if item.get("practiceScore") is not None]
+                score = round(sum(scores) / len(scores)) if scores else None
+                confidences = [float(item.get("confidence", 0)) for item in phonemes]
+                confidence = sum(confidences) / len(confidences) if confidences else 0.0
                 result = {
                     "jobId": job_id, "status": "completed", "modelVersion": _backend.model_version,
                     "contentVersion": content_version, "overallPracticeScore": score,
-                    "confidence": phoneme["confidence"], "phonemes": [phoneme],
-                    "baselineDelta": score - baseline_score if baseline_score is not None else None,
-                    "signalQuality": quality.to_dict(), "message": None,
+                    "confidence": confidence, "phonemes": phonemes,
+                    "baselineDelta": score - baseline_score if score is not None and baseline_score is not None else None,
+                    "signalQuality": quality.to_dict(),
+                    "message": None if score is not None else "MFA 음소 정렬을 완료했습니다. 정확도 점수는 CTC/GoP 모델을 연결한 뒤 제공합니다.",
                     "disclaimer": "훈련 참고용 자동 분석이며 임상 진단이 아닙니다.",
                 }
     except BackendUnavailable as error:

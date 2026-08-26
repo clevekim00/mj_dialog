@@ -145,7 +145,7 @@ enum PronunciationAnalysisStatus {
   failed,
 }
 
-enum PhonemeFeedbackStatus { accurate, caution, retry, unavailable }
+enum PhonemeFeedbackStatus { accurate, caution, retry, aligned, unavailable }
 
 class PhoneCandidate {
   const PhoneCandidate({required this.phone, required this.probability});
@@ -169,6 +169,7 @@ class PhonemeAnalysisResult {
     required this.practiceScore,
     required this.confidence,
     required this.status,
+    this.alignedPhone,
     this.errorType,
   });
 
@@ -177,10 +178,11 @@ class PhonemeAnalysisResult {
   final PhonemePosition position;
   final int startMs;
   final int endMs;
-  final double rawGop;
-  final int practiceScore;
+  final double? rawGop;
+  final int? practiceScore;
   final double confidence;
   final PhonemeFeedbackStatus status;
+  final String? alignedPhone;
   final String? errorType;
 
   factory PhonemeAnalysisResult.fromJson(Map<String, dynamic> json) =>
@@ -194,15 +196,17 @@ class PhonemeAnalysisResult {
         position: PhonemePositionLabel.fromValue(json['position'] as String?),
         startMs: json['startMs'] as int? ?? 0,
         endMs: json['endMs'] as int? ?? 0,
-        rawGop: (json['gop'] as num?)?.toDouble() ?? 0,
-        practiceScore: json['practiceScore'] as int? ?? 0,
+        rawGop: (json['gop'] as num?)?.toDouble(),
+        practiceScore: json['practiceScore'] as int?,
         confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
         status: switch (json['status']) {
           'accurate' => PhonemeFeedbackStatus.accurate,
           'caution' => PhonemeFeedbackStatus.caution,
           'retry' => PhonemeFeedbackStatus.retry,
+          'aligned' => PhonemeFeedbackStatus.aligned,
           _ => PhonemeFeedbackStatus.unavailable,
         },
+        alignedPhone: json['alignedPhone'] as String?,
         errorType: json['errorType'] as String?,
       );
 }
@@ -340,6 +344,7 @@ class ConsonantTrainingAttempt {
               'practiceScore': item.practiceScore,
               'confidence': item.confidence,
               'status': item.status.name,
+              'alignedPhone': item.alignedPhone,
               'errorType': item.errorType,
             },
           )
