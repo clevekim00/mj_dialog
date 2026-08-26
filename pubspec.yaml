@@ -50,6 +50,7 @@ dependencies:
   synchronized: ^3.4.0
   camera: ^0.12.0+1
   video_player: ^2.11.1
+  crypto: ^3.0.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -76,8 +77,8 @@ flutter:
   assets:
     - assets/gemma-2b-it-gpu-int4.bin
     - assets/images/ai_speech_2d_tutor.png
-    - assets/images/ai_speech_mouth_guide.png
     - assets/videos/training/
+    - assets/pronunciation/content/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

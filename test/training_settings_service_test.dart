@@ -14,4 +14,23 @@ void main() {
       '5회 반복하세요.',
     );
   });
+
+  test('normalizes playback settings and limits custom routine to 8', () async {
+    SharedPreferences.setMockInitialValues({});
+
+    await TrainingSettingsService.savePlaybackSpeed(2);
+    await TrainingSettingsService.saveCaptionScale(1.25);
+    await TrainingSettingsService.saveCaptionsEnabled(false);
+    await TrainingSettingsService.saveCustomRoutineIds(
+      List.generate(10, (index) => 'exercise_$index'),
+    );
+
+    expect(
+      await TrainingSettingsService.loadPlaybackSpeed(),
+      TrainingSettingsService.defaultPlaybackSpeed,
+    );
+    expect(await TrainingSettingsService.loadCaptionScale(), 1.25);
+    expect(await TrainingSettingsService.loadCaptionsEnabled(), isFalse);
+    expect(await TrainingSettingsService.loadCustomRoutineIds(), hasLength(8));
+  });
 }

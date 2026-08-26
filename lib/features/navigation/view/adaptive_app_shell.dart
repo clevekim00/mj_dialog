@@ -175,6 +175,13 @@ class _RecordsHub extends StatelessWidget {
           color: Colors.purpleAccent,
           onTap: () => Navigator.pushNamed(context, '/voice_analysis_history'),
         ),
+        _HubCard(
+          title: '구강·호흡 훈련 기록',
+          subtitle: '완료한 루틴, 반복 횟수와 피로도를 확인합니다.',
+          icon: Icons.self_improvement,
+          color: Colors.tealAccent,
+          onTap: () => Navigator.pushNamed(context, '/guided_training/history'),
+        ),
       ],
     );
   }
@@ -228,8 +235,8 @@ class _SettingsHub extends StatelessWidget {
           onTap: () => Navigator.pushNamed(context, '/onboarding'),
         ),
         _HubCard(
-          title: '훈련 반복 횟수',
-          subtitle: '영상 안내 자막에 표시할 기본 반복 횟수를 설정합니다.',
+          title: '구강·호흡 훈련 설정',
+          subtitle: '반복 횟수, 재생 속도, 자막과 음성 안내를 설정합니다.',
           icon: Icons.repeat,
           color: Colors.orangeAccent,
           onTap: () => Navigator.pushNamed(context, '/training_settings'),

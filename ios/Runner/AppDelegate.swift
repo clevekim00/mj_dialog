@@ -18,6 +18,7 @@ final class SafeFlutterViewController: FlutterViewController {
   private var audioPlayer: AVAudioPlayer?
   private var audioRecorder: AVAudioRecorder?
   private var audioRecorderPath: String?
+  private let speechSynthesizer = AVSpeechSynthesizer()
   private var audioEventSink: FlutterEventSink?
   private var speechEventSink: FlutterEventSink?
   private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko_KR"))
@@ -58,7 +59,48 @@ final class SafeFlutterViewController: FlutterViewController {
     configureSharedPreferencesChannel()
     configurePermissionChannel()
     configureSpeechRecognitionChannel()
+    configureTextToSpeechChannel()
     didConfigureFlutterChannels = true
+  }
+
+  private func configureTextToSpeechChannel() {
+    guard let controller = currentFlutterViewController() else {
+      return
+    }
+    let channel = FlutterMethodChannel(
+      name: "speech_rehab/tts",
+      binaryMessenger: controller.binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self else {
+        result(FlutterError(code: "unavailable", message: "TTS unavailable.", details: nil))
+        return
+      }
+      switch call.method {
+      case "speak":
+        guard
+          let arguments = call.arguments as? [String: Any],
+          let text = arguments["text"] as? String,
+          !text.isEmpty
+        else {
+          result(FlutterError(code: "invalid_args", message: "Missing speech text.", details: nil))
+          return
+        }
+        self.cancelSpeechRecognition()
+        self.speechSynthesizer.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        utterance.rate = 0.42
+        utterance.volume = 1.0
+        self.speechSynthesizer.speak(utterance)
+        result(nil)
+      case "stop":
+        self.speechSynthesizer.stopSpeaking(at: .immediate)
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
   }
 
   private func currentFlutterViewController() -> FlutterViewController? {
