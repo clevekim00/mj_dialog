@@ -1,0 +1,413 @@
+import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
+
+const _cautionMessage = '통증이나 과도한 피로가 느껴지면 즉시 멈추고 편안하게 쉬세요.';
+const _breathingMessage = '어지럽거나 숨이 불편하면 즉시 멈추고 평소의 편안한 호흡으로 돌아오세요.';
+const _clinicianMessage = '이 훈련은 의사 또는 언어재활사와 상의한 뒤 실시하세요.';
+
+GuidedTrainingExercise _exercise({
+  required String id,
+  required GuidedTrainingCategory category,
+  required int order,
+  required String title,
+  required String instruction,
+  required String caption,
+  required GuidedTrainingVisualMode visual,
+  String? video,
+  int seconds = 5,
+  GuidedTrainingSafetyTier safety = GuidedTrainingSafetyTier.general,
+  String? safetyMessage,
+}) {
+  return GuidedTrainingExercise(
+    id: id,
+    category: category,
+    sourceOrder: order,
+    title: title,
+    instruction: instruction,
+    shortCaption: caption,
+    visualMode: visual,
+    videoAsset: video,
+    loopDuration: Duration(seconds: seconds),
+    safetyTier: safety,
+    safetyMessage: safetyMessage,
+  );
+}
+
+final allGuidedTrainingExercises = <GuidedTrainingExercise>[
+  _exercise(
+    id: 'tongue_01_vertical',
+    category: GuidedTrainingCategory.tongue,
+    order: 1,
+    title: '혀 내밀어 위아래 움직이기',
+    instruction: '혀를 최대한 편안하게 내밀었다가 위와 아래로 천천히 움직이세요.',
+    caption: '혀를 내밀어 위와 아래로 움직이세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/tongue_01_vertical.mp4',
+  ),
+  _exercise(
+    id: 'tongue_02_touch_lips',
+    category: GuidedTrainingCategory.tongue,
+    order: 2,
+    title: '윗입술·아랫입술 대기',
+    instruction: '혀끝을 윗입술과 아랫입술에 번갈아 붙이세요.',
+    caption: '혀끝을 윗입술과 아랫입술에 번갈아 대세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'tongue_03_lip_corners',
+    category: GuidedTrainingCategory.tongue,
+    order: 3,
+    title: '양쪽 입꼬리 대기',
+    instruction: '고개는 고정하고 혀끝을 양쪽 입꼬리에 번갈아 대세요.',
+    caption: '혀끝을 양쪽 입꼬리에 번갈아 대세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/tongue_03_lip_corners.mp4',
+  ),
+  _exercise(
+    id: 'tongue_04_lip_circle',
+    category: GuidedTrainingCategory.tongue,
+    order: 4,
+    title: '입술 둘레 돌리기',
+    instruction: '혀로 입술 전체를 시계 방향과 반시계 방향으로 천천히 훑으세요.',
+    caption: '입술 둘레를 양방향으로 천천히 돌리세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/tongue_04_lip_circle.mp4',
+    seconds: 8,
+  ),
+  _exercise(
+    id: 'tongue_05_soft_palate_click',
+    category: GuidedTrainingCategory.tongue,
+    order: 5,
+    title: '혀 뒤쪽 붙였다 떼기',
+    instruction: '혀 뒤쪽을 연구개 방향으로 천천히 붙였다가 떼세요.',
+    caption: '혀 뒤쪽을 올려 천천히 붙였다 떼세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+    safety: GuidedTrainingSafetyTier.caution,
+    safetyMessage: _cautionMessage,
+  ),
+  _exercise(
+    id: 'tongue_06_palate_sweep',
+    category: GuidedTrainingCategory.tongue,
+    order: 6,
+    title: '입천장 뒤로 훑기',
+    instruction: '혀끝을 윗니 뒤에 댄 뒤 입천장을 따라 뒤로 천천히 움직이세요.',
+    caption: '윗니 뒤에서 입천장을 따라 혀를 뒤로 움직이세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+  ),
+  _exercise(
+    id: 'tongue_07_hard_palate_hold',
+    category: GuidedTrainingCategory.tongue,
+    order: 7,
+    title: '입천장에 혀 대고 유지하기',
+    instruction: '입을 편안한 범위에서 벌리고 혀를 경구개에 대어 잠깐 유지하세요.',
+    caption: '혀를 입천장에 대고 편안하게 유지하세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+    seconds: 6,
+    safety: GuidedTrainingSafetyTier.caution,
+    safetyMessage: _cautionMessage,
+  ),
+  _exercise(
+    id: 'tongue_08_resistance',
+    category: GuidedTrainingCategory.tongue,
+    order: 8,
+    title: '설압자 저항 운동',
+    instruction: '전문가 지도 아래 설압자로 앞·좌·우 방향에 가벼운 저항을 주세요.',
+    caption: '전문가 지도 아래 가벼운 저항 운동을 하세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+    seconds: 6,
+    safety: GuidedTrainingSafetyTier.clinicianOnly,
+    safetyMessage: _clinicianMessage,
+  ),
+  _exercise(
+    id: 'tongue_09_monkey_lips',
+    category: GuidedTrainingCategory.tongue,
+    order: 9,
+    title: '원숭이 입 모양 만들기',
+    instruction: '입술 안쪽에서 혀로 윗입술과 아랫입술을 번갈아 밀어주세요.',
+    caption: '혀로 윗입술과 아랫입술 안쪽을 번갈아 미세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'tongue_10_molars',
+    category: GuidedTrainingCategory.tongue,
+    order: 10,
+    title: '양쪽 어금니 대기',
+    instruction: '혀끝을 왼쪽과 오른쪽 어금니에 번갈아 대세요.',
+    caption: '혀끝을 양쪽 어금니에 번갈아 대세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+  ),
+  _exercise(
+    id: 'tongue_11_trace_teeth',
+    category: GuidedTrainingCategory.tongue,
+    order: 11,
+    title: '치아 차례로 훑기',
+    instruction: '이를 하나씩 확인하듯 혀끝으로 윗니와 아랫니를 차례로 훑으세요.',
+    caption: '혀끝으로 윗니와 아랫니를 차례로 훑으세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+    seconds: 7,
+  ),
+  _exercise(
+    id: 'tongue_12_cheek_press',
+    category: GuidedTrainingCategory.tongue,
+    order: 12,
+    title: '양쪽 볼 안쪽 밀기',
+    instruction: '입을 다문 상태에서 혀로 양쪽 볼 안쪽을 번갈아 미세요.',
+    caption: '혀로 양쪽 볼 안쪽을 번갈아 미세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/tongue_12_cheek_press.mp4',
+  ),
+  _exercise(
+    id: 'tongue_13_clock_click',
+    category: GuidedTrainingCategory.tongue,
+    order: 13,
+    title: '똑딱 소리 내기',
+    instruction: '혀끝을 윗니 뒤쪽에 붙였다 떼며 똑딱 소리를 내보세요.',
+    caption: '혀끝을 붙였다 떼며 똑딱 소리를 내보세요.',
+    visual: GuidedTrainingVisualMode.oralCutaway,
+  ),
+  _exercise(
+    id: 'tongue_14_tongue_click',
+    category: GuidedTrainingCategory.tongue,
+    order: 14,
+    title: '혀 차기 연습',
+    instruction: '강아지를 부르듯 혀 차기 소리를 천천히 반복하세요.',
+    caption: '혀 차기 소리를 천천히 따라 하세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_01_tuck_extend',
+    category: GuidedTrainingCategory.lip,
+    order: 1,
+    title: '입술 넣었다 내밀기',
+    instruction: '입술을 입 안으로 넣었다가 앞으로 쭉 내미세요.',
+    caption: '입술을 안으로 넣었다가 앞으로 내미세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_02_u_to_i',
+    category: GuidedTrainingCategory.lip,
+    order: 2,
+    title: '우-이 입 모양',
+    instruction: '/우/와 /이/ 입 모양을 번갈아 만드세요.',
+    caption: '/우/와 /이/ 입 모양을 번갈아 만드세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/lip_02_u_to_i.mp4',
+  ),
+  _exercise(
+    id: 'lip_03_a_to_i',
+    category: GuidedTrainingCategory.lip,
+    order: 3,
+    title: '아-이 입 모양',
+    instruction: '/아/와 /이/ 입 모양을 번갈아 만드세요.',
+    caption: '/아/와 /이/ 입 모양을 번갈아 만드세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_04_u_to_a',
+    category: GuidedTrainingCategory.lip,
+    order: 4,
+    title: '우-아 입 모양',
+    instruction: '/우/와 /아/ 입 모양을 번갈아 만드세요.',
+    caption: '/우/와 /아/ 입 모양을 번갈아 만드세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_05_kiss',
+    category: GuidedTrainingCategory.lip,
+    order: 5,
+    title: '뽀뽀 입술 만들기',
+    instruction: '뽀뽀하는 입술 모양을 느리게 한 뒤 빠르게 반복하세요.',
+    caption: '뽀뽀하는 입술 모양을 반복하세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_06_spread_pucker',
+    category: GuidedTrainingCategory.lip,
+    order: 6,
+    title: '입술 벌렸다 모으기',
+    instruction: '입술을 양옆으로 벌렸다가 앞으로 모으세요.',
+    caption: '입술을 양옆으로 벌렸다가 앞으로 모으세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_07_open_hold',
+    category: GuidedTrainingCategory.lip,
+    order: 7,
+    title: '입 크게 벌려 유지하기',
+    instruction: '입을 편안한 범위에서 크게 벌리고 약 2초 유지하세요.',
+    caption: '입을 편안한 범위에서 크게 벌려 2초 유지하세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+    video: 'assets/videos/training/lip_07_open_hold.mp4',
+    seconds: 6,
+    safety: GuidedTrainingSafetyTier.caution,
+    safetyMessage: _cautionMessage,
+  ),
+  _exercise(
+    id: 'lip_08_lip_cover',
+    category: GuidedTrainingCategory.lip,
+    order: 8,
+    title: '윗입술·아랫입술 덮기',
+    instruction: '아랫입술로 윗입술을 덮고, 윗입술로 아랫입술을 번갈아 덮으세요.',
+    caption: '아랫입술과 윗입술을 번갈아 덮으세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_09_one_side_grimace',
+    category: GuidedTrainingCategory.lip,
+    order: 9,
+    title: '입꼬리 한쪽씩 움직이기',
+    instruction: '한쪽 안면만 가볍게 찡그려 입술을 좌우로 움직이세요.',
+    caption: '입꼬리를 한쪽씩 움직여 보세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_10_ppa_release',
+    category: GuidedTrainingCategory.lip,
+    order: 10,
+    title: '빠 소리 내기',
+    instruction: '입술을 막았다 터뜨리는 느낌으로 /빠/를 발음하세요.',
+    caption: '입술을 막았다 터뜨리며 /빠/를 발음하세요.',
+    visual: GuidedTrainingVisualMode.phoneme,
+  ),
+  _exercise(
+    id: 'lip_11_fish_mouth',
+    category: GuidedTrainingCategory.lip,
+    order: 11,
+    title: '붕어입 만들기',
+    instruction: '볼을 살짝 안으로 당기고 입술을 둥글게 모으세요.',
+    caption: '볼을 살짝 당겨 붕어입 모양을 만드세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  _exercise(
+    id: 'lip_12_sad_smile',
+    category: GuidedTrainingCategory.lip,
+    order: 12,
+    title: '슬픈 표정·웃는 표정',
+    instruction: '슬픈 표정과 웃는 표정을 천천히 번갈아 만드세요.',
+    caption: '슬픈 표정과 웃는 표정을 번갈아 만드세요.',
+    visual: GuidedTrainingVisualMode.faceCloseUp,
+  ),
+  ..._alternatingExercises,
+  ..._breathingExercises,
+];
+
+final _alternatingExercises = <GuidedTrainingExercise>[
+  _alternating(1, 'uiui', '우이우이', '우 · 이 · 우 · 이'),
+  _alternating(2, 'ba_ppa_pa_ma', '바-빠-파-마', '바 · 빠 · 파 · 마'),
+  _alternating(3, 'aia', '아이아', '아 · 이 · 아'),
+  _alternating(4, 'da_tta_ta_na', '다-따-타-나', '다 · 따 · 타 · 나'),
+  _alternating(5, 'reoreo', '러러러', '러 · 러 · 러'),
+  _alternating(6, 'peo_teo_reo_keo', '퍼-터-러-커', '퍼 · 터 · 러 · 커'),
+  _alternating(7, 'peo_repeat', '퍼퍼퍼', '퍼 · 퍼 · 퍼'),
+  _alternating(8, 'teo_repeat', '터터터', '터 · 터 · 터'),
+  _alternating(9, 'keo_repeat', '커커커', '커 · 커 · 커'),
+  _alternating(10, 'peo_teo_keo', '퍼터커', '퍼 · 터 · 커'),
+];
+
+GuidedTrainingExercise _alternating(
+  int order,
+  String slug,
+  String title,
+  String caption,
+) {
+  return _exercise(
+    id: 'alternating_${order.toString().padLeft(2, '0')}_$slug',
+    category: GuidedTrainingCategory.alternating,
+    order: order,
+    title: title,
+    instruction: '$title 음절을 입 모양을 크게 하며 빠르고 또렷하게 반복하세요.',
+    caption: caption,
+    visual: GuidedTrainingVisualMode.phoneme,
+    seconds: 4,
+  );
+}
+
+final _breathingExercises = <GuidedTrainingExercise>[
+  _exercise(
+    id: 'breathing_01_posture_inhale',
+    category: GuidedTrainingCategory.breathing,
+    order: 1,
+    title: '자세 펴고 들이마시기',
+    instruction: '앉은 자세에서 가슴을 편안하게 펴며 천천히 숨을 들이마시세요.',
+    caption: '가슴을 편안하게 펴며 천천히 들이마시세요.',
+    visual: GuidedTrainingVisualMode.upperBody,
+    video: 'assets/videos/training/breathing_01_posture_inhale.mp4',
+    seconds: 6,
+    safety: GuidedTrainingSafetyTier.caution,
+    safetyMessage: _breathingMessage,
+  ),
+  _breathing(2, 'pause_inhale', '호흡 멈춘 뒤 들이마시기', '무리하지 말고 잠깐 멈춘 뒤 한 번 들이마시세요.'),
+  _breathing(3, 'rapid_deep', '빠르게 심호흡하기', '빠른 호흡은 전문가 지시에 따라 짧게 실시하세요.'),
+  _breathing(4, 'hiccup_sob', '딸꾹질·흐느낌 흉내', '짧게 끊어 들이마시는 동작을 따라 해보세요.'),
+  _breathing(5, 'hold_exhale', '들이마신 뒤 천천히 내쉬기', '편안히 들이마셔 잠깐 유지한 뒤 천천히 내쉬세요.'),
+  _breathing(6, 'small_inhale_hold', '조금 들이마시고 멈추기', '조금 들이마시고 편안하게 잠깐 멈추세요.'),
+  _breathing(7, 'small_exhale_hold', '조금 내쉬고 멈추기', '조금 내쉬고 편안하게 잠깐 멈추세요.'),
+  _sustainedVowel(
+    8,
+    'a',
+    '아',
+    'assets/videos/training/breathing_08_sustain_a.mp4',
+  ),
+  _sustainedVowel(9, 'i', '이', null),
+  _sustainedVowel(10, 'u', '우', null),
+];
+
+GuidedTrainingExercise _breathing(
+  int order,
+  String slug,
+  String title,
+  String caption,
+) {
+  return _exercise(
+    id: 'breathing_${order.toString().padLeft(2, '0')}_$slug',
+    category: GuidedTrainingCategory.breathing,
+    order: order,
+    title: title,
+    instruction: caption,
+    caption: caption,
+    visual: GuidedTrainingVisualMode.upperBody,
+    seconds: 6,
+    safety: GuidedTrainingSafetyTier.clinicianOnly,
+    safetyMessage: _clinicianMessage,
+  );
+}
+
+GuidedTrainingExercise _sustainedVowel(
+  int order,
+  String slug,
+  String vowel,
+  String? video,
+) {
+  return _exercise(
+    id: 'breathing_${order.toString().padLeft(2, '0')}_sustain_$slug',
+    category: GuidedTrainingCategory.breathing,
+    order: order,
+    title: '$vowel 모음 길게 발성하기',
+    instruction: '숨을 크게 들이마신 뒤 /$vowel/를 편안한 범위에서 길게 발성하세요.',
+    caption: '숨을 들이마신 뒤 /$vowel/를 편안하게 길게 발성하세요.',
+    visual: GuidedTrainingVisualMode.upperBody,
+    video: video,
+    seconds: 8,
+    safety: GuidedTrainingSafetyTier.caution,
+    safetyMessage: _breathingMessage,
+  );
+}
+
+List<GuidedTrainingExercise> guidedExercisesFor(
+  GuidedTrainingCategory category,
+) => allGuidedTrainingExercises
+    .where((exercise) => exercise.category == category)
+    .toList(growable: false);
+
+GuidedTrainingExercise? guidedExerciseById(String id) {
+  for (final exercise in allGuidedTrainingExercises) {
+    if (exercise.id == id) return exercise;
+  }
+  return null;
+}
+
+List<GuidedTrainingExercise> get defaultGuidedRoutine => [
+  guidedExerciseById('tongue_01_vertical')!,
+  guidedExerciseById('lip_02_u_to_i')!,
+  guidedExerciseById('alternating_01_uiui')!,
+  guidedExerciseById('breathing_01_posture_inhale')!,
+];

@@ -5,7 +5,8 @@ import 'package:speech_rehab/features/chat/view/chat_screen.dart';
 import 'package:speech_rehab/features/chat/view/history_screen.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
-import 'package:speech_rehab/features/tongue_exercise/provider/tongue_exercise_provider.dart';
+import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
+import 'package:speech_rehab/services/guided_training/guided_training_history_service.dart';
 import 'package:speech_rehab/services/practice_history_service.dart';
 
 class PracticeModeSelectionScreen extends ConsumerWidget {
@@ -14,7 +15,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final practice = ref.watch(practiceProvider);
-    final tongueExercise = ref.watch(tongueExerciseProvider);
+    final guidedTraining = ref.watch(guidedTrainingSessionsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
@@ -69,7 +70,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildRecommendedPractice(context, ref, practice),
           const SizedBox(height: 16),
-          _buildTongueExerciseWarmupCard(context, practice, tongueExercise),
+          _buildGuidedTrainingCard(context, practice, guidedTraining),
+          const SizedBox(height: 16),
+          _buildConsonantTrainingCard(context),
           const SizedBox(height: 22),
           _buildSectionTitle('다른 연습 선택'),
           const SizedBox(height: 12),
@@ -89,6 +92,44 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildSafetyNotice(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildConsonantTrainingCard(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () => Navigator.pushNamed(context, '/consonant_training'),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.blueAccent.withValues(alpha: 0.09),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.25)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.record_voice_over, color: Colors.lightBlueAccent),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '자음 집중 훈련',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '초성·받침을 음절, 단어, 짧은 문장으로 반복 연습해요.',
+                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.white38),
+          ],
+        ),
       ),
     );
   }
@@ -443,12 +484,13 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTongueExerciseWarmupCard(
+  Widget _buildGuidedTrainingCard(
     BuildContext context,
     PracticeProgress practice,
-    TongueExerciseProgress tongueExercise,
+    AsyncValue<List<GuidedTrainingSession>> sessions,
   ) {
-    final isCompleted = tongueExercise.isTodayCompleted;
+    final isCompleted =
+        sessions.whenOrNull(data: (items) => items.isTodayCompleted) ?? false;
     final isHighFatigue = practice.fatigueBefore >= 4;
     final status = isCompleted
         ? '오늘 완료'
@@ -458,7 +500,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, '/exercise_menu'),
+      onTap: () => Navigator.pushNamed(context, '/guided_training'),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
@@ -493,7 +535,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                     children: [
                       const Expanded(
                         child: Text(
-                          '연습 전 준비운동',
+                          '구강·호흡 준비운동',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -525,7 +567,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 7),
                   const Text(
-                    '혀운동 3분',
+                    '오늘의 통합 루틴',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -535,8 +577,8 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   const SizedBox(height: 5),
                   Text(
                     isCompleted
-                        ? '혀운동은 오늘 완료했어요. 얼굴운동도 필요하면 이어서 해보세요.'
-                        : '혀와 얼굴을 천천히 풀고 발음 연습을 시작해요.',
+                        ? '오늘 루틴을 완료했어요. 필요하면 같은 속도로 반복하세요.'
+                        : '영상과 자막을 보며 혀·입술·호흡을 천천히 준비해요.',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

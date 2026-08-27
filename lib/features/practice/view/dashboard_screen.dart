@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
-import 'package:speech_rehab/features/tongue_exercise/provider/tongue_exercise_provider.dart';
+import 'package:speech_rehab/services/guided_training/guided_training_history_service.dart';
 import 'package:speech_rehab/services/practice_content_service.dart';
 import '../provider/practice_provider.dart';
 
@@ -12,7 +13,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final practice = ref.watch(practiceProvider);
-    final tongueExercise = ref.watch(tongueExerciseProvider);
+    final guidedTraining = ref.watch(guidedTrainingSessionsProvider);
     final contentService = ref.watch(practiceContentServiceProvider);
     final history = practice.history;
 
@@ -53,7 +54,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _buildRehabConsistencyCard(activeDays, avgFatigue),
             const SizedBox(height: 16),
-            _buildTongueRoutineCard(context, tongueExercise),
+            _buildGuidedTrainingCard(context, guidedTraining),
             const SizedBox(height: 32),
             _buildSectionTitle('최근 7일 연습 활동'),
             const SizedBox(height: 16),
@@ -127,12 +128,13 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTongueRoutineCard(
+  Widget _buildGuidedTrainingCard(
     BuildContext context,
-    TongueExerciseProgress tongueExercise,
+    AsyncValue<List<GuidedTrainingSession>> sessions,
   ) {
-    final completedDays = tongueExercise.completedDaysInLast7;
-    final averageDuration = tongueExercise.averageDurationLast7;
+    final items = sessions.whenOrNull(data: (value) => value) ?? const [];
+    final completedDays = items.completedDaysInLast7;
+    final averageDuration = items.averageDurationLast7;
     final durationLabel = averageDuration == 0
         ? '평균 기록 없음'
         : '평균 ${_formatDuration(averageDuration)}';
@@ -154,7 +156,7 @@ class DashboardScreen extends ConsumerWidget {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '혀운동 루틴',
+                  '구강·호흡 훈련',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -178,10 +180,11 @@ class DashboardScreen extends ConsumerWidget {
             width: double.infinity,
             height: 44,
             child: ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/tongue_exercise'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/guided_training/player'),
               icon: const Icon(Icons.play_arrow),
               label: Text(
-                tongueExercise.isTodayCompleted ? '혀운동 다시 하기' : '오늘 혀운동 시작',
+                items.isTodayCompleted ? '통합 루틴 다시 하기' : '오늘 통합 루틴 시작',
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.tealAccent,
