@@ -21,7 +21,8 @@ final class SafeFlutterViewController: FlutterViewController {
   private let speechSynthesizer = AVSpeechSynthesizer()
   private var audioEventSink: FlutterEventSink?
   private var speechEventSink: FlutterEventSink?
-  private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko_KR"))
+  private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko-KR"))
+  private var speechLanguage = "ko-KR"
   private let speechAudioEngine = AVAudioEngine()
   private var speechRecognitionRequest: SFSpeechAudioBufferRecognitionRequest?
   private var speechRecognitionTask: SFSpeechRecognitionTask?
@@ -88,8 +89,13 @@ final class SafeFlutterViewController: FlutterViewController {
         }
         self.cancelSpeechRecognition()
         self.speechSynthesizer.stopSpeaking(at: .immediate)
+        let language = arguments["language"] as? String ?? "ko-KR"
+        guard let voice = AVSpeechSynthesisVoice(language: language) else {
+          result(FlutterError(code: "unsupported_language", message: "TTS language unavailable.", details: language))
+          return
+        }
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+        utterance.voice = voice
         utterance.rate = 0.42
         utterance.volume = 1.0
         self.speechSynthesizer.speak(utterance)
@@ -611,8 +617,16 @@ final class SafeFlutterViewController: FlutterViewController {
 
       switch call.method {
       case "initialize":
+        guard self.configureSpeechLanguage(from: call.arguments) else {
+          result(false)
+          return
+        }
         self.requestSpeechAndMicrophonePermission(result: result)
       case "startListening":
+        guard self.configureSpeechLanguage(from: call.arguments) else {
+          result(false)
+          return
+        }
         self.startSpeechRecognition(result: result)
       case "stopListening":
         self.stopSpeechRecognition()
@@ -641,6 +655,21 @@ final class SafeFlutterViewController: FlutterViewController {
         }
       )
     )
+  }
+
+  private func configureSpeechLanguage(from arguments: Any?) -> Bool {
+    let values = arguments as? [String: Any]
+    let language = values?["language"] as? String ?? speechLanguage
+    if language == speechLanguage, speechRecognizer != nil {
+      return true
+    }
+    guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language)) else {
+      return false
+    }
+    cancelSpeechRecognition()
+    speechLanguage = language
+    speechRecognizer = recognizer
+    return true
   }
 
   private func startSpeechRecognition(result: FlutterResult) {

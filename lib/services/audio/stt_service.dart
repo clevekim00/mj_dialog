@@ -7,14 +7,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 
 typedef SttResultCallback = Future<void> Function(String text, bool isFinal);
 
 final sttServiceProvider = Provider<SttService>((ref) {
-  return SttService();
+  final languageTag = ref.watch(appLanguageProvider).languageTag;
+  final service = SttService(languageTag: languageTag);
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 class SttService {
+  SttService({this.languageTag = 'ko-KR'});
+
+  final String languageTag;
   static const MethodChannel _iosSpeechChannel = MethodChannel(
     'speech_rehab/speech_recognition',
   );
@@ -46,7 +53,10 @@ class SttService {
       }
       try {
         _sttEnabled =
-            await _iosSpeechChannel.invokeMethod<bool>('initialize') ?? false;
+            await _iosSpeechChannel.invokeMethod<bool>('initialize', {
+              'language': languageTag,
+            }) ??
+            false;
       } catch (error) {
         debugPrint('[STT] iOS native initialization error: $error');
         _sttEnabled = false;
@@ -121,7 +131,9 @@ class SttService {
             );
 
         _iosListening =
-            await _iosSpeechChannel.invokeMethod<bool>('startListening') ??
+            await _iosSpeechChannel.invokeMethod<bool>('startListening', {
+              'language': languageTag,
+            }) ??
             false;
         debugPrint('[STT] iOS listen started: $_iosListening');
         return _iosListening;
@@ -147,7 +159,7 @@ class SttService {
           );
           await onResult(result.recognizedWords, result.finalResult);
         },
-        localeId: 'ko_KR',
+        localeId: languageTag.replaceAll('-', '_'),
         listenOptions: SpeechListenOptions(
           cancelOnError: true,
           partialResults: true,

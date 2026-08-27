@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
 import 'package:speech_rehab/features/consonant_training/data/consonant_content_repository.dart';
@@ -22,14 +23,50 @@ import 'package:speech_rehab/features/practice/view/practice_history_screen.dart
 import 'package:speech_rehab/features/practice/view/recording_library_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/features/startup/view/startup_splash_screen.dart';
+import 'package:speech_rehab/features/settings/view/language_settings_screen.dart';
+import 'package:speech_rehab/features/settings/view/resource_center_screen.dart';
 import 'package:speech_rehab/features/voice_analysis/view/voice_analysis_screens.dart';
+import 'package:speech_rehab/l10n/app_localizations.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
+import 'package:speech_rehab/services/resources/resource_catalog_repository.dart';
+import 'package:speech_rehab/services/resources/resource_pack_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  unawaited(_refreshPronunciationContent());
   runApp(const MyApp());
+  // 리소스 확인은 첫 화면 표시를 차단하지 않는다.
+  unawaited(_refreshResources());
+  unawaited(_refreshPronunciationContent());
+}
+
+Future<void> _refreshResources() async {
+  try {
+    final repository = ResourceCatalogRepository();
+    final result = await repository.checkForUpdates();
+    final preferences = await SharedPreferences.getInstance();
+    final preference = AppLanguagePreferenceValue.parse(
+      preferences.getString(AppLanguageController.preferenceKey),
+    );
+    final locale = resolveSupportedLocale(
+      preference,
+      WidgetsBinding.instance.platformDispatcher.locale,
+    );
+    final languageTag = locale.languageCode == 'ko' ? 'ko-KR' : 'en-US';
+    final languages = result.snapshot.catalog.languages.where(
+      (item) => item.locale == languageTag && item.enabled,
+    );
+    if (languages.isEmpty) return;
+    final manager = ResourcePackManager();
+    for (final packId in languages.first.requiredPacks) {
+      final descriptor = result.snapshot.catalog.packById(packId);
+      if (descriptor != null) await manager.install(descriptor);
+    }
+  } catch (error) {
+    debugPrint('Resource update skipped: $error');
+  }
 }
 
 Future<void> _refreshPronunciationContent() async {
@@ -51,13 +88,22 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class _AppView extends StatelessWidget {
+class _AppView extends ConsumerWidget {
   const _AppView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(appLanguageProvider);
     return MaterialApp(
       title: 'Speech Rehab',
+      locale: language.resolvedLocale,
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF121212),
@@ -133,6 +179,8 @@ class _AppView extends StatelessWidget {
             const VoiceAnalysisHistoryScreen(),
         '/microphone_check': (context) => const MicrophoneCheckScreen(),
         '/training_settings': (context) => const GuidedTrainingSettingsScreen(),
+        '/language_settings': (context) => const LanguageSettingsScreen(),
+        '/resource_center': (context) => const ResourceCenterScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

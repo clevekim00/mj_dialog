@@ -26,34 +26,48 @@ class ConsonantContentRepository {
     this.manifestUrl = const String.fromEnvironment(
       'PRONUNCIATION_CONTENT_MANIFEST_URL',
     ),
+    this.languageTag = 'ko-KR',
   }) : _dio = dio ?? Dio(),
        _bundledTextLoader = bundledTextLoader ?? rootBundle.loadString,
        _supportDirectoryLoader =
            supportDirectoryLoader ?? getApplicationSupportDirectory;
 
-  static const bundledAsset =
-      'assets/pronunciation/content/ko_consonant_core.json';
+  static const bundledAssets = <String, String>{
+    'ko-KR': 'assets/pronunciation/content/ko_consonant_core.json',
+    'en-US': 'assets/pronunciation/content/en_us_consonant_core.json',
+  };
 
   final Dio _dio;
   final BundledTextLoader _bundledTextLoader;
   final SupportDirectoryLoader _supportDirectoryLoader;
   final String manifestUrl;
+  final String languageTag;
+
+  String get bundledAsset =>
+      bundledAssets[languageTag] ?? bundledAssets['en-US']!;
+  String get resolvedManifestUrl =>
+      manifestUrl.replaceAll('{language}', languageTag);
 
   Future<PronunciationContentPack> load() async {
     final directory = await _packDirectory();
     final downloaded = File(path.join(directory.path, 'current.json'));
-    if (await downloaded.exists()) {
+    final previous = File(path.join(directory.path, 'previous.json'));
+    for (final candidate in [downloaded, previous]) {
+      if (!await candidate.exists()) continue;
       try {
-        return _decode(await downloaded.readAsString(), source: 'downloaded');
+        return _decode(
+          await candidate.readAsString(),
+          source: candidate == downloaded ? 'downloaded' : 'rollback',
+        );
       } catch (_) {
-        // 손상된 업데이트는 무시하고 항상 앱 내장본으로 복구합니다.
+        // 손상된 업데이트는 무시하고 이전 버전 또는 앱 내장본으로 복구합니다.
       }
     }
     return _decode(await _bundledTextLoader(bundledAsset), source: 'bundled');
   }
 
   Future<ContentUpdateResult> updateIfAvailable() async {
-    if (manifestUrl.trim().isEmpty) {
+    if (resolvedManifestUrl.trim().isEmpty) {
       return const ContentUpdateResult(
         updated: false,
         message: '콘텐츠 업데이트 주소가 설정되지 않았습니다.',
@@ -61,13 +75,17 @@ class ConsonantContentRepository {
     }
 
     final current = await load();
-    final response = await _dio.get<dynamic>(manifestUrl);
+    final response = await _dio.get<dynamic>(resolvedManifestUrl);
     final manifest = Map<String, dynamic>.from(response.data as Map);
+    final manifestLanguage = manifest['language'] as String? ?? languageTag;
     final version = manifest['version'] as String? ?? '';
     final downloadUrl = manifest['url'] as String? ?? '';
     final expectedSha = manifest['sha256'] as String? ?? '';
     if (version.isEmpty || downloadUrl.isEmpty || expectedSha.length != 64) {
       throw const FormatException('콘텐츠 manifest 형식이 올바르지 않습니다.');
+    }
+    if (manifestLanguage != languageTag) {
+      throw const FormatException('manifest 언어와 선택한 앱 언어가 다릅니다.');
     }
     if (_compareVersions(version, current.version) <= 0) {
       return const ContentUpdateResult(
@@ -93,11 +111,20 @@ class ConsonantContentRepository {
     final directory = await _packDirectory();
     final temporary = File(path.join(directory.path, 'next.json'));
     final currentFile = File(path.join(directory.path, 'current.json'));
+    final previousFile = File(path.join(directory.path, 'previous.json'));
     await temporary.writeAsBytes(bytes, flush: true);
+    if (await previousFile.exists()) await previousFile.delete();
     if (await currentFile.exists()) {
-      await currentFile.delete();
+      await currentFile.rename(previousFile.path);
     }
-    await temporary.rename(currentFile.path);
+    try {
+      await temporary.rename(currentFile.path);
+    } catch (_) {
+      if (await previousFile.exists() && !await currentFile.exists()) {
+        await previousFile.rename(currentFile.path);
+      }
+      rethrow;
+    }
     return ContentUpdateResult(
       updated: true,
       message: '콘텐츠를 $version 버전으로 업데이트했습니다.',
@@ -113,13 +140,16 @@ class ConsonantContentRepository {
     if (pack.schemaVersion != 1 || pack.targets.isEmpty || pack.items.isEmpty) {
       throw const FormatException('지원하지 않거나 비어 있는 콘텐츠입니다.');
     }
+    if (pack.language != languageTag) {
+      throw const FormatException('콘텐츠 팩 언어와 선택한 앱 언어가 다릅니다.');
+    }
     return pack;
   }
 
   Future<Directory> _packDirectory() async {
     final support = await _supportDirectoryLoader();
     final directory = Directory(
-      path.join(support.path, 'pronunciation_content'),
+      path.join(support.path, 'pronunciation_content', languageTag),
     );
     if (!await directory.exists()) {
       await directory.create(recursive: true);

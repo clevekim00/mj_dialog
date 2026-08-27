@@ -56,4 +56,32 @@ void main() {
     );
     expect(sentences.every((item) => item.targetOccurrenceCount >= 2), isTrue);
   });
+
+  test('영어 내장 콘텐츠는 initial, medial, final 목표를 분리한다', () async {
+    final raw = await rootBundle.loadString(
+      'assets/pronunciation/content/en_us_consonant_core.json',
+    );
+    final pack = PronunciationContentPack.fromJson(
+      jsonDecode(raw) as Map<String, dynamic>,
+    );
+
+    expect(pack.language, 'en-US');
+    expect(pack.targets, hasLength(12));
+    for (final position in PhonemePosition.values) {
+      expect(
+        pack.targets.where((target) => target.position == position),
+        hasLength(4),
+      );
+    }
+    for (final target in pack.targets) {
+      expect(
+        pack.itemsFor(target.id, ConsonantTrainingLevel.word),
+        hasLength(1),
+      );
+      expect(
+        pack.itemsFor(target.id, ConsonantTrainingLevel.sentence),
+        hasLength(1),
+      );
+    }
+  });
 }

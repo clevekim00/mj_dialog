@@ -41,18 +41,22 @@ void main() {
         description: '',
       ),
       contentVersion: '1.0.0',
+      language: 'en-US',
     );
 
     expect(result.status, PronunciationAnalysisStatus.completed);
     expect(result.overallPracticeScore, 84);
     expect(result.phonemes.single.expectedPhone, 'k');
+    expect(result.language, 'en-US');
     expect(adapter.statusReads, 2);
+    expect(adapter.sentLanguage, 'en-US');
   });
 
   test('MFA 정렬 결과는 점수 없이 음소 구간으로 파싱한다', () {
     final result = PronunciationAnalysisResult.fromJson({
       'jobId': 'mfa-job',
       'status': 'completed',
+      'language': 'ko-KR',
       'modelVersion': 'mfa-korean-v3.0.0',
       'contentVersion': '1.0.0',
       'overallPracticeScore': null,
@@ -87,6 +91,7 @@ void main() {
 
 class _AnalysisAdapter implements HttpClientAdapter {
   int statusReads = 0;
+  String? sentLanguage;
 
   @override
   Future<ResponseBody> fetch(
@@ -95,6 +100,11 @@ class _AnalysisAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     if (options.method == 'POST') {
+      final form = options.data as FormData;
+      sentLanguage = form.fields
+          .where((entry) => entry.key == 'language')
+          .single
+          .value;
       return _json({'jobId': 'job-1', 'status': 'queued'});
     }
     statusReads++;
@@ -104,6 +114,7 @@ class _AnalysisAdapter implements HttpClientAdapter {
     return _json({
       'jobId': 'job-1',
       'status': 'completed',
+      'language': 'en-US',
       'modelVersion': 'test-model',
       'contentVersion': '1.0.0',
       'overallPracticeScore': 84,

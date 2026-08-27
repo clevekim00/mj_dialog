@@ -1,30 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/view/chat_screen.dart';
 import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_history_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/features/practice/view/recording_library_screen.dart';
+import 'package:speech_rehab/l10n/app_localizations.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
+import 'package:speech_rehab/services/resources/app_strings.dart';
+import 'package:speech_rehab/services/resources/resource_providers.dart';
 
 /// The shared, width-adaptive navigation shell for phone, tablet, desktop,
 /// and web. Product destinations stay the same; only their presentation adapts.
-class AdaptiveAppShell extends StatefulWidget {
+class AdaptiveAppShell extends ConsumerStatefulWidget {
   const AdaptiveAppShell({super.key});
 
   @override
-  State<AdaptiveAppShell> createState() => _AdaptiveAppShellState();
+  ConsumerState<AdaptiveAppShell> createState() => _AdaptiveAppShellState();
 }
 
-class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
+class _AdaptiveAppShellState extends ConsumerState<AdaptiveAppShell> {
   int _selectedIndex = 0;
-
-  static const _destinations = <_AppDestination>[
-    _AppDestination('오늘', Icons.today_outlined, Icons.today),
-    _AppDestination('훈련', Icons.fitness_center_outlined, Icons.fitness_center),
-    _AppDestination('기록', Icons.calendar_month_outlined, Icons.calendar_month),
-    _AppDestination('소통', Icons.forum_outlined, Icons.forum),
-    _AppDestination('설정', Icons.settings_outlined, Icons.settings),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +34,7 @@ class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
   }
 
   Widget _buildCompact() {
+    final strings = _strings();
     final compactIndex = _selectedIndex < 3 ? _selectedIndex : 3;
     final body = _selectedIndex < 3
         ? _destinationBody(_selectedIndex)
@@ -47,26 +45,26 @@ class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: compactIndex,
         onDestinationSelected: (index) => _select(index),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.today_outlined),
-            selectedIcon: Icon(Icons.today),
-            label: '오늘',
+            icon: const Icon(Icons.today_outlined),
+            selectedIcon: const Icon(Icons.today),
+            label: strings.today,
           ),
           NavigationDestination(
-            icon: Icon(Icons.fitness_center_outlined),
-            selectedIcon: Icon(Icons.fitness_center),
-            label: '훈련',
+            icon: const Icon(Icons.fitness_center_outlined),
+            selectedIcon: const Icon(Icons.fitness_center),
+            label: strings.training,
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: '기록',
+            icon: const Icon(Icons.calendar_month_outlined),
+            selectedIcon: const Icon(Icons.calendar_month),
+            label: strings.records,
           ),
           NavigationDestination(
-            icon: Icon(Icons.more_horiz),
-            selectedIcon: Icon(Icons.more),
-            label: '더보기',
+            icon: const Icon(Icons.more_horiz),
+            selectedIcon: const Icon(Icons.more),
+            label: strings.more,
           ),
         ],
       ),
@@ -74,6 +72,26 @@ class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
   }
 
   Widget _buildLarge({required bool extended}) {
+    final strings = _strings();
+    final destinations = <_AppDestination>[
+      _AppDestination(strings.today, Icons.today_outlined, Icons.today),
+      _AppDestination(
+        strings.training,
+        Icons.fitness_center_outlined,
+        Icons.fitness_center,
+      ),
+      _AppDestination(
+        strings.records,
+        Icons.calendar_month_outlined,
+        Icons.calendar_month,
+      ),
+      _AppDestination(strings.communication, Icons.forum_outlined, Icons.forum),
+      _AppDestination(
+        strings.settings,
+        Icons.settings_outlined,
+        Icons.settings,
+      ),
+    ];
     return Scaffold(
       body: SafeArea(
         child: Row(
@@ -100,7 +118,7 @@ class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
                     : const Icon(Icons.graphic_eq, color: Colors.blueAccent),
               ),
               destinations: [
-                for (final destination in _destinations)
+                for (final destination in destinations)
                   NavigationRailDestination(
                     icon: Icon(destination.icon),
                     selectedIcon: Icon(destination.selectedIcon),
@@ -114,6 +132,15 @@ class _AdaptiveAppShellState extends State<AdaptiveAppShell> {
         ),
       ),
     );
+  }
+
+  AppStrings _strings() {
+    final language = ref.watch(appLanguageProvider);
+    final overrides = ref
+        .watch(runtimeStringsProvider(language.languageTag))
+        .asData
+        ?.value;
+    return AppStrings(AppLocalizations.of(context)!, overrides ?? const {});
   }
 
   void _select(int index) => setState(() => _selectedIndex = index);
@@ -218,39 +245,66 @@ class _CommunicationHub extends StatelessWidget {
   }
 }
 
-class _SettingsHub extends StatelessWidget {
+class _SettingsHub extends ConsumerWidget {
   const _SettingsHub();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(appLanguageProvider);
+    final overrides = ref
+        .watch(runtimeStringsProvider(language.languageTag))
+        .asData
+        ?.value;
+    final strings = AppStrings(
+      AppLocalizations.of(context)!,
+      overrides ?? const {},
+    );
     return _HubPage(
-      title: '설정',
-      description: '훈련 목표와 사용 환경을 관리하세요.',
+      title: strings.settings,
+      description: strings.settingsDescription,
       children: [
         _HubCard(
-          title: '재활 목표 다시 설정',
-          subtitle: '하루 훈련 횟수와 주요 훈련 목표를 조정합니다.',
+          title: strings.language,
+          subtitle: strings.languageDescription,
+          icon: Icons.language,
+          color: Colors.purpleAccent,
+          onTap: () => Navigator.pushNamed(context, '/language_settings'),
+        ),
+        _HubCard(
+          title: Localizations.localeOf(context).languageCode == 'ko'
+              ? '다운로드 리소스'
+              : 'Downloaded Resources',
+          subtitle: Localizations.localeOf(context).languageCode == 'ko'
+              ? '언어와 훈련 콘텐츠의 업데이트 상태를 확인합니다.'
+              : 'Check language and training content updates.',
+          icon: Icons.download_for_offline_outlined,
+          color: Colors.tealAccent,
+          onTap: () => Navigator.pushNamed(context, '/resource_center'),
+        ),
+        _HubCard(
+          title: strings.resetGoals,
+          subtitle: strings.resetGoalsDescription,
           icon: Icons.flag_outlined,
           color: Colors.blueAccent,
           onTap: () => Navigator.pushNamed(context, '/onboarding'),
         ),
         _HubCard(
-          title: '구강·호흡 훈련 설정',
-          subtitle: '반복 횟수, 재생 속도, 자막과 음성 안내를 설정합니다.',
+          title: strings.oralTrainingSettings,
+          subtitle: strings.oralTrainingSettingsDescription,
           icon: Icons.repeat,
           color: Colors.orangeAccent,
           onTap: () => Navigator.pushNamed(context, '/training_settings'),
         ),
         _HubCard(
-          title: '마이크 점검',
-          subtitle: '훈련 전 입력 장치와 주변 소음을 확인합니다.',
+          title: strings.microphoneCheck,
+          subtitle: strings.microphoneCheckDescription,
           icon: Icons.mic_outlined,
           color: Colors.greenAccent,
           onTap: () => Navigator.pushNamed(context, '/microphone_check'),
         ),
-        const _InfoCard(
-          title: '접근성 원칙',
-          subtitle: '큰 조작 영역, 명확한 글자 안내, 일관된 훈련 버튼을 제공합니다.',
+        _InfoCard(
+          title: strings.accessibilityPrinciples,
+          subtitle: strings.accessibilityPrinciplesDescription,
           icon: Icons.accessibility_new,
         ),
       ],

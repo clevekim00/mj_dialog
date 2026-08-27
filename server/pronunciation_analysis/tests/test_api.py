@@ -74,7 +74,7 @@ class ApiTests(unittest.TestCase):
             "/v1/analysis/jobs",
             files={"audio": ("sample.wav", make_wav(), "audio/wav")},
             data={
-                "text": "가", "target_phone": "k", "position": "onset",
+                "text": "가", "language": "ko-KR", "target_phone": "k", "position": "onset",
                 "content_version": "1.0.0", "baseline_score": "80",
             },
         )
@@ -84,6 +84,7 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result.json()["status"], "completed")
         self.assertEqual(result.json()["overallPracticeScore"], 88)
         self.assertEqual(result.json()["baselineDelta"], 8)
+        self.assertEqual(result.json()["language"], "ko-KR")
 
     def test_mfa_alignment_returns_timing_without_score(self):
         configure_backend(FakeMfaBackend())
@@ -91,7 +92,7 @@ class ApiTests(unittest.TestCase):
             "/v1/analysis/jobs",
             files={"audio": ("sample.wav", make_wav(), "audio/wav")},
             data={
-                "text": "가", "target_phone": "k", "position": "onset",
+                "text": "가", "language": "ko-KR", "target_phone": "k", "position": "onset",
                 "content_version": "1.0.0",
             },
         )
@@ -100,6 +101,37 @@ class ApiTests(unittest.TestCase):
         self.assertIsNone(result["overallPracticeScore"])
         self.assertEqual(result["phonemes"][0]["status"], "aligned")
         self.assertIn("MFA 음소 정렬", result["message"])
+
+    def test_routes_english_request_and_localizes_contract(self):
+        english = FakeMfaBackend()
+        english.model_version = "mfa-english-test"
+        configure_backend(english, language="en-US")
+        response = self.client.post(
+            "/v1/analysis/jobs",
+            files={"audio": ("sample.wav", make_wav(), "audio/wav")},
+            data={
+                "text": "key", "language": "en-US", "target_phone": "k",
+                "position": "onset", "content_version": "en-US-1.0.0",
+            },
+        )
+        self.assertEqual(response.status_code, 202)
+        result = self.client.get(f"/v1/analysis/jobs/{response.json()['jobId']}").json()
+        self.assertEqual(result["language"], "en-US")
+        self.assertEqual(result["modelVersion"], "mfa-english-test")
+        self.assertIn("alignment is complete", result["message"])
+        self.assertIn("not a clinical diagnosis", result["disclaimer"])
+
+    def test_rejects_unsupported_language(self):
+        response = self.client.post(
+            "/v1/analysis/jobs",
+            files={"audio": ("sample.wav", make_wav(), "audio/wav")},
+            data={
+                "text": "bonjour", "language": "fr-FR", "target_phone": "b",
+                "position": "onset", "content_version": "1.0.0",
+            },
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"]["code"], "unsupported_language")
 
 
 if __name__ == "__main__":

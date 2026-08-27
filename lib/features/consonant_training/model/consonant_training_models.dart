@@ -1,12 +1,19 @@
-enum PhonemePosition { onset, coda }
+enum PhonemePosition { onset, medial, coda }
 
 extension PhonemePositionLabel on PhonemePosition {
-  String get label => this == PhonemePosition.onset ? '초성' : '받침';
+  String get label => switch (this) {
+    PhonemePosition.onset => '초성',
+    PhonemePosition.medial => '중간',
+    PhonemePosition.coda => '받침',
+  };
 
   String get storageValue => name;
 
-  static PhonemePosition fromValue(String? value) =>
-      value == 'coda' ? PhonemePosition.coda : PhonemePosition.onset;
+  static PhonemePosition fromValue(String? value) => switch (value) {
+    'medial' => PhonemePosition.medial,
+    'coda' => PhonemePosition.coda,
+    _ => PhonemePosition.onset,
+  };
 }
 
 enum ConsonantTrainingLevel { syllable, word, sentence }
@@ -102,6 +109,7 @@ class PronunciationContentPack {
     required this.targets,
     required this.items,
     required this.source,
+    this.language = 'ko-KR',
   });
 
   final String id;
@@ -110,6 +118,7 @@ class PronunciationContentPack {
   final List<ConsonantTrainingTarget> targets;
   final List<PronunciationContentItem> items;
   final String source;
+  final String language;
 
   factory PronunciationContentPack.fromJson(
     Map<String, dynamic> json, {
@@ -127,6 +136,7 @@ class PronunciationContentPack {
         .map(PronunciationContentItem.fromJson)
         .toList(growable: false),
     source: source,
+    language: json['language'] as String? ?? 'ko-KR',
   );
 
   List<PronunciationContentItem> itemsFor(
@@ -223,6 +233,7 @@ class PronunciationAnalysisResult {
     required this.baselineDelta,
     required this.signalAccepted,
     required this.disclaimer,
+    this.language = 'ko-KR',
     this.message,
   });
 
@@ -236,6 +247,7 @@ class PronunciationAnalysisResult {
   final double? baselineDelta;
   final bool signalAccepted;
   final String disclaimer;
+  final String language;
   final String? message;
 
   bool get hasReliableScore =>
@@ -267,6 +279,7 @@ class PronunciationAnalysisResult {
       signalAccepted: signal?['accepted'] as bool? ?? false,
       disclaimer:
           json['disclaimer'] as String? ?? '훈련 참고용 자동 분석이며 임상 진단이 아닙니다.',
+      language: json['language'] as String? ?? 'ko-KR',
       message: json['message'] as String?,
     );
   }
@@ -283,6 +296,7 @@ class PronunciationAnalysisResult {
         baselineDelta: null,
         signalAccepted: false,
         disclaimer: '훈련 참고용 자동 분석이며 임상 진단이 아닙니다.',
+        language: 'ko-KR',
         message: message,
       );
 }
@@ -350,6 +364,7 @@ class ConsonantTrainingAttempt {
           )
           .toList(),
       'disclaimer': analysis.disclaimer,
+      'language': analysis.language,
       'message': analysis.message,
     },
   };

@@ -38,9 +38,29 @@ void main() {
     expect(baseline.validAttemptCount, 3);
     expect(baseline.modelVersion, 'test-model');
   });
+
+  test('언어가 다른 점수는 같은 기준선에 섞지 않는다', () async {
+    final service = ConsonantTrainingHistoryService(
+      preferences: await SharedPreferences.getInstance(),
+    );
+    final attempts = [
+      _attempt(90, language: 'ko-KR'),
+      _attempt(80, language: 'ko-KR'),
+      _attempt(70, language: 'en-US'),
+    ];
+
+    expect(
+      service.baselineFor(attempts, 'onset_g', language: 'ko-KR'),
+      isNull,
+    );
+  });
 }
 
-ConsonantTrainingAttempt _attempt(int score, {String id = 'attempt'}) {
+ConsonantTrainingAttempt _attempt(
+  int score, {
+  String id = 'attempt',
+  String language = 'ko-KR',
+}) {
   return ConsonantTrainingAttempt(
     id: id,
     targetId: 'onset_g',
@@ -60,6 +80,7 @@ ConsonantTrainingAttempt _attempt(int score, {String id = 'attempt'}) {
       baselineDelta: null,
       signalAccepted: true,
       disclaimer: 'test',
+      language: language,
     ),
   );
 }

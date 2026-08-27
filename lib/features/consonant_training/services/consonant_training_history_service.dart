@@ -39,12 +39,18 @@ class ConsonantTrainingHistoryService {
 
   ConsonantBaseline? baselineFor(
     List<ConsonantTrainingAttempt> attempts,
-    String targetId,
-  ) {
-    final valid = attempts
+    String targetId, {
+    String? language,
+  }) {
+    final candidates = attempts
         .where(
           (item) => item.targetId == targetId && item.analysis.hasReliableScore,
         )
+        .toList();
+    if (candidates.isEmpty) return null;
+    final selectedLanguage = language ?? candidates.first.analysis.language;
+    final valid = candidates
+        .where((item) => item.analysis.language == selectedLanguage)
         .toList();
     if (valid.length < 3) return null;
     final modelVersion = valid.first.analysis.modelVersion;

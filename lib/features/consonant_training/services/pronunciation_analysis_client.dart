@@ -24,6 +24,7 @@ class PronunciationAnalysisClient {
     required PronunciationContentItem item,
     required ConsonantTrainingTarget target,
     required String contentVersion,
+    required String language,
     double? baselineScore,
   }) async {
     try {
@@ -35,8 +36,10 @@ class PronunciationAnalysisClient {
         data: FormData.fromMap({
           'audio': await MultipartFile.fromFile(audioFilePath),
           'text': item.text,
+          'language': language,
           'target_phone': target.phone,
           'position': target.position.name,
+          'target_occurrence': 0,
           'content_version': contentVersion,
           'baseline_score': ?baselineScore,
         }),

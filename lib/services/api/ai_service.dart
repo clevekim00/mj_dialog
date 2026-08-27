@@ -5,20 +5,26 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
-  return AiService();
+  return AiService(
+    languageCode: ref.watch(appLanguageProvider).resolvedLocale.languageCode,
+  );
 });
 
 class AiService {
-  const AiService();
+  const AiService({this.languageCode});
+
+  final String? languageCode;
 
   static final Lock _gemmaLock = Lock();
   static bool _gemmaReady = false;
 
   String get _osLanguage {
-    final locale = PlatformDispatcher.instance.locale;
-    return switch (locale.languageCode) {
+    final code =
+        languageCode ?? PlatformDispatcher.instance.locale.languageCode;
+    return switch (code) {
       'ko' => 'Korean',
       'en' => 'English',
       'ja' => 'Japanese',

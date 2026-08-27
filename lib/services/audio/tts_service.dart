@@ -4,13 +4,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 
 final ttsServiceProvider = Provider<TtsService>((ref) {
-  return TtsService();
+  final languageTag = ref.watch(appLanguageProvider).languageTag;
+  final service = TtsService(languageTag: languageTag);
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 class TtsService {
-  TtsService() {
+  TtsService({this.languageTag = 'ko-KR'}) {
     _initFuture = _initTts();
   }
 
@@ -18,6 +22,7 @@ class TtsService {
   static const MethodChannel _iosTtsChannel = MethodChannel('speech_rehab/tts');
   late final Future<void> _initFuture;
   Completer<void>? _speakCompleter;
+  final String languageTag;
 
   bool get _usesNativeIosTts => defaultTargetPlatform == TargetPlatform.iOS;
 
@@ -28,7 +33,7 @@ class TtsService {
     }
 
     await _flutterTts.awaitSpeakCompletion(true);
-    await _flutterTts.setLanguage('ko-KR');
+    await _flutterTts.setLanguage(languageTag);
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
@@ -43,7 +48,10 @@ class TtsService {
   Future<void> speak(String text) async {
     if (_usesNativeIosTts) {
       if (text.isNotEmpty) {
-        await _iosTtsChannel.invokeMethod<void>('speak', {'text': text});
+        await _iosTtsChannel.invokeMethod<void>('speak', {
+          'text': text,
+          'language': languageTag,
+        });
       }
       return;
     }

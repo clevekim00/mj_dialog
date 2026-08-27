@@ -26,19 +26,31 @@ class ConsonantTrainingHubScreen extends StatefulWidget {
 
 class _ConsonantTrainingHubScreenState
     extends State<ConsonantTrainingHubScreen> {
-  late final ConsonantContentRepository _repository;
+  ConsonantContentRepository? _repository;
   late final ConsonantTrainingHistoryService _historyService;
-  late Future<PronunciationContentPack> _packFuture;
+  Future<PronunciationContentPack>? _packFuture;
+  String? _loadedLanguage;
   PhonemePosition _position = PhonemePosition.onset;
   bool _updating = false;
 
   @override
   void initState() {
     super.initState();
-    _repository = widget.repository ?? ConsonantContentRepository();
     _historyService =
         widget.historyService ?? ConsonantTrainingHistoryService();
-    _packFuture = _repository.load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = Localizations.localeOf(context);
+    final languageTag = locale.languageCode == 'ko' ? 'ko-KR' : 'en-US';
+    if (_packFuture != null && _loadedLanguage == languageTag) return;
+    _loadedLanguage = languageTag;
+    _repository =
+        widget.repository ??
+        ConsonantContentRepository(languageTag: languageTag);
+    _packFuture = _repository!.load();
     _refreshInBackground();
   }
 
@@ -82,6 +94,7 @@ class _ConsonantTrainingHubScreenState
             return _ErrorView(onRetry: _reload);
           }
           final pack = snapshot.data!;
+          final isEnglish = pack.language == 'en-US';
           final targets = pack.targets
               .where((target) => target.position == _position)
               .toList(growable: false);
@@ -99,12 +112,20 @@ class _ConsonantTrainingHubScreenState
               ),
               const SizedBox(height: 20),
               SegmentedButton<PhonemePosition>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: PhonemePosition.onset,
-                    label: Text('초성'),
+                    label: Text(isEnglish ? 'Initial' : '초성'),
                   ),
-                  ButtonSegment(value: PhonemePosition.coda, label: Text('받침')),
+                  if (isEnglish)
+                    const ButtonSegment(
+                      value: PhonemePosition.medial,
+                      label: Text('Medial'),
+                    ),
+                  ButtonSegment(
+                    value: PhonemePosition.coda,
+                    label: Text(isEnglish ? 'Final' : '받침'),
+                  ),
                 ],
                 selected: {_position},
                 onSelectionChanged: (value) =>
@@ -150,12 +171,12 @@ class _ConsonantTrainingHubScreenState
     );
   }
 
-  void _reload() => setState(() => _packFuture = _repository.load());
+  void _reload() => setState(() => _packFuture = _repository!.load());
 
   Future<void> _refreshInBackground() async {
-    if (_repository.manifestUrl.trim().isEmpty) return;
+    if (_repository!.manifestUrl.trim().isEmpty) return;
     try {
-      final result = await _repository.updateIfAvailable();
+      final result = await _repository!.updateIfAvailable();
       if (mounted && result.updated) _reload();
     } catch (_) {
       // 네트워크가 없어도 내장 콘텐츠로 훈련을 계속합니다.
@@ -165,7 +186,7 @@ class _ConsonantTrainingHubScreenState
   Future<void> _updateContent() async {
     setState(() => _updating = true);
     try {
-      final result = await _repository.updateIfAvailable();
+      final result = await _repository!.updateIfAvailable();
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -222,6 +243,12 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen> {
 
   List<PronunciationContentItem> get _items =>
       widget.pack.itemsFor(widget.target.id, _level);
+  List<ConsonantTrainingLevel> get _availableLevels => ConsonantTrainingLevel
+      .values
+      .where(
+        (level) => widget.pack.itemsFor(widget.target.id, level).isNotEmpty,
+      )
+      .toList(growable: false);
   PronunciationContentItem get _item => _items[_index % _items.length];
 
   @override
@@ -230,7 +257,10 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen> {
     _analysisClient = widget.analysisClient ?? PronunciationAnalysisClient();
     _recorder = widget.recorder ?? AudioRecorderService();
     _player = widget.player ?? AudioPlayerService();
-    _tts = widget.tts ?? TtsService();
+    _tts = widget.tts ?? TtsService(languageTag: widget.pack.language);
+    if (_items.isEmpty && _availableLevels.isNotEmpty) {
+      _level = _availableLevels.first;
+    }
   }
 
   @override
@@ -242,10 +272,20 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
             SegmentedButton<ConsonantTrainingLevel>(
-              segments: ConsonantTrainingLevel.values
+              segments: _availableLevels
                   .map(
-                    (level) =>
-                        ButtonSegment(value: level, label: Text(level.label)),
+                    (level) => ButtonSegment(
+                      value: level,
+                      label: Text(
+                        widget.pack.language == 'en-US'
+                            ? switch (level) {
+                                ConsonantTrainingLevel.syllable => 'Syllable',
+                                ConsonantTrainingLevel.word => 'Word',
+                                ConsonantTrainingLevel.sentence => 'Sentence',
+                              }
+                            : level.label,
+                      ),
+                    ),
                   )
                   .toList(),
               selected: {_level},
@@ -402,12 +442,14 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen> {
     final baseline = widget.historyService.baselineFor(
       attempts,
       widget.target.id,
+      language: widget.pack.language,
     );
     final result = await _analysisClient.analyze(
       audioFilePath: path,
       item: _item,
       target: widget.target,
       contentVersion: widget.pack.version,
+      language: widget.pack.language,
       baselineScore: baseline?.medianScore,
     );
     final attempt = ConsonantTrainingAttempt(

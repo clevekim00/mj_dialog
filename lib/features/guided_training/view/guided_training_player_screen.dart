@@ -217,7 +217,8 @@ class _GuidedTrainingPlayerScreenState
   Future<void> _speakInstruction() async {
     if (!_ttsEnabled) return;
     try {
-      await _tts.setLanguage('ko-KR');
+      final locale = Localizations.localeOf(context);
+      await _tts.setLanguage(locale.languageCode == 'ko' ? 'ko-KR' : 'en-US');
       await _tts.setSpeechRate(0.42);
       await _tts.speak(_exercise.instruction);
     } catch (_) {
