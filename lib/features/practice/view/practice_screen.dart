@@ -1,101 +1,396 @@
+import 'dart:async';
+import 'package:speech_rehab/services/audio/audio_player_service.dart';
 import 'package:camera/camera.dart';
+import 'package:speech_rehab/services/rehab_profile_service.dart';
+import 'package:speech_rehab/services/audio/tts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/practice/view/widgets/mouth_video_preview_sheet.dart';
 import 'package:speech_rehab/services/practice_content_service.dart';
 import '../model/practice_mode.dart';
 import '../provider/practice_provider.dart';
-import '../../chat/provider/chat_provider.dart';
 import '../../chat/view/widgets/feedback_card.dart';
-import '../../chat/view/widgets/animated_orb.dart';
 
-class PracticeScreen extends ConsumerWidget {
+class PracticeScreen extends ConsumerStatefulWidget {
   const PracticeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final practice = ref.watch(practiceProvider);
-    final notifier = ref.read(practiceProvider.notifier);
+  ConsumerState<PracticeScreen> createState() => _PracticeScreenState();
+}
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
-      appBar: AppBar(
-        title: Text(practice.mode.label),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+class _PracticeScreenState extends ConsumerState<PracticeScreen>
+    with WidgetsBindingObserver {
+  TtsService? _tts;
+  AudioPlayerService? _player;
+  bool _confirmingExit = false;
+  TtsService get _ttsService {
+    final TtsService service = _tts ?? ref.read<TtsService>(ttsServiceProvider);
+    _tts = service;
+    return service;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(rehabSessionProvider.notifier).beginSession();
+    });
+  }
+
+  Future<void> _silence() async {
+    try {
+      await _tts?.stop();
+    } catch (_) {}
+    try {
+      await _player?.stop();
+    } catch (_) {}
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle == AppLifecycleState.paused ||
+        lifecycle == AppLifecycleState.hidden) {
+      if (ref.read(practiceProvider).state == PracticeState.recording) {
+        unawaited(ref.read(practiceProvider.notifier).stopRecording());
+      }
+      unawaited(_silence());
+    }
+  }
+
+  Future<void> _openSecondary(String route) async {
+    await _silence();
+    if (mounted) Navigator.pushNamed(context, route);
+  }
+
+  Future<void> _requestExit() async {
+    if (_confirmingExit) return;
+    if (ref.read(practiceProvider).state != PracticeState.recording) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('녹음을 저장하고 있어요. 잠시만 기다려 주세요.')),
+      );
+      return;
+    }
+    _confirmingExit = true;
+    final finish = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('녹음을 마치고 나갈까요?'),
+        content: const Text('지금까지 녹음한 내용을 저장한 뒤 연습을 마쳐요.'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.library_music),
-            tooltip: '녹음 보관함',
-            onPressed: () {
-              Navigator.pushNamed(context, '/recording_library');
-            },
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('계속 녹음'),
           ),
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            onPressed: () {
-              Navigator.pushNamed(context, '/dashboard');
-            },
-            tooltip: '성과 대시보드',
-          ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.pushNamed(context, '/practice_history');
-            },
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('녹음 마치고 나가기'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              _buildRehabSessionCard(ref, practice),
-              const SizedBox(height: 20),
-              _buildModeSelector(ref, practice.mode),
-              if (practice.mode == PracticeMode.wordGame) ...[
-                const SizedBox(height: 14),
-                _buildWordGameControls(ref, practice),
-              ],
-              if (practice.mode == PracticeMode.longSentence) ...[
-                const SizedBox(height: 14),
-                _buildLongSentenceTools(context, ref),
-              ],
-              const SizedBox(height: 20),
-              _buildTargetCard(context, ref, practice),
-              const SizedBox(height: 40),
-              // Changed from Expanded to a fixed/min height for scrolling compatibility
-              Container(
-                constraints: const BoxConstraints(minHeight: 210),
-                child: Center(
-                  child: _buildInteractionArea(
-                    context,
-                    ref,
-                    practice,
-                    notifier,
-                  ),
-                ),
+    );
+    if (!mounted) return;
+    if (finish == true) {
+      await ref.read(practiceProvider.notifier).stopRecording();
+      if (!mounted) return;
+      if (ref.read(practiceProvider).state == PracticeState.error) {
+        _confirmingExit = false;
+        return;
+      }
+      await _silence();
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) Navigator.maybePop(context);
+    }
+    _confirmingExit = false;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_silence());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final practice = ref.watch(practiceProvider);
+    final notifier = ref.read(practiceProvider.notifier);
+
+    final locked =
+        practice.state == PracticeState.recording ||
+        practice.state == PracticeState.analyzing;
+    if (practice.isPlaying) _player = ref.read(audioPlayerServiceProvider);
+    return PopScope(
+      canPop: !locked,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          unawaited(_silence());
+        } else {
+          unawaited(_requestExit());
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0D0D0D),
+        appBar: AppBar(
+          title: Text(practice.mode.label),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.library_music),
+              tooltip: '녹음 보관함',
+              onPressed: locked
+                  ? null
+                  : () => _openSecondary('/recording_library'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              onPressed: locked ? null : () => _openSecondary('/dashboard'),
+              tooltip: '성과 대시보드',
+            ),
+            IconButton(
+              icon: const Icon(Icons.history),
+              tooltip: '연습 기록',
+              onPressed: locked
+                  ? null
+                  : () => _openSecondary('/practice_history'),
+            ),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          children: [
+            AbsorbPointer(
+              absorbing:
+                  practice.state == PracticeState.recording ||
+                  practice.state == PracticeState.analyzing,
+              child: _buildTargetCard(context, ref, practice),
+            ),
+            const SizedBox(height: 16),
+            if (practice.feedback != null) ...[
+              FeedbackCard(
+                aiResponse: practice.feedback!,
+                onDismiss: () => notifier.dismissFeedback(),
               ),
-              const SizedBox(height: 20),
-              if (practice.feedback != null) ...[
-                FeedbackCard(
-                  aiResponse: practice.feedback!,
-                  onDismiss: () => notifier.dismissFeedback(),
-                ),
-                const SizedBox(height: 20),
-              ],
-              if (_shouldShowPostPracticeActions(practice))
-                _buildActionButtons(context, practice, notifier),
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
             ],
-          ),
+            _buildInteractionArea(context, ref, practice, notifier),
+            if (_shouldShowPostPracticeActions(practice)) ...[
+              _buildActionButtons(context, practice, notifier),
+              const SizedBox(height: 12),
+              const Text(
+                '연습 후 피로도 (선택)',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (var value = 1; value <= 5; value++)
+                    ChoiceChip(
+                      label: Text('$value / 5'),
+                      selected: practice.fatigueAfter == value,
+                      onSelected: (_) => notifier.saveFatigueAfter(value),
+                    ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            AbsorbPointer(
+              absorbing:
+                  practice.state == PracticeState.recording ||
+                  practice.state == PracticeState.analyzing,
+              child: ExpansionTile(
+                title: const Text('목표 · 피로도 · 연습 설정'),
+                children: [
+                  _buildRehabSessionCard(ref, practice),
+                  const SizedBox(height: 12),
+                  _buildModeSelector(ref, practice.mode),
+                  if (practice.mode == PracticeMode.wordGame)
+                    _buildWordGameControls(ref, practice),
+                  if (practice.mode == PracticeMode.longSentence)
+                    _buildLongSentenceTools(context, ref),
+                ],
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildRecordingControls(
+          context,
+          ref,
+          practice,
+          notifier,
         ),
       ),
     );
   }
+
+  Widget _buildRecordingControls(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeProgress practice,
+    PracticeNotifier notifier,
+  ) {
+    final recording = practice.state == PracticeState.recording;
+    final busy = practice.state == PracticeState.analyzing;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                busy
+                    ? '녹음과 인식 결과를 정리하고 있어요'
+                    : recording
+                    ? '녹음 중 · 편안하게 말하고 끝내세요'
+                    : _idlePrompt(practice.mode),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: recording ? Colors.redAccent : Colors.white70,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (busy) const LinearProgressIndicator(),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const Key('practice-record'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                    ),
+                    onPressed: busy
+                        ? null
+                        : () async {
+                            if (recording) {
+                              await notifier.stopRecording();
+                              return;
+                            }
+                            if (ref.read(rehabSessionProvider).fatigueBefore ==
+                                null) {
+                              final fatigue = await _askFatigue(
+                                context,
+                                '시작 전 피로도',
+                              );
+                              if (fatigue == null || !context.mounted) return;
+                              ref
+                                  .read(rehabSessionProvider.notifier)
+                                  .setFatigue(fatigue);
+                              notifier.setFatigueBefore(fatigue);
+                            }
+                            try {
+                              await _ttsService.stop();
+                            } catch (_) {}
+                            await notifier.startRecording();
+                          },
+                    icon: Icon(recording ? Icons.stop : Icons.mic),
+                    label: Text(recording ? '녹음 끝내기' : '녹음 시작'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                    ),
+                    onPressed: recording || busy
+                        ? null
+                        : () async {
+                            if (practice.lastAudioPath != null &&
+                                practice.fatigueAfter == null) {
+                              final fatigue = await _askFatigue(
+                                context,
+                                '마친 뒤 피로도',
+                                allowSkip: true,
+                              );
+                              if (!context.mounted) return;
+                              if (fatigue == null) return;
+                              if (fatigue > 0) {
+                                await notifier.saveFatigueAfter(fatigue);
+                              }
+                            }
+                            try {
+                              await notifier.stopPlayback();
+                            } catch (_) {}
+                            try {
+                              await _ttsService.stop();
+                            } catch (_) {}
+                            if (context.mounted) Navigator.maybePop(context);
+                          },
+                    icon: const Icon(Icons.self_improvement),
+                    label: const Text('쉬기 · 마치기'),
+                  ),
+                ),
+              ],
+            ),
+            if (!practice.isFreeMode)
+              TextButton.icon(
+                onPressed: recording || busy
+                    ? null
+                    : () async {
+                        try {
+                          await _ttsService.speak(practice.targetText);
+                        } catch (_) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  '예시 음성을 재생하지 못했어요. 글을 보고 연습할 수 있어요.',
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                icon: const Icon(Icons.volume_up_outlined),
+                label: const Text('예시 듣기 (합성 음성)'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<int?> _askFatigue(
+    BuildContext context,
+    String title, {
+    bool allowSkip = false,
+  }) => showDialog<int>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('1 편안해요 · 5 많이 피곤해요'),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (var value = 1; value <= 5; value++)
+                FilledButton(
+                  onPressed: () => Navigator.pop(dialogContext, value),
+                  child: Text('$value'),
+                ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, allowSkip ? 0 : null),
+          child: Text(allowSkip ? '기록하지 않고 마치기' : '돌아가기'),
+        ),
+      ],
+    ),
+  );
 
   Widget _buildModeSelector(WidgetRef ref, PracticeMode mode) {
     return Container(
@@ -177,6 +472,7 @@ class PracticeScreen extends ConsumerWidget {
                 ),
                 onSelected: (_) {
                   ref.read(practiceProvider.notifier).setSessionGoal(goal);
+                  ref.read(rehabSessionProvider.notifier).setGoal(goal);
                 },
               );
             }).toList(),
@@ -216,6 +512,9 @@ class PracticeScreen extends ConsumerWidget {
                     ref
                         .read(practiceProvider.notifier)
                         .setFatigueBefore(value.round());
+                    ref
+                        .read(rehabSessionProvider.notifier)
+                        .setFatigue(value.round());
                   },
           ),
         ],
@@ -422,7 +721,7 @@ class PracticeScreen extends ConsumerWidget {
                             size: 20,
                           ),
                           onPressed: () => _startFailedWordReview(context, ref),
-                          tooltip: '틀린 단어 복습',
+                          tooltip: '다시 연습할 단어 복습',
                         ),
                       if (practice.mode == PracticeMode.longSentence) ...[
                         IconButton(
@@ -482,7 +781,7 @@ class PracticeScreen extends ConsumerWidget {
               color: practice.isFreeMode ? Colors.white54 : Colors.white,
               fontSize: switch (practice.mode) {
                 PracticeMode.wordGame => 44,
-                PracticeMode.longSentence => 17,
+                PracticeMode.longSentence => 24,
                 _ => practice.isFreeMode ? 18 : 22,
               },
               fontWeight: practice.mode == PracticeMode.longSentence
@@ -568,7 +867,7 @@ class PracticeScreen extends ConsumerWidget {
                   size: 20,
                 ),
                 onPressed: () => _startFailedWordReview(context, ref),
-                tooltip: '틀린 단어 복습',
+                tooltip: '다시 연습할 단어 복습',
               ),
               IconButton(
                 icon: const Icon(Icons.restart_alt, color: Colors.white54),
@@ -868,7 +1167,9 @@ class PracticeScreen extends ConsumerWidget {
     final started = ref.read(practiceProvider.notifier).startFailedWordReview();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(started ? '틀린 단어 복습을 시작합니다.' : '복습할 틀린 단어가 없습니다.'),
+        content: Text(
+          started ? '다시 연습할 단어 복습을 시작합니다.' : '복습할 다시 연습할 단어가 없습니다.',
+        ),
       ),
     );
   }
@@ -1181,7 +1482,7 @@ class PracticeScreen extends ConsumerWidget {
               CircularProgressIndicator(color: Colors.blueAccent),
               SizedBox(height: 20),
               Text(
-                'AI가 발음을 분석하고 있습니다...',
+                '녹음과 인식 결과를 정리하고 있어요',
                 style: TextStyle(color: Colors.white70),
               ),
             ],
@@ -1193,39 +1494,17 @@ class PracticeScreen extends ConsumerWidget {
   }
 
   Widget _buildOrbArea(PracticeProgress practice, PracticeNotifier notifier) {
-    // Map PracticeState to ConversationState for AnimatedOrb
-    final orbState = switch (practice.state) {
-      PracticeState.recording => ConversationState.listening,
-      PracticeState.analyzing => ConversationState.thinking,
-      _ => ConversationState.idle,
-    };
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: () {
-            if (practice.state == PracticeState.recording) {
-              notifier.stopRecording();
-            } else {
-              notifier.startRecording();
-            }
-          },
-          child: AnimatedOrb(state: orbState),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          practice.state == PracticeState.recording
-              ? '불편하면 즉시 멈추고 쉬어 주세요'
-              : _idlePrompt(practice.mode),
-          style: TextStyle(
-            color: practice.state == PracticeState.recording
-                ? Colors.redAccent
-                : Colors.white54,
-            fontSize: 16,
+        if (practice.state == PracticeState.error)
+          const Padding(
+            padding: EdgeInsets.all(12),
+            child: Text(
+              '녹음이 완료되지 않았어요. 마이크 상태를 확인하고 다시 시도해 주세요.',
+              style: TextStyle(color: Colors.orangeAccent),
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
         OutlinedButton.icon(
           onPressed: practice.state == PracticeState.recording
               ? null
@@ -1272,38 +1551,6 @@ class PracticeScreen extends ConsumerWidget {
           _buildCameraPreview(notifier.mouthVideoController!),
         ],
         const SizedBox(height: 14),
-        SizedBox(
-          width: 220,
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              if (practice.state == PracticeState.recording) {
-                notifier.stopRecording();
-              } else {
-                notifier.startRecording();
-              }
-            },
-            icon: Icon(
-              practice.state == PracticeState.recording
-                  ? Icons.check_circle
-                  : Icons.mic,
-            ),
-            label: Text(
-              practice.state == PracticeState.recording ? '판정하기' : '녹음 시작',
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: practice.state == PracticeState.recording
-                  ? Colors.blueAccent
-                  : Colors.white,
-              foregroundColor: practice.state == PracticeState.recording
-                  ? Colors.white
-                  : Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -1350,9 +1597,7 @@ class PracticeScreen extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      isSentenceMode
-                          ? '평가를 확인하고 다음으로 넘어가세요'
-                          : '방금 녹음한 발음을 확인하세요',
+                      isSentenceMode ? '녹음을 듣고 다음으로 넘어가세요' : '방금 녹음한 발음을 확인하세요',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,

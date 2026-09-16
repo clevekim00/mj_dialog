@@ -5,20 +5,26 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
-  return AiService();
+  return AiService(
+    languageCode: ref.watch(appLanguageProvider).resolvedLocale.languageCode,
+  );
 });
 
 class AiService {
-  const AiService();
+  const AiService({this.languageCode});
+
+  final String? languageCode;
 
   static final Lock _gemmaLock = Lock();
   static bool _gemmaReady = false;
 
   String get _osLanguage {
-    final locale = PlatformDispatcher.instance.locale;
-    return switch (locale.languageCode) {
+    final code =
+        languageCode ?? PlatformDispatcher.instance.locale.languageCode;
+    return switch (code) {
       'ko' => 'Korean',
       'en' => 'English',
       'ja' => 'Japanese',
@@ -27,59 +33,24 @@ class AiService {
     };
   }
 
+  static const textMatchVersion = 'text-match-v1';
+
   Future<AiResponse> getReadingFeedback(
     String targetText,
     String spokenText,
-  ) async {
-    try {
-      if (!await _ensureGemmaReady()) {
-        debugPrint(
-          'Gemma model is not active. Falling back to simple evaluation.',
+  ) async => _textMatchEvaluation(targetText, spokenText);
+
+  Future<AiResponse> getFreeReadingFeedback(String spokenText) async =>
+      spokenText.trim().isEmpty
+      ? _unavailable()
+      : const AiResponse(
+          replyText: '자유 말하기 기록을 남겼습니다.',
+          pronunciationScore: null,
+          pronunciationFeedback:
+              '인식된 내용을 확인하고 녹음을 들어보세요. 자유 말하기는 점수를 매기지 않습니다.',
+          evaluationMethod: 'notAssessed',
+          evaluationVersion: 'unscored-v1',
         );
-        return _fallbackReadingEvaluation(targetText, spokenText);
-      }
-
-      final prompt = _buildReadingPrompt(targetText, spokenText);
-      final responseText = await _generateGemmaText(
-        prompt: prompt,
-        temperature: 0.3,
-        label: 'reading',
-      );
-
-      if (responseText.isEmpty) {
-        return _fallbackReadingEvaluation(targetText, spokenText);
-      }
-
-      return _parseResponse(responseText);
-    } catch (error) {
-      debugPrint('Reading evaluation failed: $error');
-      return _fallbackReadingEvaluation(targetText, spokenText);
-    }
-  }
-
-  Future<AiResponse> getFreeReadingFeedback(String spokenText) async {
-    try {
-      if (!await _ensureGemmaReady()) {
-        return _fallbackReadingEvaluation('', spokenText);
-      }
-
-      final prompt = _buildFreeReadingPrompt(spokenText);
-      final responseText = await _generateGemmaText(
-        prompt: prompt,
-        temperature: 0.3,
-        label: 'freeReading',
-      );
-
-      if (responseText.isEmpty) {
-        return _fallbackReadingEvaluation('', spokenText);
-      }
-
-      return _parseResponse(responseText);
-    } catch (error) {
-      debugPrint('Free reading evaluation failed: $error');
-      return _fallbackReadingEvaluation('', spokenText);
-    }
-  }
 
   Future<AiResponse> evaluatePracticeByMode({
     required PracticeMode mode,
@@ -87,41 +58,71 @@ class AiService {
     required String spokenText,
     required int durationSeconds,
   }) async {
-    if (mode == PracticeMode.wordGame) {
-      return _wordGameEvaluation(targetText, spokenText);
-    }
-
     if (mode == PracticeMode.freeSpeech) {
       return getFreeReadingFeedback(spokenText);
     }
-
-    try {
-      if (!await _ensureGemmaReady()) {
-        return _fallbackPracticeEvaluation(mode, targetText, spokenText);
-      }
-
-      final prompt = _buildModePrompt(
-        mode: mode,
-        targetText: targetText,
-        spokenText: spokenText,
-        durationSeconds: durationSeconds,
-      );
-      final responseText = await _generateGemmaText(
-        prompt: prompt,
-        temperature: 0.3,
-        label: mode.storageValue,
-      );
-
-      if (responseText.isEmpty) {
-        return _fallbackPracticeEvaluation(mode, targetText, spokenText);
-      }
-
-      return _parseResponse(responseText);
-    } catch (error) {
-      debugPrint('${mode.label} evaluation failed: $error');
-      return _fallbackPracticeEvaluation(mode, targetText, spokenText);
-    }
+    return _textMatchEvaluation(
+      targetText,
+      spokenText,
+      exactOnly: mode == PracticeMode.wordGame,
+    );
   }
+
+  AiResponse _unavailable() => const AiResponse(
+    replyText: '음성을 인식하지 못했습니다.',
+    pronunciationScore: null,
+    pronunciationFeedback:
+        '인식 결과가 없어 비교할 수 없습니다. 녹음을 확인하거나 편할 때 다시 시도해 주세요. 발음이 틀렸다는 뜻은 아닙니다.',
+    evaluationMethod: 'unavailable',
+    evaluationVersion: 'unscored-v1',
+  );
+
+  AiResponse _textMatchEvaluation(
+    String targetText,
+    String spokenText, {
+    bool exactOnly = false,
+  }) {
+    final target = _normalizeText(targetText).runes.toList();
+    final spoken = _normalizeText(spokenText).runes.toList();
+    if (spoken.isEmpty || target.isEmpty) return _unavailable();
+    var previous = List<int>.generate(spoken.length + 1, (index) => index);
+    for (var i = 1; i <= target.length; i++) {
+      final current = List<int>.filled(spoken.length + 1, 0)..[0] = i;
+      for (var j = 1; j <= spoken.length; j++) {
+        final substitution =
+            previous[j - 1] + (target[i - 1] == spoken[j - 1] ? 0 : 1);
+        final deletion = previous[j] + 1;
+        final insertion = current[j - 1] + 1;
+        current[j] = [
+          substitution,
+          deletion,
+          insertion,
+        ].reduce((a, b) => a < b ? a : b);
+      }
+      previous = current;
+    }
+    final distance = previous.last;
+    final length = target.length > spoken.length
+        ? target.length
+        : spoken.length;
+    final score = exactOnly
+        ? (distance == 0 ? 100 : 0)
+        : ((1 - distance / length) * 100).round().clamp(0, 100);
+    return AiResponse(
+      replyText: distance == 0
+          ? '목표 글과 인식된 글이 일치합니다.'
+          : '목표 글과 인식된 글에 차이가 있습니다.',
+      pronunciationScore: score,
+      pronunciationFeedback: distance == 0
+          ? '텍스트 일치도입니다. 원음의 발음 정확도나 치료 효과를 평가한 점수는 아닙니다.'
+          : '인식된 말은 "$spokenText"입니다. 음성 인식 오류일 수도 있으니 녹음을 들어보세요. 발음 정확도 점수가 아닙니다.',
+      evaluationMethod: 'textMatch',
+      evaluationVersion: textMatchVersion,
+    );
+  }
+
+  String _normalizeText(String value) =>
+      value.trim().toLowerCase().replaceAll(RegExp(r"[\s.,!?;:，。！？、…]"), '');
 
   Future<AiResponse> getResponseAndFeedback(String userText) async {
     try {
@@ -146,7 +147,7 @@ class AiService {
 
       return _parseResponse(responseText);
     } catch (error) {
-      debugPrint('On-device Gemma evaluation failed: $error');
+      debugPrint('On-device conversation unavailable.');
       return _fallbackParse(userText);
     }
   }
@@ -206,60 +207,33 @@ class AiService {
     });
   }
 
-  String _buildPrompt(String userText) {
-    return '''
-You are '영은', a professional and friendly speech practice coach.
-The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
-The user said: "$userText".
-
-Goals:
-1. Reply naturally to the user. Always end with a natural follow-up question to keep the conversation moving.
-2. Evaluate pronunciation/grammar objectively. Do NOT give excessive praise. Be honest but encouraging.
-3. Provide one specific tip for better speech or pronunciation based on the text.
-
-Respond ONLY as JSON with this exact shape:
-{
-  "replyText": "your reply in $_osLanguage with a follow-up question",
-  "pronunciationScore": 0-100,
-  "pronunciationFeedback": "objective tip or feedback in $_osLanguage"
-}
+  String _buildPrompt(String userText) =>
+      '''
+You are a friendly conversation partner. Respond in $_osLanguage.
+The user provided this text: "$userText".
+Reply to its meaning and offer one natural follow-up question.
+You have no audio. Never evaluate pronunciation, articulation, voice, fluency,
+breathing, intelligibility, or treatment outcomes, and never assign a score.
+Return only JSON: {"replyText": "your conversational reply"}.
 ''';
-  }
 
-  Future<AiResponse> evaluateAudio(String audioPath, String targetText) async {
-    try {
-      debugPrint('Starting Gemma 4 Analysis for: $targetText');
-
-      // Implement a delay to simulate backend processing
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // Use the active Gemma model to evaluate based on the prompt
-      // Note: In actual production, this would be a multipart request to our Kotlin/Spring Boot backend
-      // for native audio token analysis.
-
-      return await getReadingFeedback(targetText, "");
-    } catch (error) {
-      debugPrint('Gemma 4 evaluation failed: $error');
-      return _fallbackReadingEvaluation(targetText, '');
-    }
-  }
+  Future<AiResponse> evaluateAudio(String audioPath, String targetText) async =>
+      _unavailable();
 
   AiResponse _parseResponse(String rawGemmaOutput) {
     try {
-      final jsonText = _extractJsonObject(rawGemmaOutput);
-      final decoded = jsonDecode(jsonText) as Map<String, dynamic>;
-      final score = (decoded['pronunciationScore'] as num?)?.toInt() ?? 80;
-
+      final decoded =
+          jsonDecode(_extractJsonObject(rawGemmaOutput))
+              as Map<String, dynamic>;
       return AiResponse(
         replyText: _sanitizeText(decoded['replyText'] as String?),
-        pronunciationScore: score.clamp(0, 100),
-        pronunciationFeedback: _sanitizeText(
-          decoded['pronunciationFeedback'] as String?,
-        ),
+        pronunciationScore: null,
+        pronunciationFeedback: '대화 내용에 대한 응답입니다. 음성이나 발음은 평가하지 않습니다.',
+        evaluationMethod: 'notAssessed',
+        evaluationVersion: 'chat-text-v1',
       );
-    } catch (error) {
-      debugPrint('Failed to parse Gemma response: $error');
-      return _fallbackParse('error');
+    } catch (_) {
+      return _fallbackParse('');
     }
   }
 
@@ -289,205 +263,13 @@ Respond ONLY as JSON with this exact shape:
     return normalized;
   }
 
-  AiResponse _fallbackParse(String userText) {
-    var reply = '반가워요! 오늘 하루는 어떠셨나요? 특별한 일은 없으셨어요?';
-    var score = 80;
-    var feedback = '문장이 자연스럽습니다. 다만 끝맺음을 조금 더 명확하게 해주시면 좋을 것 같아요.';
-
-    if (userText.contains('어려워')) {
-      reply = '많이 힘드셨군요. 어떤 부분이 가장 어려우셨나요?';
-      score = 65;
-      feedback = "'어려워' 발음 시 혀의 위치를 조금 더 신경 써보시면 좋겠습니다.";
-    }
-
-    return AiResponse(
-      replyText: reply,
-      pronunciationScore: score,
-      pronunciationFeedback: feedback,
-    );
-  }
-
-  AiResponse _fallbackReadingEvaluation(String targetText, String spokenText) {
-    bool isEmpty = spokenText.trim().isEmpty;
-
-    if (targetText.isEmpty) {
-      return AiResponse(
-        replyText: '자유 읽기 연습을 완료했습니다.',
-        pronunciationScore: isEmpty ? 0 : 85,
-        pronunciationFeedback: isEmpty
-            ? '음성이 감지되지 않았습니다. 마이크 권한을 확인하거나 조금 더 크게 말씀해 보세요.'
-            : '전체적으로 명확하게 들립니다. 꾸준히 연습해 보세요!',
-      );
-    }
-
-    final target = targetText.replaceAll(' ', '');
-    final spoken = spokenText.replaceAll(' ', '');
-
-    var score = 80;
-    if (isEmpty) {
-      score = 0;
-    } else if (target == spoken) {
-      score = 100;
-    } else if (spoken.length < target.length / 2) {
-      score = 40;
-    } else if (spoken.length < target.length * 0.8) {
-      score = 65;
-    }
-
-    return AiResponse(
-      replyText: '문장 읽기 연습을 완료했습니다.',
-      pronunciationScore: score,
-      pronunciationFeedback: isEmpty
-          ? '목소리가 인식되지 않았습니다. 다시 한 번 읽어주시겠어요?'
-          : (score > 90
-                ? '거의 완벽하게 읽으셨습니다! 아주 훌륭합니다.'
-                : '제시된 문장과 조금 차이가 있습니다. 단어를 하나씩 천천히 다시 읽어보세요.'),
-    );
-  }
-
-  AiResponse _fallbackPracticeEvaluation(
-    PracticeMode mode,
-    String targetText,
-    String spokenText,
-  ) {
-    final base = _fallbackReadingEvaluation(targetText, spokenText);
-    final feedback = switch (mode) {
-      PracticeMode.wordGame =>
-        '${base.pronunciationFeedback} 짧은 단어는 입 모양을 먼저 만들고 한 번에 또렷하게 말해 보세요.',
-      PracticeMode.shortSentence =>
-        '${base.pronunciationFeedback} 문장 끝을 흐리지 않도록 마지막 단어까지 천천히 읽어 보세요.',
-      PracticeMode.longSentence =>
-        '${base.pronunciationFeedback} 긴 문장은 의미 단위로 끊고 숨을 고른 뒤 이어서 읽어 보세요.',
-      PracticeMode.freeSpeech => base.pronunciationFeedback,
-    };
-
-    return AiResponse(
-      replyText: '${mode.label} 연습을 완료했습니다.',
-      pronunciationScore: base.pronunciationScore,
-      pronunciationFeedback: feedback,
-    );
-  }
-
-  AiResponse _wordGameEvaluation(String targetText, String spokenText) {
-    final target = _normalizeShortAnswer(targetText);
-    final spoken = _normalizeShortAnswer(spokenText);
-    final isEmpty = spoken.isEmpty;
-    final isExactMatch = target.isNotEmpty && target == spoken;
-    final score = isEmpty
-        ? 0
-        : isExactMatch
-        ? 100
-        : 40;
-
-    return AiResponse(
-      replyText: isExactMatch ? '목표 단어를 정확히 말했습니다.' : '다른 단어로 인식되었습니다.',
-      pronunciationScore: score,
-      pronunciationFeedback: isEmpty
-          ? '음성이 인식되지 않았습니다. 목표 단어 "$targetText"를 조금 더 크게 말해 보세요.'
-          : isExactMatch
-          ? '목표 단어 "$targetText"가 정확히 인식되었습니다.'
-          : '목표 단어 "$targetText"로 인식되지 않았습니다. 인식된 말은 "$spokenText"입니다. 입 모양을 다시 만들고 한 번 더 또렷하게 말해 보세요.',
-    );
-  }
-
-  String _normalizeShortAnswer(String value) {
-    return value
-        .trim()
-        .replaceAll(RegExp(r'\s+'), '')
-        .replaceAll(RegExp(r'[^\uAC00-\uD7A3a-zA-Z0-9]'), '')
-        .toLowerCase();
-  }
-
-  String _buildReadingPrompt(String targetText, String spokenText) {
-    return '''
-You are '영은', a professional speech practice coach.
-The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
-The user is practicing reading a specific sentence aloud.
-
-Target Sentence: "$targetText"
-User Spoke: "$spokenText"
-
-Goals:
-1. Compare the 'User Spoke' text with the 'Target Sentence'.
-2. Identify any mispronunciations, omissions, or additions.
-3. Provide an encouraging but objective pronunciation score (0-100).
-4. Provide one specific tip to improve the pronunciation of this specific sentence in $_osLanguage.
-
-Respond ONLY as JSON with this exact shape:
-{
-  "replyText": "Encouraging summary of the attempt in $_osLanguage",
-  "pronunciationScore": 0-100,
-  "pronunciationFeedback": "Specific tip for improvement in $_osLanguage"
-}
-''';
-  }
-
-  String _buildFreeReadingPrompt(String spokenText) {
-    return '''
-You are '영은', a professional speech practice coach.
-The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
-The user is speaking freely without a target sentence.
-
-User Spoke: "$spokenText"
-
-Goals:
-1. Evaluate the clarity, articulation, and naturalness of the 'User Spoke' text.
-2. Provide an encouraging but objective pronunciation/fluency score (0-100).
-3. Provide one specific tip for clearer or more natural speech in $_osLanguage based on what the user said.
-
-Respond ONLY as JSON with this exact shape:
-{
-  "replyText": "Feedback on the content and delivery in $_osLanguage",
-  "pronunciationScore": 0-100,
-  "pronunciationFeedback": "Specific tip for clearer speech in $_osLanguage"
-}
-''';
-  }
-
-  String _buildModePrompt({
-    required PracticeMode mode,
-    required String targetText,
-    required String spokenText,
-    required int durationSeconds,
-  }) {
-    final modeGoal = switch (mode) {
-      PracticeMode.wordGame =>
-        'Focus on whether the single target word was spoken clearly and completely.',
-      PracticeMode.shortSentence =>
-        'Focus on sentence clarity, omitted words, changed words, and speaking pace.',
-      PracticeMode.longSentence =>
-        'Focus on completion, breathing, pauses, phrasing, and rhythm across the longer sentence.',
-      PracticeMode.freeSpeech =>
-        'Focus on communication clarity and a helpful next practice suggestion.',
-    };
-
-    return '''
-You are '영은', a professional speech practice coach.
-The user's OS language is $_osLanguage. You MUST respond in $_osLanguage.
-The user is practicing in this mode: ${mode.label}.
-
-Target Text: "$targetText"
-User Spoke: "$spokenText"
-Duration Seconds: $durationSeconds
-
-Mode-specific goal:
-$modeGoal
-
-Goals:
-1. Compare the user speech with the target text when a target exists.
-2. Score objectively from 0 to 100. Do not overpraise.
-3. Provide one concrete, mode-specific pronunciation or speaking tip in $_osLanguage.
-4. For long sentences, mention breathing or phrase breaks when useful.
-5. For word practice, mention the target word and whether it was clear.
-
-Respond ONLY as JSON with this exact shape:
-{
-  "replyText": "Short result summary in $_osLanguage",
-  "pronunciationScore": 0-100,
-  "pronunciationFeedback": "Specific mode-aware tip in $_osLanguage"
-}
-''';
-  }
+  AiResponse _fallbackParse(String userText) => const AiResponse(
+    replyText: '천천히 이어가도 괜찮아요. 오늘 이야기하고 싶은 일이 있나요?',
+    pronunciationScore: null,
+    pronunciationFeedback: '기본 대화 안내입니다. 음성이나 발음은 평가하지 않습니다.',
+    evaluationMethod: 'notAssessed',
+    evaluationVersion: 'chat-fallback-v1',
+  );
 }
 
 class AiResponse {
@@ -495,12 +277,28 @@ class AiResponse {
     required this.replyText,
     required this.pronunciationScore,
     required this.pronunciationFeedback,
+    this.evaluationMethod = 'notAssessed',
+    this.evaluationVersion = 'unscored-v1',
     this.phonemeAccuracy,
     this.intonationFeedback,
   });
 
   final String replyText;
-  final int pronunciationScore;
+  final int? pronunciationScore;
+  final String evaluationMethod;
+  final String evaluationVersion;
+  bool get hasComparableScore =>
+      evaluationMethod == 'textMatch' && pronunciationScore != null;
+  String get scoreLabel => switch (evaluationMethod) {
+    'textMatch' => '텍스트 일치도',
+    'legacy' => '이전 방식 점수',
+    'unavailable' => '분석 불가',
+    _ => '점수 없음',
+  };
+  String get scoreDisplay => pronunciationScore == null
+      ? scoreLabel
+      : '$scoreLabel $pronunciationScore${evaluationMethod == 'textMatch' ? '%' : '점'}';
+
   final String pronunciationFeedback;
   final List<PhonemeData>? phonemeAccuracy;
   final String? intonationFeedback;

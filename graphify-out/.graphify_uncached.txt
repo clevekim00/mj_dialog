@@ -1,8 +1,10 @@
 /Users/youngwhankim/Project/mj_dialog/README.md
 /Users/youngwhankim/Project/mj_dialog/analysis_options.yaml
-/Users/youngwhankim/Project/mj_dialog/blender_tongue_exercise/README.md
+/Users/youngwhankim/Project/mj_dialog/blueprint-acquired-dysarthria-daily-rehab.md
+/Users/youngwhankim/Project/mj_dialog/docs/adaptive-ui-menu-architecture.md
 /Users/youngwhankim/Project/mj_dialog/docs/ai-speech-therapy-avatar-platform.md
 /Users/youngwhankim/Project/mj_dialog/docs/android-playstore-release.md
+/Users/youngwhankim/Project/mj_dialog/docs/breathing-and-oral-exercises.md
 /Users/youngwhankim/Project/mj_dialog/docs/improvement-plan.md
 /Users/youngwhankim/Project/mj_dialog/docs/project-structure-review.md
 /Users/youngwhankim/Project/mj_dialog/docs/sentence-repeat-and-mouth-video-plan.md
@@ -10,8 +12,10 @@
 /Users/youngwhankim/Project/mj_dialog/docs/structured-practice-modes-implementation-plan.md
 /Users/youngwhankim/Project/mj_dialog/docs/tongue-exercise-implementation-plan.md
 /Users/youngwhankim/Project/mj_dialog/docs/tongue-exercise-menu-review-2026-06-05.md
+/Users/youngwhankim/Project/mj_dialog/docs/training-video-prompts/training-video-production-plan.md
 /Users/youngwhankim/Project/mj_dialog/docs/ui-improvement-review-2026-06-04.md
 /Users/youngwhankim/Project/mj_dialog/docs/ui-screen-inventory.md
+/Users/youngwhankim/Project/mj_dialog/docs/voice-tools-feature-analysis-and-integration-plan.md
 /Users/youngwhankim/Project/mj_dialog/ios/Pods/CwlCatchException/LICENSE.txt
 /Users/youngwhankim/Project/mj_dialog/ios/Pods/CwlCatchException/README.md
 /Users/youngwhankim/Project/mj_dialog/ios/Pods/CwlCatchExceptionSupport/LICENSE.txt
@@ -25,10 +29,8 @@
 /Users/youngwhankim/Project/mj_dialog/macos/Pods/CwlCatchException/README.md
 /Users/youngwhankim/Project/mj_dialog/macos/Pods/CwlCatchExceptionSupport/LICENSE.txt
 /Users/youngwhankim/Project/mj_dialog/macos/Pods/CwlCatchExceptionSupport/README.md
+/Users/youngwhankim/Project/mj_dialog/override.txt
 /Users/youngwhankim/Project/mj_dialog/pubspec.yaml
-/Users/youngwhankim/Project/mj_dialog/react_mouth_exercise/README.md
-/Users/youngwhankim/Project/mj_dialog/react_mouth_exercise/index.html
-/Users/youngwhankim/Project/mj_dialog/react_mouth_exercise/public/models/README.md
 /Users/youngwhankim/Project/mj_dialog/web/index.html
 /Users/youngwhankim/Project/mj_dialog/windows/CMakeLists.txt
 /Users/youngwhankim/Project/mj_dialog/windows/flutter/CMakeLists.txt
@@ -39,7 +41,6 @@
 /Users/youngwhankim/Project/mj_dialog/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
 /Users/youngwhankim/Project/mj_dialog/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 /Users/youngwhankim/Project/mj_dialog/assets/images/ai_speech_2d_tutor.png
-/Users/youngwhankim/Project/mj_dialog/assets/images/ai_speech_mouth_guide.png
 /Users/youngwhankim/Project/mj_dialog/docs/ui-captures/01_permission.png
 /Users/youngwhankim/Project/mj_dialog/docs/ui-captures/02_onboarding.png
 /Users/youngwhankim/Project/mj_dialog/docs/ui-captures/03_practice_modes.png
@@ -84,3 +85,11 @@
 /Users/youngwhankim/Project/mj_dialog/web/icons/Icon-512.png
 /Users/youngwhankim/Project/mj_dialog/web/icons/Icon-maskable-192.png
 /Users/youngwhankim/Project/mj_dialog/web/icons/Icon-maskable-512.png
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/breathing_01_posture_inhale.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/breathing_08_sustain_a.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/lip_02_u_to_i.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/lip_07_open_hold.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/tongue_01_vertical.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/tongue_03_lip_corners.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/tongue_04_lip_circle.mp4
+/Users/youngwhankim/Project/mj_dialog/assets/videos/training/tongue_12_cheek_press.mp4

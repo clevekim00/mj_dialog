@@ -19,6 +19,9 @@ class ChatMessage {
     this.pronunciationScore,
     this.pronunciationFeedback,
     this.mouthVideoPath,
+    this.inputMethod = 'text',
+    this.evaluationMethod = 'notAssessed',
+    this.evaluationVersion = 'chat-text-v1',
   });
 
   final String id;
@@ -27,6 +30,9 @@ class ChatMessage {
   final int? pronunciationScore;
   final String? pronunciationFeedback;
   final String? mouthVideoPath;
+  final String inputMethod;
+  final String evaluationMethod;
+  final String evaluationVersion;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -35,6 +41,9 @@ class ChatMessage {
     'pronunciationScore': pronunciationScore,
     'pronunciationFeedback': pronunciationFeedback,
     'mouthVideoPath': mouthVideoPath,
+    'inputMethod': inputMethod,
+    'evaluationMethod': evaluationMethod,
+    'evaluationVersion': evaluationVersion,
   };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
@@ -44,6 +53,9 @@ class ChatMessage {
     pronunciationScore: json['pronunciationScore'],
     pronunciationFeedback: json['pronunciationFeedback'],
     mouthVideoPath: json['mouthVideoPath'] as String?,
+    inputMethod: json['inputMethod'] as String? ?? 'unknown',
+    evaluationMethod: json['evaluationMethod'] as String? ?? 'legacy',
+    evaluationVersion: json['evaluationVersion'] as String? ?? 'legacy',
   );
 }
 
@@ -183,6 +195,53 @@ class ChatController extends Notifier<ChatSessionState> {
   CameraController? get mouthVideoController => _mouthVideoRecorder.controller;
 
   String? _mouthVideoFileName;
+  int _conversationEpoch = 0;
+  Future<void>? _listeningStartFuture;
+  Future<void>? _endingFuture;
+  bool _ending = false;
+
+  bool _isCurrent(int epoch) => ref.mounted && epoch == _conversationEpoch;
+
+  /// Stops capture and speech, and ignores responses from the ended turn.
+  Future<void> endConversation() async {
+    final pending = _endingFuture;
+    if (pending != null) return pending;
+    final ending = _endConversation();
+    _endingFuture = ending;
+    try {
+      await ending;
+    } finally {
+      _endingFuture = null;
+      _ending = false;
+    }
+  }
+
+  Future<void> _endConversation() async {
+    _ending = true;
+    _conversationEpoch++;
+    state = state.copyWith(
+      conversationState: ConversationState.idle,
+      liveText: '',
+      clearFeedback: true,
+    );
+    // Stop TTS promptly, without waiting for a pending microphone permission.
+    try {
+      await _ttsService.stop();
+    } catch (_) {}
+    try {
+      await _listeningStartFuture;
+    } catch (_) {}
+    if (!ref.mounted) return;
+    try {
+      await _sttService.stopListening();
+    } catch (_) {}
+    if (!ref.mounted) return;
+    try {
+      await _stopMouthVideoIfNeeded();
+    } catch (_) {}
+    if (!ref.mounted) return;
+    await _historyService.saveSessions(state.sessions);
+  }
 
   @override
   ChatSessionState build() {
@@ -204,6 +263,7 @@ class ChatController extends Notifier<ChatSessionState> {
 
   Future<void> _loadHistory() async {
     final sessions = await _historyService.loadSessions();
+    if (!ref.mounted) return;
     if (sessions.isNotEmpty) {
       state = state.copyWith(
         sessions: sessions,
@@ -295,7 +355,7 @@ class ChatController extends Notifier<ChatSessionState> {
   }
 
   Future<void> toggleVoiceInput({required bool isVoiceSupported}) async {
-    if (!isVoiceSupported) {
+    if (!isVoiceSupported || _ending) {
       return;
     }
 
@@ -311,25 +371,31 @@ class ChatController extends Notifier<ChatSessionState> {
     }
   }
 
-  Future<void> submitText(String text) async {
+  Future<void> submitText(String text, {String inputMethod = 'text'}) async {
     final trimmed = text.trim();
-    if (trimmed.isEmpty || state.isProcessing) {
+    if (trimmed.isEmpty || state.isProcessing || _ending) {
       return;
     }
 
-    await _processInput(trimmed);
+    await _processInput(trimmed, inputMethod: inputMethod);
   }
 
   Future<void> stopListeningAndSubmit() async {
-    if (state.conversationState != ConversationState.listening) {
+    if (_ending || state.conversationState != ConversationState.listening) {
       return;
     }
 
-    final spokenText = state.liveText.trim();
+    final epoch = _conversationEpoch;
+    state = state.copyWith(conversationState: ConversationState.thinking);
+    await _listeningStartFuture;
+    if (!_isCurrent(epoch)) return;
     await _sttService.stopListening();
+    if (!_isCurrent(epoch)) return;
+    final spokenText = state.liveText.trim();
 
     if (spokenText.isEmpty) {
       await _stopMouthVideoIfNeeded();
+      if (!_isCurrent(epoch)) return;
       state = state.copyWith(
         conversationState: ConversationState.idle,
         liveText: '',
@@ -338,7 +404,8 @@ class ChatController extends Notifier<ChatSessionState> {
       return;
     }
 
-    await _processInput(spokenText);
+    state = state.copyWith(conversationState: ConversationState.idle);
+    await _processInput(spokenText, inputMethod: 'voice');
   }
 
   void dismissFeedback() {
@@ -359,6 +426,18 @@ class ChatController extends Notifier<ChatSessionState> {
   }
 
   Future<void> _startListening() async {
+    if (_ending || _listeningStartFuture != null) return;
+    final starting = _runStartListening();
+    _listeningStartFuture = starting;
+    try {
+      await starting;
+    } finally {
+      _listeningStartFuture = null;
+    }
+  }
+
+  Future<void> _runStartListening() async {
+    final epoch = _conversationEpoch;
     state = state.copyWith(
       conversationState: ConversationState.listening,
       liveText: '',
@@ -373,6 +452,7 @@ class ChatController extends Notifier<ChatSessionState> {
       final started = await _mouthVideoRecorder.startRecording(
         _mouthVideoFileName!,
       );
+      if (!_isCurrent(epoch)) return;
       state = state.copyWith(
         isMouthVideoReady: started || _mouthVideoRecorder.isReady,
         isMouthVideoRecording: started,
@@ -382,7 +462,10 @@ class ChatController extends Notifier<ChatSessionState> {
     }
 
     final initialized = await _sttService.init();
+    if (!_isCurrent(epoch)) return;
     if (!initialized) {
+      await _stopMouthVideoIfNeeded();
+      if (!_isCurrent(epoch)) return;
       _setError('음성 인식을 시작할 수 없어요. 권한과 기기 설정을 확인해 주세요.');
       state = state.copyWith(conversationState: ConversationState.idle);
       return;
@@ -390,20 +473,30 @@ class ChatController extends Notifier<ChatSessionState> {
 
     final didStart = await _sttService.startListening(
       onResult: (text, isFinal) async {
+        if (!_isCurrent(epoch)) return;
         state = state.copyWith(liveText: text);
         if (isFinal && state.conversationState == ConversationState.listening) {
           await _processInput(text.trim(), fromVoiceInput: true);
         }
       },
     );
+    if (!_isCurrent(epoch)) return;
 
     if (!didStart) {
+      await _stopMouthVideoIfNeeded();
+      if (!_isCurrent(epoch)) return;
       _setError('음성 인식을 사용할 수 없는 상태예요. 잠시 후 다시 시도해 주세요.');
       state = state.copyWith(conversationState: ConversationState.idle);
     }
   }
 
-  Future<void> _processInput(String text, {bool fromVoiceInput = false}) async {
+  Future<void> _processInput(
+    String text, {
+    bool fromVoiceInput = false,
+    String inputMethod = 'text',
+  }) async {
+    if (state.isProcessing || _ending) return;
+    final epoch = _conversationEpoch;
     final trimmed = text.trim();
     if (trimmed.isEmpty) {
       state = state.copyWith(
@@ -413,10 +506,13 @@ class ChatController extends Notifier<ChatSessionState> {
       return;
     }
 
+    state = state.copyWith(conversationState: ConversationState.thinking);
     if (fromVoiceInput) {
       await _sttService.stopListening();
+      if (!_isCurrent(epoch)) return;
     }
     final mouthVideoPath = await _stopMouthVideoIfNeeded();
+    if (!_isCurrent(epoch)) return;
 
     final currentSession = state.currentSession;
     if (currentSession == null) return;
@@ -428,6 +524,7 @@ class ChatController extends Notifier<ChatSessionState> {
         text: trimmed,
         role: ChatRole.user,
         mouthVideoPath: mouthVideoPath,
+        inputMethod: fromVoiceInput ? 'voice' : inputMethod,
       ),
     ];
 
@@ -460,6 +557,7 @@ class ChatController extends Notifier<ChatSessionState> {
 
     try {
       final aiResult = await _aiService.getResponseAndFeedback(trimmed);
+      if (!_isCurrent(epoch)) return;
 
       final withReply = [
         ...updatedMessages,
@@ -468,6 +566,8 @@ class ChatController extends Notifier<ChatSessionState> {
           text: aiResult.replyText,
           role: ChatRole.assistant,
           pronunciationScore: aiResult.pronunciationScore,
+          evaluationMethod: aiResult.evaluationMethod,
+          evaluationVersion: aiResult.evaluationVersion,
           pronunciationFeedback: aiResult.pronunciationFeedback,
         ),
       ];
@@ -484,16 +584,22 @@ class ChatController extends Notifier<ChatSessionState> {
         sessions: finalSessions,
       );
 
-      await _ttsService.speak(aiResult.replyText);
+      await _historyService.saveSessions(finalSessions);
+      if (!_isCurrent(epoch)) return;
+      try {
+        await _ttsService.speak(aiResult.replyText);
+      } catch (_) {
+        // The written reply remains usable when speech output is unavailable.
+      }
+      if (!_isCurrent(epoch)) return;
 
       state = state.copyWith(
         conversationState: ConversationState.feedback,
         feedback: aiResult,
         sessions: finalSessions,
       );
-
-      _historyService.saveSessions(finalSessions);
     } catch (_) {
+      if (!_isCurrent(epoch)) return;
       _setError('응답을 처리하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.');
       state = state.copyWith(conversationState: ConversationState.idle);
     }
@@ -511,6 +617,7 @@ class ChatController extends Notifier<ChatSessionState> {
     final path = await _mouthVideoRecorder.stopRecording(
       _mouthVideoFileName ?? 'chat_${DateTime.now().millisecondsSinceEpoch}',
     );
+    if (!ref.mounted) return path;
     state = state.copyWith(
       isMouthVideoRecording: false,
       lastMouthVideoPath: path,

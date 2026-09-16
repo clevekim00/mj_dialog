@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +18,7 @@ import '../model/practice_mode.dart';
 
 enum PracticeState { idle, recording, analyzing, completed, error }
 
-enum WordGameStatus { ready, running, gameOver }
+enum WordGameStatus { ready, running, paused, gameOver }
 
 class FallingWord {
   const FallingWord({
@@ -98,6 +98,7 @@ class PracticeProgress {
   final int movementScore;
   final bool isExercisePattern;
   final WordGameStatus wordGameStatus;
+  final bool wordGameTimed;
   final List<FallingWord> fallingWords;
   final int wordGameScore;
   final int wordGameHits;
@@ -138,6 +139,7 @@ class PracticeProgress {
     this.movementScore = 1,
     this.isExercisePattern = false,
     this.wordGameStatus = WordGameStatus.ready,
+    this.wordGameTimed = false,
     this.fallingWords = const [],
     this.wordGameScore = 0,
     this.wordGameHits = 0,
@@ -186,6 +188,7 @@ class PracticeProgress {
     int? movementScore,
     bool? isExercisePattern,
     WordGameStatus? wordGameStatus,
+    bool? wordGameTimed,
     List<FallingWord>? fallingWords,
     int? wordGameScore,
     int? wordGameHits,
@@ -241,6 +244,7 @@ class PracticeProgress {
       movementScore: movementScore ?? this.movementScore,
       isExercisePattern: isExercisePattern ?? this.isExercisePattern,
       wordGameStatus: wordGameStatus ?? this.wordGameStatus,
+      wordGameTimed: wordGameTimed ?? this.wordGameTimed,
       fallingWords: fallingWords ?? this.fallingWords,
       wordGameScore: wordGameScore ?? this.wordGameScore,
       wordGameHits: wordGameHits ?? this.wordGameHits,
@@ -354,6 +358,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   void nextItem() {
+    if (_recordingBusy) return;
     if (state.isFreeMode || _currentItems.isEmpty) return;
     if (state.mode == PracticeMode.wordGame && !state.isReviewMode) {
       _setWeightedWordItem();
@@ -368,16 +373,18 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   void resetPractice() {
+    if (_recordingBusy) return;
     state = state.copyWith(
       state: PracticeState.idle,
       spokenText: '',
       speechRecognitionUnavailable: false,
-      feedback: null,
+      clearFeedback: true,
       clearFatigueAfter: true,
     );
   }
 
   void setTargetText(String text) {
+    if (_recordingBusy) return;
     state = state.copyWith(
       targetText: text,
       isFreeMode: false,
@@ -385,9 +392,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state: PracticeState.idle,
       spokenText: '',
       speechRecognitionUnavailable: false,
-      feedback: null,
-      lastAudioPath: null,
-      previousAudioPath: null,
+      clearFeedback: true,
+      clearLastAudioPath: true,
+      clearPreviousAudioPath: true,
       clearLastMouthVideoPath: true,
       clearMouthVideoError: true,
       clearFatigueAfter: true,
@@ -400,6 +407,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   void practiceAgainFromSession(PracticeSession session) {
+    if (_recordingBusy) return;
     _wordGameTimer?.cancel();
     final mode = PracticeModeLabel.fromStorageValue(session.mode);
     final isFreeSpeech = mode == PracticeMode.freeSpeech;
@@ -439,6 +447,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   Future<void> setMode(PracticeMode mode) async {
+    if (_recordingBusy) return;
     _wordGameTimer?.cancel();
     final isFreeSpeech = mode == PracticeMode.freeSpeech;
     _currentItems = isFreeSpeech ? [] : await _loadItemsForMode(mode);
@@ -510,7 +519,40 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     }
   }
 
+  void setWordGameTimed(bool timed) {
+    if (state.wordGameStatus == WordGameStatus.running ||
+        state.wordGameStatus == WordGameStatus.paused) {
+      return;
+    }
+    state = state.copyWith(wordGameTimed: timed);
+  }
+
+  void pauseWordGame() {
+    if (state.wordGameStatus != WordGameStatus.running ||
+        state.state == PracticeState.recording ||
+        state.state == PracticeState.analyzing) {
+      return;
+    }
+    _wordGameTimer?.cancel();
+    state = state.copyWith(wordGameStatus: WordGameStatus.paused);
+  }
+
+  void resumeWordGame() {
+    if (state.wordGameStatus != WordGameStatus.paused) return;
+    state = state.copyWith(wordGameStatus: WordGameStatus.running);
+    _startWordGameTimer();
+  }
+
+  void _startWordGameTimer() {
+    _wordGameTimer?.cancel();
+    if (!state.wordGameTimed) return;
+    _wordGameTimer = Timer.periodic(const Duration(milliseconds: 650), (_) {
+      _tickFallingWordGame();
+    });
+  }
+
   void startFallingWordGame() {
+    if (_recordingBusy) return;
     if (state.mode != PracticeMode.wordGame || _currentItems.isEmpty) {
       return;
     }
@@ -530,13 +572,12 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       speechRecognitionUnavailable: false,
     );
     _spawnFallingWord();
-    _spawnFallingWord();
-    _wordGameTimer = Timer.periodic(const Duration(milliseconds: 650), (_) {
-      _tickFallingWordGame();
-    });
+    if (state.wordGameTimed) _spawnFallingWord();
+    _startWordGameTimer();
   }
 
   void resetFallingWordGame() {
+    if (_recordingBusy) return;
     _wordGameTimer?.cancel();
     state = state.copyWith(
       wordGameStatus: WordGameStatus.ready,
@@ -600,6 +641,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
         state.history
             .where(
               (session) =>
+                  session.hasComparableScore &&
                   session.mode == PracticeMode.wordGame.storageValue &&
                   session.contentId != null,
             )
@@ -616,7 +658,9 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final entries = <FailedWordReviewEntry>[];
     for (final entry in sessionsByContentId.entries) {
       final sessions = entry.value;
-      final failures = sessions.where((session) => session.score < 70).toList();
+      final failures = sessions
+          .where((session) => session.score! < 70)
+          .toList();
       if (failures.isEmpty) {
         continue;
       }
@@ -624,7 +668,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       final recentTwo = sessions.take(2).toList();
       final hasRecovered =
           recentTwo.length == 2 &&
-          recentTwo.every((session) => session.score >= 80);
+          recentTwo.every((session) => session.score! >= 80);
       if (hasRecovered) {
         continue;
       }
@@ -688,7 +732,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   void _setWeightedWordItem() {
     if (_currentItems.isEmpty) {
-      debugPrint('[WordGame] set target skipped: no current items');
       return;
     }
     final item = contentService.pickWeightedWord(
@@ -705,16 +748,11 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final index = _currentItems.indexWhere(
       (candidate) => candidate.id == item.id,
     );
-    debugPrint(
-      '[WordGame] set weighted target: "${item.text}" '
-      'id=${item.id} focusC=${state.wordGameFocusConsonant ?? "-"} '
-      'focusV=${state.wordGameFocusVowel ?? "-"} '
-      'excluded=${state.contentId ?? "-"}',
-    );
     _setCurrentItem(index == -1 ? 0 : index);
   }
 
   void _tickFallingWordGame() {
+    if (!state.wordGameTimed) return;
     if (state.wordGameStatus != WordGameStatus.running) {
       _wordGameTimer?.cancel();
       return;
@@ -735,14 +773,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
         .map((word) => word.copyWith(progress: word.progress + speed))
         .toList();
     if (movedWords.any((word) => word.progress >= 1)) {
-      final missedWord = movedWords
-          .where((word) => word.progress >= 1)
-          .fold<FallingWord?>(null, (best, word) {
-            if (best == null || word.progress > best.progress) {
-              return word;
-            }
-            return best;
-          });
       _wordGameTimer?.cancel();
       state = state.copyWith(
         wordGameStatus: WordGameStatus.gameOver,
@@ -750,9 +780,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
         state: PracticeState.idle,
         wordGameMisses: state.wordGameMisses + 1,
       );
-      if (missedWord != null) {
-        unawaited(_saveMissedWordSession(missedWord.item));
-      }
       return;
     }
 
@@ -770,7 +797,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
   void _spawnFallingWord() {
     if (_currentItems.isEmpty) {
-      debugPrint('[WordGame] spawn skipped: no current items');
       return;
     }
 
@@ -804,13 +830,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       id: '${item.id}_${DateTime.now().microsecondsSinceEpoch}_$_fallingWordSequence',
       item: item,
       lane: lane,
-      progress: 0,
-    );
-    debugPrint(
-      '[WordGame] spawned word: "${item.text}" id=${item.id} lane=$lane '
-      'focusC=${state.wordGameFocusConsonant ?? "-"} '
-      'focusV=${state.wordGameFocusVowel ?? "-"} '
-      'active=${state.fallingWords.map((word) => word.item.text).join(",")}',
+      progress: state.wordGameTimed ? 0 : 0.35,
     );
     state = state.copyWith(fallingWords: [...state.fallingWords, word]);
     _syncTargetToFirstFallingWord(keepSelectedTarget: true);
@@ -829,10 +849,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     if (state.wordGameStatus != WordGameStatus.running ||
         state.state == PracticeState.recording ||
         state.state == PracticeState.analyzing) {
-      debugPrint(
-        '[WordGame] select ignored: id=$fallingWordId '
-        'status=${state.wordGameStatus.name} state=${state.state.name}',
-      );
       return;
     }
 
@@ -840,15 +856,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       (word) => word.id == fallingWordId,
     );
     if (selectedWords.isEmpty) {
-      debugPrint('[WordGame] select ignored: missing id=$fallingWordId');
       return;
     }
 
     final item = selectedWords.first.item;
-    debugPrint(
-      '[WordGame] selected word: "${item.text}" id=${item.id} '
-      'fallingId=$fallingWordId',
-    );
     state = state.copyWith(
       targetText: item.text,
       contentId: item.id,
@@ -876,10 +887,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       (a, b) => a.progress >= b.progress ? a : b,
     );
     final item = first.item;
-    debugPrint(
-      '[WordGame] synced target to first: "${item.text}" id=${item.id} '
-      'progress=${first.progress.toStringAsFixed(2)}',
-    );
     state = state.copyWith(
       targetText: item.text,
       contentId: item.id,
@@ -891,22 +898,15 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
-  void _handleFallingWordResult(int score) {
+  void _handleFallingWordResult(int? score) {
+    if (score == null) return;
     if (state.mode != PracticeMode.wordGame ||
         state.wordGameStatus != WordGameStatus.running ||
         state.contentId == null) {
-      debugPrint(
-        '[WordGame] result ignored: mode=${state.mode.storageValue} '
-        'status=${state.wordGameStatus.name} contentId=${state.contentId}',
-      );
       return;
     }
 
     if (score < 70) {
-      debugPrint(
-        '[WordGame] result failed: target="${state.targetText}" '
-        'id=${state.contentId} score=$score',
-      );
       state = state.copyWith(wordGameMisses: state.wordGameMisses + 1);
       return;
     }
@@ -920,10 +920,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
           }
           return best;
         });
-    debugPrint(
-      '[WordGame] result passed: target="${state.targetText}" '
-      'id=$targetId score=$score found=${targetWord != null}',
-    );
     if (targetWord == null) {
       return;
     }
@@ -936,39 +932,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       wordGameHits: state.wordGameHits + 1,
       wordGameScore: state.wordGameScore + score,
     );
-    if (nextWords.length < 2) {
+    if (nextWords.length < (state.wordGameTimed ? 2 : 1)) {
       _spawnFallingWord();
     }
     _syncTargetToFirstFallingWord();
-  }
-
-  Future<void> _saveMissedWordSession(PracticeContentItem item) async {
-    final session = PracticeSession(
-      id: const Uuid().v4(),
-      targetText: item.text,
-      spokenText: '',
-      audioFilePath: '',
-      score: 0,
-      feedback: '단어가 바닥에 닿아 복습 목록에 추가했습니다.',
-      timestamp: DateTime.now(),
-      sessionGoal: state.sessionGoal,
-      fatigueBefore: state.fatigueBefore,
-      fatigueAfter: state.fatigueAfter ?? state.fatigueBefore,
-      durationSeconds: 0,
-      mode: PracticeMode.wordGame.storageValue,
-      contentId: item.id,
-      category: item.category,
-      difficulty: item.difficulty,
-      retryCount: state.retryCount + 1,
-      streakCount: 0,
-      contentSource: item.source.storageValue,
-      movementScore: item.movementScore,
-      isExercisePattern: item.isExercisePattern,
-    );
-
-    await historyService.savePractice(session);
-    final updatedHistory = await historyService.loadPractices();
-    state = state.copyWith(history: updatedHistory);
   }
 
   Future<void> addCustomLongSentence({
@@ -1032,6 +999,17 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     state = state.copyWith(fatigueAfter: value);
   }
 
+  String? _lastSavedSessionId;
+
+  Future<void> saveFatigueAfter(int value) async {
+    if (value < 1 || value > 5) throw ArgumentError.value(value, 'value');
+    state = state.copyWith(fatigueAfter: value);
+    final id = _lastSavedSessionId;
+    if (id == null) return;
+    await historyService.updateFatigueAfter(id, value);
+    state = state.copyWith(history: await historyService.loadPractices());
+  }
+
   String _tempSpokenText = '';
   DateTime? _recordingStartTime;
   String? _mouthVideoFileName;
@@ -1062,29 +1040,31 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
+  Future<void>? _recordingStartFuture;
+  Future<void>? _recordingStopFuture;
+
+  bool get _recordingBusy =>
+      _recordingStartFuture != null ||
+      _recordingStopFuture != null ||
+      state.state == PracticeState.recording ||
+      state.state == PracticeState.analyzing;
+
   Future<void> startRecording() async {
-    debugPrint(
-      '[PracticeRecording] start requested: mode=${state.mode.storageValue} '
-      'state=${state.state.name} status=${state.wordGameStatus.name} '
-      'target="${state.targetText}" contentId=${state.contentId}',
-    );
-    if (state.state == PracticeState.recording) {
-      debugPrint('[PracticeRecording] start ignored: already recording');
-      return;
+    final pending = _recordingStartFuture;
+    if (pending != null) return pending;
+    if (_recordingBusy) return;
+    final operation = _startRecording();
+    _recordingStartFuture = operation;
+    try {
+      await operation;
+    } finally {
+      _recordingStartFuture = null;
     }
+  }
+
+  Future<void> _startRecording() async {
     if (state.mode == PracticeMode.wordGame &&
         state.wordGameStatus != WordGameStatus.running) {
-      debugPrint(
-        '[PracticeRecording] start ignored: word game is '
-        '${state.wordGameStatus.name}',
-      );
-      return;
-    }
-
-    final hasPermission = await audioRecorder.hasPermission();
-    if (!hasPermission) {
-      debugPrint('[PracticeRecording] start failed: microphone denied');
-      state = state.copyWith(state: PracticeState.error);
       return;
     }
 
@@ -1095,12 +1075,21 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       clearFeedback: true,
       clearFatigueAfter: true,
     );
+    try {
+      if (!await audioRecorder.hasPermission()) {
+        state = state.copyWith(state: PracticeState.error);
+        return;
+      }
+    } catch (_) {
+      state = state.copyWith(state: PracticeState.error);
+      return;
+    }
 
+    _lastSavedSessionId = null;
     _tempSpokenText = '';
     _recordingStartTime = DateTime.now();
     final fileName = 'practice_${DateTime.now().millisecondsSinceEpoch}';
     _mouthVideoFileName = fileName;
-    debugPrint('[PracticeRecording] recording state entered: file=$fileName');
 
     if (state.mouthVideoEnabled) {
       final videoStarted = await mouthVideoRecorder.startRecording(fileName);
@@ -1119,17 +1108,10 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final sttStarted = await sttService.startListening(
       onResult: (text, isFinal) async {
         _tempSpokenText = text;
-        debugPrint(
-          '[PracticeRecording] live transcription: "$text" final=$isFinal',
-        );
         state = state.copyWith(spokenText: text);
       },
     );
     sttStartWatch.stop();
-    debugPrint(
-      '[PracticeRecording] STT start result=$sttStarted '
-      'elapsed=${sttStartWatch.elapsedMilliseconds}ms',
-    );
 
     if (sttStarted) {
       // Wait a bit for the audio session to stabilize before starting the high-quality recorder.
@@ -1138,37 +1120,68 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       state = state.copyWith(speechRecognitionUnavailable: true);
     }
 
-    final recorderStartWatch = Stopwatch()..start();
-    await audioRecorder.startRecording(fileName);
-    recorderStartWatch.stop();
-    debugPrint(
-      '[PracticeRecording] recorder started '
-      'elapsed=${recorderStartWatch.elapsedMilliseconds}ms',
-    );
+    try {
+      await audioRecorder.startRecording(fileName);
+      _recordingStartTime = DateTime.now();
+    } catch (_) {
+      try {
+        await sttService.stopListening();
+      } catch (_) {
+        /* Cleanup is best effort. */
+      }
+      if (state.isMouthVideoRecording || mouthVideoRecorder.isRecording) {
+        try {
+          await mouthVideoRecorder.stopRecording(fileName);
+        } catch (_) {
+          /* Cleanup is best effort. */
+        }
+      }
+      state = state.copyWith(
+        state: PracticeState.error,
+        isMouthVideoRecording: false,
+        feedback: const AiResponse(
+          replyText: '녹음을 시작하지 못했습니다.',
+          pronunciationScore: null,
+          pronunciationFeedback: '마이크 권한과 다른 녹음 앱 사용 여부를 확인해 주세요.',
+          evaluationMethod: 'unavailable',
+        ),
+      );
+    }
   }
 
   Future<void> stopRecording() async {
-    debugPrint(
-      '[PracticeRecording] stop requested: state=${state.state.name} '
-      'target="${state.targetText}" temp="$_tempSpokenText"',
-    );
-    if (state.state != PracticeState.recording) {
-      debugPrint('[PracticeRecording] stop ignored: not recording');
+    final pending = _recordingStopFuture;
+    if (pending != null) return pending;
+    if (state.state != PracticeState.recording && _recordingStartFuture == null) {
       return;
     }
+    state = state.copyWith(state: PracticeState.analyzing);
+    final operation = _finishRecordingAfterStart();
+    _recordingStopFuture = operation;
+    try {
+      await operation;
+    } finally {
+      _recordingStopFuture = null;
+    }
+  }
 
+  Future<void> _finishRecordingAfterStart() async {
+    await _recordingStartFuture;
+    if (state.state == PracticeState.error) return;
+    await _stopRecording();
+  }
+
+  Future<void> _stopRecording() async {
+    final recordedDurationSeconds = _recordingStartTime == null
+        ? 0
+        : DateTime.now().difference(_recordingStartTime!).inSeconds;
     state = state.copyWith(state: PracticeState.analyzing);
     final totalStopWatch = Stopwatch()..start();
-    debugPrint('[PracticeRecording] analyzing state entered');
 
     // Guard: Prevent stopping too fast
     if (_recordingStartTime != null) {
       final elapsed = DateTime.now().difference(_recordingStartTime!);
       if (elapsed.inMilliseconds < 500) {
-        debugPrint(
-          '[PracticeRecording] stop guard delay='
-          '${500 - elapsed.inMilliseconds}ms',
-        );
         await Future.delayed(
           Duration(milliseconds: 500 - elapsed.inMilliseconds),
         );
@@ -1193,82 +1206,50 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final recorderStopWatch = Stopwatch()..start();
     final audioFile = await audioRecorder.stopRecording();
     recorderStopWatch.stop();
-    debugPrint(
-      '[PracticeRecording] recorder stopped path=${audioFile ?? "null"} '
-      'elapsed=${recorderStopWatch.elapsedMilliseconds}ms',
-    );
     final sttStopWatch = Stopwatch()..start();
-    await sttService.stopListening();
+    try {
+      await sttService.stopListening();
+    } catch (_) {
+      state = state.copyWith(speechRecognitionUnavailable: true);
+    }
     sttStopWatch.stop();
-    debugPrint(
-      '[PracticeRecording] STT stop completed '
-      'elapsed=${sttStopWatch.elapsedMilliseconds}ms',
-    );
 
     // Small delay to allow the STT engine to process the last audio chunk
     await Future.delayed(const Duration(milliseconds: 600));
 
-    String finalSpokenText = _tempSpokenText;
-    debugPrint('[PracticeRecording] final transcription: "$finalSpokenText"');
-
-    if (finalSpokenText.isEmpty) {
-      if (state.isFreeMode) {
-        debugPrint(
-          '[PracticeRecording] no transcription: using free speech fallback',
-        );
-        finalSpokenText = '오늘 있었던 일을 편하게 말했습니다.';
-      } else {
-        debugPrint(
-          '[PracticeRecording] no transcription: keeping empty for scoring',
-        );
-      }
-    }
+    final finalSpokenText = _tempSpokenText;
 
     state = state.copyWith(spokenText: finalSpokenText);
 
     if (audioFile == null) {
-      debugPrint('[PracticeRecording] stop failed: audio file is null');
       state = state.copyWith(state: PracticeState.error);
       return;
     }
 
-    debugPrint(
-      '[PracticeRecording] analysis starting: mode=${state.mode.label} '
-      'target="${state.targetText}" spoken="$finalSpokenText"',
-    );
-    late AiResponse feedback;
-    final analysisWatch = Stopwatch()..start();
+    AiResponse feedback;
     try {
-      feedback = await aiService.evaluatePracticeByMode(
-        mode: state.mode,
-        targetText: state.targetText,
-        spokenText: finalSpokenText,
-        durationSeconds: _recordingStartTime == null
-            ? 0
-            : DateTime.now().difference(_recordingStartTime!).inSeconds,
-      );
-      debugPrint(
-        '[PracticeRecording] analysis completed '
-        'elapsed=${analysisWatch.elapsedMilliseconds}ms '
-        'score=${feedback.pronunciationScore}',
-      );
-    } catch (e) {
-      debugPrint('[PracticeRecording] analysis failed, retrying: $e');
-      feedback = await aiService.evaluatePracticeByMode(
-        mode: state.mode,
-        targetText: state.targetText,
-        spokenText: finalSpokenText,
-        durationSeconds: _recordingStartTime == null
-            ? 0
-            : DateTime.now().difference(_recordingStartTime!).inSeconds,
-      );
-      debugPrint(
-        '[PracticeRecording] analysis retry completed '
-        'elapsed=${analysisWatch.elapsedMilliseconds}ms '
-        'score=${feedback.pronunciationScore}',
+      feedback = finalSpokenText.trim().isEmpty
+          ? const AiResponse(
+              replyText: '음성을 인식하지 못했습니다.',
+              pronunciationScore: null,
+              pronunciationFeedback:
+                  '인식 결과가 없어 비교하지 않았습니다. 녹음을 확인하고 편할 때 다시 시도하세요.',
+              evaluationMethod: 'unavailable',
+            )
+          : await aiService.evaluatePracticeByMode(
+              mode: state.mode,
+              targetText: state.targetText,
+              spokenText: finalSpokenText,
+              durationSeconds: recordedDurationSeconds,
+            );
+    } catch (_) {
+      feedback = const AiResponse(
+        replyText: '분석을 완료하지 못했습니다.',
+        pronunciationScore: null,
+        pronunciationFeedback: '녹음은 보관됩니다. 편할 때 다시 시도해 주세요.',
+        evaluationMethod: 'unavailable',
       );
     }
-    analysisWatch.stop();
 
     feedback = _enforceStrictWordGameMatch(
       feedback: feedback,
@@ -1278,10 +1259,15 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     final previousBestScore = _previousBestScore();
     final previousAudioPath = _previousComparableAudioPath();
-    final nextRetryCount = feedback.pronunciationScore >= 70
-        ? state.retryCount
-        : state.retryCount + 1;
-    final nextStreakCount = feedback.pronunciationScore >= 80
+    final comparableScore = feedback.hasComparableScore
+        ? feedback.pronunciationScore
+        : null;
+    final nextRetryCount = comparableScore != null && comparableScore < 70
+        ? state.retryCount + 1
+        : state.retryCount;
+    final nextStreakCount = comparableScore == null
+        ? state.streakCount
+        : comparableScore >= 80
         ? state.streakCount + 1
         : 0;
 
@@ -1292,6 +1278,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       audioFilePath: audioFile,
       videoFilePath: mouthVideoPath,
       score: feedback.pronunciationScore,
+      evaluationMethod: feedback.evaluationMethod,
+      evaluationVersion: feedback.evaluationVersion,
       feedback: feedback.pronunciationFeedback,
       phonemeAccuracy: feedback.phonemeAccuracy
           ?.map(
@@ -1302,10 +1290,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       timestamp: DateTime.now(),
       sessionGoal: state.sessionGoal,
       fatigueBefore: state.fatigueBefore,
-      fatigueAfter: state.fatigueAfter ?? state.fatigueBefore,
-      durationSeconds: _recordingStartTime == null
-          ? 0
-          : DateTime.now().difference(_recordingStartTime!).inSeconds,
+      fatigueAfter: state.fatigueAfter,
+      durationSeconds: recordedDurationSeconds,
       mode: state.mode.storageValue,
       contentId: state.contentId,
       category: state.category,
@@ -1318,11 +1304,11 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       isExercisePattern: state.isExercisePattern,
     );
 
-    debugPrint('[PracticeRecording] saving history...');
     await historyService.savePractice(session);
+    _lastSavedSessionId = session.id;
     final updatedHistory = await historyService.loadPractices();
 
-    _handleFallingWordResult(feedback.pronunciationScore);
+    _handleFallingWordResult(comparableScore);
 
     final keepWordGameRunning =
         state.mode == PracticeMode.wordGame &&
@@ -1339,11 +1325,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       streakCount: nextStreakCount,
     );
     totalStopWatch.stop();
-    debugPrint(
-      '[PracticeRecording] stop flow completed: '
-      'nextState=${state.state.name} keepWordGameRunning=$keepWordGameRunning '
-      'total=${totalStopWatch.elapsedMilliseconds}ms',
-    );
   }
 
   AiResponse _enforceStrictWordGameMatch({
@@ -1359,24 +1340,19 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     final normalizedSpoken = _normalizeWordGameAnswer(spokenText);
     final isExactMatch =
         normalizedTarget.isNotEmpty && normalizedTarget == normalizedSpoken;
-    if (isExactMatch || feedback.pronunciationScore < 70) {
-      debugPrint(
-        '[WordGame] strict match check: target="$normalizedTarget" '
-        'spoken="$normalizedSpoken" score=${feedback.pronunciationScore} '
-        'allowed=$isExactMatch',
-      );
+    if (isExactMatch ||
+        feedback.pronunciationScore == null ||
+        feedback.pronunciationScore! < 70) {
       return feedback;
     }
 
-    debugPrint(
-      '[WordGame] strict mismatch forced fail: target="$normalizedTarget" '
-      'spoken="$normalizedSpoken" aiScore=${feedback.pronunciationScore}',
-    );
     return AiResponse(
       replyText: '다른 단어로 인식되었습니다.',
-      pronunciationScore: 40,
+      pronunciationScore: 0,
+      evaluationMethod: 'textMatch',
+      evaluationVersion: AiService.textMatchVersion,
       pronunciationFeedback:
-          '목표 단어 "$targetText"로 인식되지 않았습니다. 입 모양을 다시 만들고 한 번 더 또렷하게 말해 보세요.',
+          '목표 단어 "$targetText"로 인식되지 않았습니다. 인식된 글과 목표 글의 차이이며 발음 정확도 점수가 아닙니다.',
       phonemeAccuracy: feedback.phonemeAccuracy,
       intonationFeedback: feedback.intonationFeedback,
     );
@@ -1397,8 +1373,13 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     }
 
     final matchingScores = state.history
-        .where((session) => session.contentId == contentId)
-        .map((session) => session.score)
+        .where(
+          (session) =>
+              session.contentId == contentId &&
+              session.hasComparableScore &&
+              session.evaluationVersion == AiService.textMatchVersion,
+        )
+        .map((session) => session.score!)
         .toList();
     if (matchingScores.isEmpty) {
       return null;
@@ -1527,8 +1508,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       if (await file.exists()) {
         await file.delete();
       }
-    } catch (e) {
-      debugPrint('Recording file deletion failed: $e');
+    } catch (_) {
+      // Missing or inaccessible files are handled as unavailable recordings.
     }
   }
 
@@ -1544,7 +1525,6 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       // We could listen to playback completion here, but for now we reset on stop
       return true;
     } catch (e) {
-      debugPrint('Playback failed: $e');
       state = state.copyWith(isPlaying: false);
       return false;
     }
@@ -1565,8 +1545,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
             text: '내 발음 연습 녹음 파일입니다: "${state.targetText}"',
           ),
         );
-      } catch (error) {
-        debugPrint('Share recording failed: $error');
+      } catch (_) {
+        // Sharing can be dismissed or unavailable on this platform.
       }
     }
   }

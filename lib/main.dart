@@ -1,11 +1,19 @@
 import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:speech_rehab/features/breathing_training/view/breathing_training_screen.dart';
 import 'package:speech_rehab/features/chat/view/permission_screen.dart';
+import 'package:speech_rehab/features/consonant_training/data/consonant_content_repository.dart';
+import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
 import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
-import 'package:speech_rehab/features/face_exercise/view/face_exercise_screen.dart';
+import 'package:speech_rehab/features/guided_training/data/guided_training_catalog.dart';
+import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
+import 'package:speech_rehab/features/guided_training/view/guided_training_hub_screen.dart';
+import 'package:speech_rehab/features/guided_training/view/guided_training_player_screen.dart';
+import 'package:speech_rehab/features/guided_training/view/guided_training_settings_screen.dart';
+import 'package:speech_rehab/features/guided_training/view/routine_builder_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/navigation/view/adaptive_app_shell.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
@@ -15,17 +23,60 @@ import 'package:speech_rehab/features/practice/view/practice_history_screen.dart
 import 'package:speech_rehab/features/practice/view/recording_library_screen.dart';
 import 'package:speech_rehab/features/practice/view/dashboard_screen.dart';
 import 'package:speech_rehab/features/startup/view/startup_splash_screen.dart';
-import 'package:speech_rehab/features/tongue_exercise/view/oral_alternating_exercise_screen.dart';
-import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_screen.dart';
-import 'package:speech_rehab/features/tongue_exercise/view/tongue_exercise_menu_screen.dart';
-import 'package:speech_rehab/features/training_video/view/training_settings_screen.dart';
+import 'package:speech_rehab/features/settings/view/language_settings_screen.dart';
+import 'package:speech_rehab/features/settings/view/resource_center_screen.dart';
 import 'package:speech_rehab/features/voice_analysis/view/voice_analysis_screens.dart';
+import 'package:speech_rehab/l10n/app_localizations.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
+import 'package:speech_rehab/services/resources/resource_catalog_repository.dart';
+import 'package:speech_rehab/services/resources/resource_pack_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+  // 리소스 확인은 첫 화면 표시를 차단하지 않는다.
+  unawaited(_refreshResources());
+  unawaited(_refreshPronunciationContent());
+}
+
+Future<void> _refreshResources() async {
+  try {
+    final repository = ResourceCatalogRepository();
+    final result = await repository.checkForUpdates();
+    final preferences = await SharedPreferences.getInstance();
+    final preference = AppLanguagePreferenceValue.parse(
+      preferences.getString(AppLanguageController.preferenceKey),
+    );
+    final locale = resolveSupportedLocale(
+      preference,
+      WidgetsBinding.instance.platformDispatcher.locale,
+    );
+    final languageTag = locale.languageCode == 'ko' ? 'ko-KR' : 'en-US';
+    final languages = result.snapshot.catalog.languages.where(
+      (item) => item.locale == languageTag && item.enabled,
+    );
+    if (languages.isEmpty) return;
+    final manager = ResourcePackManager();
+    for (final packId in languages.first.requiredPacks) {
+      final descriptor = result.snapshot.catalog.packById(packId);
+      if (descriptor != null) await manager.install(descriptor);
+    }
+  } catch (error) {
+    debugPrint('Resource update skipped: $error');
+  }
+}
+
+Future<void> _refreshPronunciationContent() async {
+  final repository = ConsonantContentRepository();
+  if (repository.manifestUrl.trim().isEmpty) return;
+  try {
+    await repository.updateIfAvailable();
+  } catch (error) {
+    debugPrint('Pronunciation content update skipped: $error');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -37,13 +88,22 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class _AppView extends StatelessWidget {
+class _AppView extends ConsumerWidget {
   const _AppView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final language = ref.watch(appLanguageProvider);
     return MaterialApp(
       title: 'Speech Rehab',
+      locale: language.resolvedLocale,
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF121212),
@@ -64,12 +124,47 @@ class _AppView extends StatelessWidget {
         '/recording_library': (context) => const RecordingLibraryScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/exercise_menu': (context) => const ExerciseMenuScreen(),
-        '/face_exercise': (context) => const FaceExerciseScreen(),
-        '/breathing_training': (context) => const BreathingTrainingScreen(),
-        '/tongue_exercise_menu': (context) => const TongueExerciseMenuScreen(),
+        '/guided_training': (context) => const GuidedTrainingHubScreen(),
+        '/consonant_training': (context) => const ConsonantTrainingHubScreen(),
+        '/guided_training/tongue': (context) =>
+            const GuidedTrainingCategoryScreen(
+              category: GuidedTrainingCategory.tongue,
+            ),
+        '/guided_training/lip': (context) => const GuidedTrainingCategoryScreen(
+          category: GuidedTrainingCategory.lip,
+        ),
+        '/guided_training/alternating': (context) =>
+            const GuidedTrainingCategoryScreen(
+              category: GuidedTrainingCategory.alternating,
+            ),
+        '/guided_training/breathing': (context) =>
+            const GuidedTrainingCategoryScreen(
+              category: GuidedTrainingCategory.breathing,
+            ),
+        '/guided_training/player': (context) => GuidedTrainingPlayerScreen(
+          exercises: defaultGuidedRoutine,
+          routineName: '오늘의 구강·호흡 루틴',
+        ),
+        '/guided_training/routine_builder': (context) =>
+            const RoutineBuilderScreen(),
+        '/guided_training/history': (context) =>
+            const GuidedTrainingHistoryScreen(),
+        // 한 릴리스 동안 기존 딥 링크를 새 통합 화면으로 연결합니다.
+        '/face_exercise': (context) => const GuidedTrainingCategoryScreen(
+          category: GuidedTrainingCategory.lip,
+        ),
+        '/breathing_training': (context) => const GuidedTrainingCategoryScreen(
+          category: GuidedTrainingCategory.breathing,
+        ),
+        '/tongue_exercise_menu': (context) => const GuidedTrainingHubScreen(),
         '/oral_alternating_exercise': (context) =>
-            const OralAlternatingExerciseScreen(),
-        '/tongue_exercise': (context) => const TongueExerciseScreen(),
+            const GuidedTrainingCategoryScreen(
+              category: GuidedTrainingCategory.alternating,
+            ),
+        '/tongue_exercise': (context) => GuidedTrainingPlayerScreen(
+          exercises: defaultGuidedRoutine,
+          routineName: '오늘의 구강·호흡 루틴',
+        ),
         '/voice_analysis_menu': (context) => const VoiceAnalysisMenuScreen(),
         '/voice_pitch': (context) => const PitchTrainingScreen(),
         '/target_tone': (context) => const TargetToneScreen(),
@@ -83,7 +178,9 @@ class _AppView extends StatelessWidget {
         '/voice_analysis_history': (context) =>
             const VoiceAnalysisHistoryScreen(),
         '/microphone_check': (context) => const MicrophoneCheckScreen(),
-        '/training_settings': (context) => const TrainingSettingsScreen(),
+        '/training_settings': (context) => const GuidedTrainingSettingsScreen(),
+        '/language_settings': (context) => const LanguageSettingsScreen(),
+        '/resource_center': (context) => const ResourceCenterScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

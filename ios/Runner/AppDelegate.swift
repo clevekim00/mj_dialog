@@ -18,12 +18,18 @@ final class SafeFlutterViewController: FlutterViewController {
   private var audioPlayer: AVAudioPlayer?
   private var audioRecorder: AVAudioRecorder?
   private var audioRecorderPath: String?
+  private let speechSynthesizer = AVSpeechSynthesizer()
   private var audioEventSink: FlutterEventSink?
   private var speechEventSink: FlutterEventSink?
-  private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko_KR"))
+  private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko-KR"))
+  private var speechLanguage = "ko-KR"
   private let speechAudioEngine = AVAudioEngine()
   private var speechRecognitionRequest: SFSpeechAudioBufferRecognitionRequest?
   private var speechRecognitionTask: SFSpeechRecognitionTask?
+  private var speechSessionID: UUID?
+  private var lastSpeechText = ""
+  private var pendingSpeechStop: FlutterResult?
+  private var speechStopDeadline: DispatchWorkItem?
   private var didConfigureFlutterChannels = false
 
   override func application(
@@ -58,7 +64,53 @@ final class SafeFlutterViewController: FlutterViewController {
     configureSharedPreferencesChannel()
     configurePermissionChannel()
     configureSpeechRecognitionChannel()
+    configureTextToSpeechChannel()
     didConfigureFlutterChannels = true
+  }
+
+  private func configureTextToSpeechChannel() {
+    guard let controller = currentFlutterViewController() else {
+      return
+    }
+    let channel = FlutterMethodChannel(
+      name: "speech_rehab/tts",
+      binaryMessenger: controller.binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self else {
+        result(FlutterError(code: "unavailable", message: "TTS unavailable.", details: nil))
+        return
+      }
+      switch call.method {
+      case "speak":
+        guard
+          let arguments = call.arguments as? [String: Any],
+          let text = arguments["text"] as? String,
+          !text.isEmpty
+        else {
+          result(FlutterError(code: "invalid_args", message: "Missing speech text.", details: nil))
+          return
+        }
+        self.cancelSpeechRecognition()
+        self.speechSynthesizer.stopSpeaking(at: .immediate)
+        let language = arguments["language"] as? String ?? "ko-KR"
+        guard let voice = AVSpeechSynthesisVoice(language: language) else {
+          result(FlutterError(code: "unsupported_language", message: "TTS language unavailable.", details: language))
+          return
+        }
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = voice
+        utterance.rate = 0.42
+        utterance.volume = 1.0
+        self.speechSynthesizer.speak(utterance)
+        result(nil)
+      case "stop":
+        self.speechSynthesizer.stopSpeaking(at: .immediate)
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
   }
 
   private func currentFlutterViewController() -> FlutterViewController? {
@@ -569,12 +621,19 @@ final class SafeFlutterViewController: FlutterViewController {
 
       switch call.method {
       case "initialize":
+        guard self.configureSpeechLanguage(from: call.arguments) else {
+          result(false)
+          return
+        }
         self.requestSpeechAndMicrophonePermission(result: result)
       case "startListening":
+        guard self.configureSpeechLanguage(from: call.arguments) else {
+          result(false)
+          return
+        }
         self.startSpeechRecognition(result: result)
       case "stopListening":
-        self.stopSpeechRecognition()
-        result(nil)
+        self.stopSpeechRecognition(result: result)
       case "cancelListening":
         self.cancelSpeechRecognition()
         result(nil)
@@ -599,6 +658,21 @@ final class SafeFlutterViewController: FlutterViewController {
         }
       )
     )
+  }
+
+  private func configureSpeechLanguage(from arguments: Any?) -> Bool {
+    let values = arguments as? [String: Any]
+    let language = values?["language"] as? String ?? speechLanguage
+    if language == speechLanguage, speechRecognizer != nil {
+      return true
+    }
+    guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language)) else {
+      return false
+    }
+    cancelSpeechRecognition()
+    speechLanguage = language
+    speechRecognizer = recognizer
+    return true
   }
 
   private func startSpeechRecognition(result: FlutterResult) {
@@ -630,23 +704,29 @@ final class SafeFlutterViewController: FlutterViewController {
         self?.speechRecognitionRequest?.append(buffer)
       }
 
+      let sessionID = UUID()
+      speechSessionID = sessionID
+      lastSpeechText = ""
       speechRecognitionTask = recognizer.recognitionTask(with: request) { [weak self] recognitionResult, error in
-        guard let self else { return }
-
-        if let recognitionResult {
-          self.speechEventSink?([
+        DispatchQueue.main.async {
+          guard let self, self.speechSessionID == sessionID else { return }
+          if let recognitionResult {
+            self.lastSpeechText = recognitionResult.bestTranscription.formattedString
+            self.speechEventSink?([
             "text": recognitionResult.bestTranscription.formattedString,
             "isFinal": recognitionResult.isFinal,
           ])
 
-          if recognitionResult.isFinal {
-            self.stopSpeechRecognition()
+            if recognitionResult.isFinal {
+              self.finishSpeechRecognition()
+              return
+            }
           }
-        }
-
-        if let error {
-          debugPrint("Speech recognition failed: \(error.localizedDescription)")
-          self.stopSpeechRecognition()
+          if let error {
+            debugPrint("Speech recognition failed: \(error.localizedDescription)")
+            self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true])
+            self.finishSpeechRecognition()
+          }
         }
       }
 
@@ -660,17 +740,35 @@ final class SafeFlutterViewController: FlutterViewController {
     }
   }
 
-  private func stopSpeechRecognition() {
+  private func stopSpeechRecognition(result: @escaping FlutterResult) {
+    guard speechRecognitionTask != nil else {
+      result(nil)
+      return
+    }
+    guard pendingSpeechStop == nil else {
+      result(FlutterError(code: "stop_pending", message: "Speech stop already pending.", details: nil))
+      return
+    }
+    pendingSpeechStop = result
     if speechAudioEngine.isRunning {
       speechAudioEngine.stop()
       speechAudioEngine.inputNode.removeTap(onBus: 0)
     }
+    // Keep request/task alive for the recognizer's final result.
     speechRecognitionRequest?.endAudio()
-    speechRecognitionRequest = nil
-    speechRecognitionTask = nil
+    let deadline = DispatchWorkItem { [weak self] in
+      guard let self, self.pendingSpeechStop != nil else { return }
+      self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true])
+      self.finishSpeechRecognition()
+    }
+    speechStopDeadline = deadline
+    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: deadline)
   }
 
-  private func cancelSpeechRecognition() {
+  private func finishSpeechRecognition() {
+    speechStopDeadline?.cancel()
+    speechStopDeadline = nil
+    speechSessionID = nil
     if speechAudioEngine.isRunning {
       speechAudioEngine.stop()
       speechAudioEngine.inputNode.removeTap(onBus: 0)
@@ -679,7 +777,18 @@ final class SafeFlutterViewController: FlutterViewController {
     speechRecognitionRequest = nil
     speechRecognitionTask?.cancel()
     speechRecognitionTask = nil
+    let completion = pendingSpeechStop
+    pendingSpeechStop = nil
+    completion?(nil)
   }
+
+  private func cancelSpeechRecognition() {
+    if speechSessionID != nil {
+      speechEventSink?(["text": lastSpeechText, "isFinal": false, "done": true])
+    }
+    finishSpeechRecognition()
+  }
+
 }
 
 final class ClosureStreamHandler: NSObject, FlutterStreamHandler {

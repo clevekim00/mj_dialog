@@ -47,6 +47,36 @@ void main() {
       expect(loaded.first.isExercisePattern, isTrue);
     });
 
+    test(
+      'unavailable score and missing final fatigue survive storage',
+      () async {
+        final service = PracticeHistoryService();
+        final session = PracticeSession(
+          id: 'unavailable',
+          targetText: '물',
+          spokenText: '',
+          audioFilePath: '/tmp/audio.m4a',
+          score: null,
+          feedback: '인식 불가',
+          timestamp: DateTime(2026, 9, 15),
+          fatigueBefore: 2,
+          evaluationMethod: 'unavailable',
+          evaluationVersion: 'unscored-v1',
+        );
+        await service.savePractice(session);
+        var loaded = await service.loadPractices();
+        expect(loaded.single.score, isNull);
+        expect(loaded.single.fatigueAfter, isNull);
+        expect(loaded.single.evaluationMethod, 'unavailable');
+        await service.updateFatigueAfter('unavailable', 4);
+        loaded = await service.loadPractices();
+        expect(loaded.single.fatigueBefore, 2);
+        expect(loaded.single.fatigueAfter, 4);
+        expect(loaded.single.score, isNull);
+        expect(loaded.single.audioFilePath, '/tmp/audio.m4a');
+      },
+    );
+
     test('loads old practice sessions with default mode metadata', () {
       final oldJson = {
         'id': 'old-session',
@@ -60,6 +90,9 @@ void main() {
 
       final session = PracticeSession.fromJson(oldJson);
 
+      expect(session.score, 80);
+      expect(session.evaluationMethod, 'legacy');
+      expect(session.hasComparableScore, isFalse);
       expect(session.mode, 'shortSentence');
       expect(session.category, '일반');
       expect(session.difficulty, 1);

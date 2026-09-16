@@ -19,29 +19,11 @@ class ExerciseMenuScreen extends StatelessWidget {
           const SizedBox(height: 18),
           _buildExerciseCard(
             context,
-            title: '혀운동',
-            subtitle: '혀운동 루틴과 연속 교대운동',
+            title: '구강·호흡 훈련',
+            subtitle: '혀 14개 · 입술 12개 · 교호 10개 · 호흡 10개',
             icon: Icons.self_improvement,
             color: Colors.tealAccent,
-            routeName: '/tongue_exercise_menu',
-          ),
-          const SizedBox(height: 14),
-          _buildExerciseCard(
-            context,
-            title: '얼굴운동',
-            subtitle: '입 크게 벌리기, 입술 모으기, 웃기, 턱 좌우, 볼 부풀리기',
-            icon: Icons.face_retouching_natural,
-            color: Colors.pinkAccent,
-            routeName: '/face_exercise',
-          ),
-          const SizedBox(height: 14),
-          _buildExerciseCard(
-            context,
-            title: '호흡훈련',
-            subtitle: '깊은 호흡 준비, 입·입술·혀·볼 움직임을 천천히 따라 하기',
-            icon: Icons.air,
-            color: Colors.lightBlueAccent,
-            routeName: '/breathing_training',
+            routeName: '/guided_training',
           ),
           const SizedBox(height: 14),
           _buildExerciseCard(
@@ -76,7 +58,7 @@ class ExerciseMenuScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '발음 전 준비운동',
+            '말하기를 위한 통합 훈련',
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -85,7 +67,7 @@ class ExerciseMenuScreen extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            '혀와 얼굴을 천천히 움직이며 말하기 연습 전 몸을 가볍게 준비합니다.',
+            '2D 시범 영상과 자막을 보며 구강 움직임·교호 발음·호흡을 반복합니다.',
             style: TextStyle(color: Colors.white60, height: 1.4),
           ),
         ],

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_rehab/features/navigation/view/adaptive_app_shell.dart';
+import 'package:speech_rehab/l10n/app_localizations.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -13,9 +15,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: AdaptiveAppShell())),
-    );
+    await tester.pumpWidget(const ProviderScope(child: _LocalizedTestApp()));
     await tester.pump();
 
     expect(find.byType(NavigationBar), findsOneWidget);
@@ -31,9 +31,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: AdaptiveAppShell())),
-    );
+    await tester.pumpWidget(const ProviderScope(child: _LocalizedTestApp()));
     await tester.pump();
 
     expect(find.byType(NavigationRail), findsOneWidget);
@@ -45,4 +43,21 @@ void main() {
     expect(find.text('훈련 달력 · 이력'), findsOneWidget);
     expect(find.text('음성 분석 기록'), findsOneWidget);
   });
+}
+
+class _LocalizedTestApp extends StatelessWidget {
+  const _LocalizedTestApp();
+
+  @override
+  Widget build(BuildContext context) => const MaterialApp(
+    locale: Locale('ko', 'KR'),
+    supportedLocales: [Locale('ko', 'KR'), Locale('en', 'US')],
+    localizationsDelegates: [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    home: AdaptiveAppShell(),
+  );
 }

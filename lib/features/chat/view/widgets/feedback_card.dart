@@ -15,12 +15,7 @@ class FeedbackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color scoreColor = Colors.greenAccent;
-    if (aiResponse.pronunciationScore < 60) {
-      scoreColor = Colors.redAccent;
-    } else if (aiResponse.pronunciationScore < 80) {
-      scoreColor = Colors.orangeAccent;
-    }
+    const scoreColor = Colors.blueAccent;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24.0),
@@ -40,11 +35,13 @@ class FeedbackCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      '발음 피드백',
+                      '연습 결과',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -52,14 +49,17 @@ class FeedbackCard extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: scoreColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: scoreColor),
                       ),
                       child: Text(
-                        '${aiResponse.pronunciationScore} 점',
+                        aiResponse.scoreDisplay,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class FeedbackCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'AI의 응답:',
+                  '결과 안내:',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -80,11 +80,15 @@ class FeedbackCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   aiResponse.replyText,
-                  style: const TextStyle(fontSize: 18, color: Colors.white, height: 1.5),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '코칭 조언:',
+                  '안내:',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.6),
@@ -93,7 +97,11 @@ class FeedbackCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   aiResponse.pronunciationFeedback,
-                  style: TextStyle(fontSize: 16, color: Colors.blue[100], height: 1.5),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue[100],
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Align(
@@ -107,11 +115,17 @@ class FeedbackCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
-                    child: const Text('닫기', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      '닫기',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),

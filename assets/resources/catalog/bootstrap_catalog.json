@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "1.0.0",
+  "languages": [
+    {
+      "locale": "ko-KR",
+      "nativeName": "한국어",
+      "fallbackLocale": "en-US",
+      "enabled": true,
+      "capabilities": {
+        "ui": true,
+        "content": true,
+        "tts": true,
+        "stt": true,
+        "analysis": true
+      },
+      "requiredPacks": ["ui.ko-KR", "consonant-core.ko-KR"],
+      "optionalPacks": []
+    },
+    {
+      "locale": "en-US",
+      "nativeName": "English (US)",
+      "fallbackLocale": "en-US",
+      "enabled": true,
+      "capabilities": {
+        "ui": true,
+        "content": true,
+        "tts": true,
+        "stt": true,
+        "analysis": true
+      },
+      "requiredPacks": ["ui.en-US", "consonant-core.en-US"],
+      "optionalPacks": []
+    }
+  ],
+  "packs": [
+    {
+      "id": "ui.ko-KR",
+      "type": "ui_strings",
+      "locale": "ko-KR",
+      "version": "1.0.0",
+      "url": "",
+      "sha256": "",
+      "sizeBytes": 0,
+      "required": true,
+      "bundledAsset": "assets/resources/ui/ko-KR.json"
+    },
+    {
+      "id": "ui.en-US",
+      "type": "ui_strings",
+      "locale": "en-US",
+      "version": "1.0.0",
+      "url": "",
+      "sha256": "",
+      "sizeBytes": 0,
+      "required": true,
+      "bundledAsset": "assets/resources/ui/en-US.json"
+    },
+    {
+      "id": "consonant-core.ko-KR",
+      "type": "content",
+      "locale": "ko-KR",
+      "version": "1.0.0",
+      "url": "",
+      "sha256": "",
+      "sizeBytes": 0,
+      "required": true,
+      "bundledAsset": "assets/pronunciation/content/ko_consonant_core.json"
+    },
+    {
+      "id": "consonant-core.en-US",
+      "type": "content",
+      "locale": "en-US",
+      "version": "1.0.0",
+      "url": "",
+      "sha256": "",
+      "sizeBytes": 0,
+      "required": true,
+      "bundledAsset": "assets/pronunciation/content/en_us_consonant_core.json"
+    }
+  ]
+}

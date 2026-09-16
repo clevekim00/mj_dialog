@@ -7,14 +7,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_rehab/services/app_language_service.dart';
 
 typedef SttResultCallback = Future<void> Function(String text, bool isFinal);
 
 final sttServiceProvider = Provider<SttService>((ref) {
-  return SttService();
+  final languageTag = ref.watch(appLanguageProvider).languageTag;
+  final service = SttService(languageTag: languageTag);
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 class SttService {
+  SttService({this.languageTag = 'ko-KR', bool? useIosNative})
+    : _useIosNative = useIosNative ?? (!kIsWeb && Platform.isIOS);
+
+  final bool _useIosNative;
+
+  final String languageTag;
   static const MethodChannel _iosSpeechChannel = MethodChannel(
     'speech_rehab/speech_recognition',
   );
@@ -25,6 +35,7 @@ class SttService {
   final SpeechToText _speechToText = SpeechToText();
   bool _sttEnabled = false;
   bool _iosListening = false;
+  Completer<void>? _iosTerminalResult;
   StreamSubscription<dynamic>? _iosSpeechSubscription;
 
   Future<bool> init() async {
@@ -40,13 +51,16 @@ class SttService {
       return false;
     }
 
-    if (Platform.isIOS) {
+    if (_useIosNative) {
       if (_sttEnabled) {
         return true;
       }
       try {
         _sttEnabled =
-            await _iosSpeechChannel.invokeMethod<bool>('initialize') ?? false;
+            await _iosSpeechChannel.invokeMethod<bool>('initialize', {
+              'language': languageTag,
+            }) ??
+            false;
       } catch (error) {
         debugPrint('[STT] iOS native initialization error: $error');
         _sttEnabled = false;
@@ -96,13 +110,15 @@ class SttService {
       }
     }
 
-    if (Platform.isIOS) {
+    if (_useIosNative) {
       if (_iosListening) {
         await stopListening();
       }
 
       try {
         await _iosSpeechSubscription?.cancel();
+        final terminal = Completer<void>();
+        _iosTerminalResult = terminal;
         _iosSpeechSubscription = _iosSpeechEvents
             .receiveBroadcastStream()
             .listen(
@@ -112,16 +128,27 @@ class SttService {
                 }
                 final text = event['text'] as String? ?? '';
                 final isFinal = event['isFinal'] as bool? ?? false;
-                debugPrint('[STT] iOS result: "$text" (final: $isFinal)');
-                await onResult(text, isFinal);
+                debugPrint('[STT] iOS result received (final: $isFinal)');
+                // Invoke the callback first so consumers receive the text.
+                // Do not wait for downstream AI work: a final callback may
+                // itself call stopListening(), which would wait on itself.
+                final handling = onResult(text, isFinal);
+                if ((isFinal || event['done'] == true) &&
+                    !terminal.isCompleted) {
+                  terminal.complete();
+                }
+                await handling;
               },
               onError: (Object error) {
                 debugPrint('[STT] iOS event error: $error');
+                if (!terminal.isCompleted) terminal.complete();
               },
             );
 
         _iosListening =
-            await _iosSpeechChannel.invokeMethod<bool>('startListening') ??
+            await _iosSpeechChannel.invokeMethod<bool>('startListening', {
+              'language': languageTag,
+            }) ??
             false;
         debugPrint('[STT] iOS listen started: $_iosListening');
         return _iosListening;
@@ -141,13 +168,10 @@ class SttService {
       final listenWatch = Stopwatch()..start();
       await _speechToText.listen(
         onResult: (SpeechRecognitionResult result) async {
-          debugPrint(
-            '[STT] result: "${result.recognizedWords}" '
-            '(final: ${result.finalResult})',
-          );
+          debugPrint('[STT] result received (final: ${result.finalResult})');
           await onResult(result.recognizedWords, result.finalResult);
         },
-        localeId: 'ko_KR',
+        localeId: languageTag.replaceAll('-', '_'),
         listenOptions: SpeechListenOptions(
           cancelOnError: true,
           partialResults: true,
@@ -167,17 +191,33 @@ class SttService {
   }
 
   Future<void> stopListening() async {
-    if (Platform.isIOS) {
+    if (_useIosNative) {
       if (!_iosListening) {
         debugPrint('[STT] iOS stop skipped: not listening');
         return;
       }
 
       debugPrint('[STT] stopping iOS native recognizer...');
-      await _iosSpeechChannel.invokeMethod<void>('stopListening');
-      await _iosSpeechSubscription?.cancel();
-      _iosSpeechSubscription = null;
-      _iosListening = false;
+      try {
+        await _iosSpeechChannel
+            .invokeMethod<void>('stopListening')
+            .timeout(const Duration(seconds: 3));
+        // Method and event channels can arrive in either order. Retain the
+        // subscription until the terminal text callback has been consumed.
+        await _iosTerminalResult?.future.timeout(
+          const Duration(milliseconds: 500),
+          onTimeout: () {},
+        );
+      } on TimeoutException {
+        debugPrint('[STT] native final result deadline reached');
+        await _iosSpeechChannel
+            .invokeMethod<void>('cancelListening')
+            .timeout(const Duration(milliseconds: 500), onTimeout: () {});
+      } finally {
+        await _iosSpeechSubscription?.cancel();
+        _iosSpeechSubscription = null;
+        _iosListening = false;
+      }
       debugPrint('[STT] iOS recognizer stopped');
       return;
     }
@@ -193,7 +233,7 @@ class SttService {
   }
 
   Future<void> dispose() async {
-    if (Platform.isIOS) {
+    if (_useIosNative) {
       if (_iosListening) {
         await _iosSpeechChannel.invokeMethod<void>('cancelListening');
       }

@@ -366,6 +366,7 @@ class PracticeContentService {
         history
             .where(
               (session) =>
+                  session.hasComparableScore &&
                   session.mode == PracticeMode.wordGame.storageValue &&
                   session.contentId != null,
             )
@@ -382,7 +383,7 @@ class PracticeContentService {
     final reviewItems = <PracticeContentItem>[];
     for (final entry in sessionsByContentId.entries) {
       final sessions = entry.value;
-      final hasFailure = sessions.any((session) => session.score < 70);
+      final hasFailure = sessions.any((session) => session.score! < 70);
       if (!hasFailure) {
         continue;
       }
@@ -390,7 +391,7 @@ class PracticeContentService {
       final recentTwo = sessions.take(2).toList();
       final hasRecovered =
           recentTwo.length == 2 &&
-          recentTwo.every((session) => session.score >= 80);
+          recentTwo.every((session) => session.score! >= 80);
       if (hasRecovered) {
         continue;
       }
@@ -473,8 +474,9 @@ class PracticeContentService {
   Map<String, int> getDifficultSoundCounts(List<PracticeSession> history) {
     final counts = <String, int>{};
     for (final session in history) {
-      if (session.mode != PracticeMode.wordGame.storageValue ||
-          session.score >= 70 ||
+      if (!session.hasComparableScore ||
+          session.mode != PracticeMode.wordGame.storageValue ||
+          session.score! >= 70 ||
           session.contentId == null) {
         continue;
       }
@@ -523,15 +525,20 @@ class PracticeContentService {
     }
 
     final itemHistory =
-        history.where((session) => session.contentId == item.id).toList()
+        history
+            .where(
+              (session) =>
+                  session.hasComparableScore && session.contentId == item.id,
+            )
+            .toList()
           ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    if (itemHistory.any((session) => session.score < 70)) {
+    if (itemHistory.any((session) => session.score! < 70)) {
       weight += 8;
     }
 
     final recentTwo = itemHistory.take(2).toList();
     if (recentTwo.length == 2 &&
-        recentTwo.every((session) => session.score >= 85)) {
+        recentTwo.every((session) => session.score! >= 85)) {
       weight -= 5;
     }
 

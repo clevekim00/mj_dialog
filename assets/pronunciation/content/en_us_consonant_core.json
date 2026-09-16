@@ -1,0 +1,53 @@
+{
+  "id": "en-us-consonant-core",
+  "schemaVersion": 1,
+  "version": "2026.08.1",
+  "language": "en-US",
+  "generator": {
+    "type": "clinically_scoped_seed_content",
+    "reviewStatus": "automated_validation_complete_slp_review_required"
+  },
+  "targets": [
+    {"id":"en-US:onset:p","grapheme":"P","phone":"p","position":"onset","description":"Initial /p/","isControl":false},
+    {"id":"en-US:medial:p","grapheme":"P","phone":"p","position":"medial","description":"Medial /p/","isControl":false},
+    {"id":"en-US:coda:p","grapheme":"P","phone":"p","position":"coda","description":"Final /p/","isControl":false},
+    {"id":"en-US:onset:t","grapheme":"T","phone":"t","position":"onset","description":"Initial /t/","isControl":false},
+    {"id":"en-US:medial:t","grapheme":"T","phone":"t","position":"medial","description":"Medial /t/","isControl":false},
+    {"id":"en-US:coda:t","grapheme":"T","phone":"t","position":"coda","description":"Final /t/","isControl":false},
+    {"id":"en-US:onset:k","grapheme":"K","phone":"k","position":"onset","description":"Initial /k/","isControl":false},
+    {"id":"en-US:medial:k","grapheme":"K","phone":"k","position":"medial","description":"Medial /k/","isControl":false},
+    {"id":"en-US:coda:k","grapheme":"K","phone":"k","position":"coda","description":"Final /k/","isControl":false},
+    {"id":"en-US:onset:theta","grapheme":"TH","phone":"theta","position":"onset","description":"Initial voiceless TH /θ/","isControl":false},
+    {"id":"en-US:medial:theta","grapheme":"TH","phone":"theta","position":"medial","description":"Medial voiceless TH /θ/","isControl":false},
+    {"id":"en-US:coda:theta","grapheme":"TH","phone":"theta","position":"coda","description":"Final voiceless TH /θ/","isControl":false}
+  ],
+  "items": [
+    {"id":"en_p_i_word","targetId":"en-US:onset:p","level":"word","text":"park","pronunciation":["p","ɑɹ","k"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_p_i_sentence","targetId":"en-US:onset:p","level":"sentence","text":"Please park near the door.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":2,"reviewStatus":"slp_review_required"},
+    {"id":"en_p_m_word","targetId":"en-US:medial:p","level":"word","text":"open","pronunciation":["ow","p","ən"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_p_m_sentence","targetId":"en-US:medial:p","level":"sentence","text":"Please open the paper bag.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":3,"reviewStatus":"slp_review_required"},
+    {"id":"en_p_f_word","targetId":"en-US:coda:p","level":"word","text":"cup","pronunciation":["k","ʌ","p"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_p_f_sentence","targetId":"en-US:coda:p","level":"sentence","text":"Keep the cup on the table.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":2,"reviewStatus":"slp_review_required"},
+
+    {"id":"en_t_i_word","targetId":"en-US:onset:t","level":"word","text":"tea","pronunciation":["t","i"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_t_i_sentence","targetId":"en-US:onset:t","level":"sentence","text":"Take your time today.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":3,"reviewStatus":"slp_review_required"},
+    {"id":"en_t_m_word","targetId":"en-US:medial:t","level":"word","text":"water","pronunciation":["w","ɔ","t","ɚ"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_t_m_sentence","targetId":"en-US:medial:t","level":"sentence","text":"I need water today.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":2,"reviewStatus":"slp_review_required"},
+    {"id":"en_t_f_word","targetId":"en-US:coda:t","level":"word","text":"seat","pronunciation":["s","i","t"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_t_f_sentence","targetId":"en-US:coda:t","level":"sentence","text":"Please take a seat.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":2,"reviewStatus":"slp_review_required"},
+
+    {"id":"en_k_i_word","targetId":"en-US:onset:k","level":"word","text":"key","pronunciation":["k","i"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_k_i_sentence","targetId":"en-US:onset:k","level":"sentence","text":"Keep the key close.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":3,"reviewStatus":"slp_review_required"},
+    {"id":"en_k_m_word","targetId":"en-US:medial:k","level":"word","text":"baker","pronunciation":["b","eɪ","k","ɚ"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_k_m_sentence","targetId":"en-US:medial:k","level":"sentence","text":"The baker can help me.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_k_f_word","targetId":"en-US:coda:k","level":"word","text":"book","pronunciation":["b","ʊ","k"],"difficulty":1,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_k_f_sentence","targetId":"en-US:coda:k","level":"sentence","text":"Look at the book.","pronunciation":[],"difficulty":2,"category":"functional","targetOccurrenceCount":2,"reviewStatus":"slp_review_required"},
+
+    {"id":"en_th_i_word","targetId":"en-US:onset:theta","level":"word","text":"think","pronunciation":["θ","ɪ","ŋ","k"],"difficulty":2,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_th_i_sentence","targetId":"en-US:onset:theta","level":"sentence","text":"Think about three things.","pronunciation":[],"difficulty":3,"category":"functional","targetOccurrenceCount":3,"reviewStatus":"slp_review_required"},
+    {"id":"en_th_m_word","targetId":"en-US:medial:theta","level":"word","text":"healthy","pronunciation":["h","ɛ","l","θ","i"],"difficulty":2,"category":"health","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_th_m_sentence","targetId":"en-US:medial:theta","level":"sentence","text":"A healthy meal helps me.","pronunciation":[],"difficulty":3,"category":"health","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_th_f_word","targetId":"en-US:coda:theta","level":"word","text":"bath","pronunciation":["b","æ","θ"],"difficulty":2,"category":"daily","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"},
+    {"id":"en_th_f_sentence","targetId":"en-US:coda:theta","level":"sentence","text":"I need help with the bath.","pronunciation":[],"difficulty":3,"category":"functional","targetOccurrenceCount":1,"reviewStatus":"slp_review_required"}
+  ]
+}

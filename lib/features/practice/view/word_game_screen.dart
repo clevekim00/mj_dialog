@@ -1,66 +1,157 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
 import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 
-class WordGameScreen extends ConsumerWidget {
+class WordGameScreen extends ConsumerStatefulWidget {
   const WordGameScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WordGameScreen> createState() => _WordGameScreenState();
+}
+
+class _WordGameScreenState extends ConsumerState<WordGameScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _pauseSession({bool finishRecording = false}) async {
+    final notifier = ref.read(practiceProvider.notifier);
+    final practice = ref.read(practiceProvider);
+    if (finishRecording &&
+        (practice.state == PracticeState.recording ||
+            practice.state == PracticeState.analyzing)) {
+      await notifier.stopRecording();
+    }
+    if (!mounted) return;
+    notifier.pauseWordGame();
+    if (ref.read(practiceProvider).isPlaying) {
+      try {
+        await notifier.stopPlayback();
+      } catch (_) {}
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle == AppLifecycleState.paused ||
+        lifecycle == AppLifecycleState.hidden) {
+      unawaited(_pauseSession(finishRecording: true));
+    }
+  }
+
+  Future<void> _openSecondary(String route) async {
+    await _pauseSession();
+    if (mounted) Navigator.pushNamed(context, route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final practice = ref.watch(practiceProvider);
     final notifier = ref.read(practiceProvider.notifier);
     final failedReviewEntries = notifier.failedWordReviewEntries();
+    final locked =
+        practice.state == PracticeState.recording ||
+        practice.state == PracticeState.analyzing;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
-      appBar: AppBar(
-        title: const Text('단어 게임'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.library_music),
-            tooltip: '녹음 보관함',
-            onPressed: () => Navigator.pushNamed(context, '/recording_library'),
+    return PopScope(
+      canPop: !locked,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          unawaited(_pauseSession());
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              practice.state == PracticeState.recording
+                  ? '녹음을 끝낸 뒤 나갈 수 있어요.'
+                  : '녹음을 저장하고 있어요. 잠시만 기다려 주세요.',
+            ),
+            action: practice.state == PracticeState.recording
+                ? SnackBarAction(
+                    label: '녹음 끝내기',
+                    onPressed: () => _pauseSession(finishRecording: true),
+                  )
+                : null,
           ),
-          IconButton(
-            icon: const Icon(Icons.replay_circle_filled_outlined),
-            tooltip: '틀린 단어 복습',
-            onPressed: () => _startFailedWordReview(context, ref),
-          ),
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            tooltip: '성과 대시보드',
-            onPressed: () => Navigator.pushNamed(context, '/dashboard'),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          children: [
-            _buildHeader(practice),
-            if (failedReviewEntries.isNotEmpty &&
-                practice.wordGameStatus != WordGameStatus.running &&
-                !practice.isReviewMode) ...[
-              const SizedBox(height: 14),
-              _buildFailedWordReviewCard(context, ref, failedReviewEntries),
-            ],
-            const SizedBox(height: 14),
-            _buildDifficultyControls(ref, practice),
-            const SizedBox(height: 14),
-            _buildFocusSoundControls(ref, practice),
-            const SizedBox(height: 14),
-            _buildStats(practice),
-            const SizedBox(height: 14),
-            _buildArena(practice, notifier),
-            const SizedBox(height: 18),
-            _buildStatusChips(practice),
-            const SizedBox(height: 18),
-            _buildControls(context, practice, notifier),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0D0D0D),
+        appBar: AppBar(
+          title: const Text('단어 게임'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.library_music),
+              tooltip: '녹음 보관함',
+              onPressed: locked
+                  ? null
+                  : () => _openSecondary('/recording_library'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.replay_circle_filled_outlined),
+              tooltip: '다시 볼 단어 복습',
+              onPressed: locked
+                  ? null
+                  : () => _startFailedWordReview(context, ref),
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              tooltip: '성과 대시보드',
+              onPressed: locked ? null : () => _openSecondary('/dashboard'),
+            ),
           ],
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            children: [
+              _buildHeader(practice),
+              SwitchListTile(
+                title: const Text('시간 제한이 있는 낙하 모드'),
+                subtitle: const Text('끄면 단어가 내려오지 않습니다.'),
+                value: practice.wordGameTimed,
+                onChanged:
+                    practice.wordGameStatus == WordGameStatus.running ||
+                        practice.wordGameStatus == WordGameStatus.paused
+                    ? null
+                    : notifier.setWordGameTimed,
+              ),
+              if (failedReviewEntries.isNotEmpty &&
+                  practice.wordGameStatus != WordGameStatus.running &&
+                  !practice.isReviewMode) ...[
+                const SizedBox(height: 14),
+                _buildFailedWordReviewCard(context, ref, failedReviewEntries),
+              ],
+              const SizedBox(height: 14),
+              _buildDifficultyControls(ref, practice),
+              const SizedBox(height: 14),
+              _buildFocusSoundControls(ref, practice),
+              const SizedBox(height: 14),
+              _buildStats(practice),
+              const SizedBox(height: 14),
+              _buildArena(practice, notifier),
+              const SizedBox(height: 18),
+              _buildStatusChips(practice),
+              const SizedBox(height: 18),
+              _buildControls(context, practice, notifier),
+            ],
+          ),
         ),
       ),
     );
@@ -69,8 +160,13 @@ class WordGameScreen extends ConsumerWidget {
   Widget _buildHeader(PracticeProgress practice) {
     final status = switch (practice.wordGameStatus) {
       WordGameStatus.ready =>
-        practice.isReviewMode ? '틀린 단어만 모아 다시 연습합니다.' : '게임 시작을 누르면 단어가 내려옵니다.',
+        practice.isReviewMode
+            ? '인식 차이가 있었던 단어를 다시 연습합니다.'
+            : practice.wordGameTimed
+            ? '선택한 낙하 모드입니다. 준비되면 시작하세요.'
+            : '시간 제한 없이 한 단어씩 편안하게 연습합니다.',
       WordGameStatus.running => '목표 단어를 말한 뒤 판정하면 맞은 단어가 사라집니다.',
+      WordGameStatus.paused => '잠시 쉬는 중입니다. 준비되면 이어가세요.',
       WordGameStatus.gameOver => '단어가 바닥에 닿아 게임이 끝났습니다.',
     };
 
@@ -126,7 +222,7 @@ class WordGameScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '틀린 단어 ${failedReviewEntries.length}개 복습',
+                  '다시 볼 단어 ${failedReviewEntries.length}개 복습',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
@@ -137,7 +233,7 @@ class WordGameScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            '70점 미만이거나 놓친 단어만 모아서 다시 발음하고, 실패했던 녹음도 바로 들어볼 수 있습니다.',
+            '텍스트 일치도가 70% 미만인 단어를 모았습니다. 음성 인식 오류일 수 있으니 녹음을 먼저 확인해 주세요.',
             style: TextStyle(color: Colors.white60, fontSize: 13, height: 1.35),
           ),
           const SizedBox(height: 12),
@@ -151,7 +247,7 @@ class WordGameScreen extends ConsumerWidget {
             child: ElevatedButton.icon(
               onPressed: () => _startFailedWordReview(context, ref),
               icon: const Icon(Icons.play_arrow),
-              label: const Text('틀린 단어만 다시 연습'),
+              label: const Text('다시 볼 단어만 다시 연습'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
@@ -215,7 +311,7 @@ class WordGameScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '실패 ${entry.failureCount}회 · 최근 ${entry.latestFailedSession.score}점',
+                  '인식 차이 ${entry.failureCount}회 · 일치도 ${entry.latestFailedSession.score}%',
                   style: const TextStyle(color: Colors.white38, fontSize: 12),
                 ),
               ],
@@ -515,21 +611,13 @@ class WordGameScreen extends ConsumerWidget {
         practice.state == PracticeState.analyzing;
 
     void handleWordTap(FallingWord word) {
-      debugPrint(
-        '[WordGameUI] word tapped: "${word.item.text}" '
-        'id=${word.item.id} fallingId=${word.id} '
-        'state=${practice.state.name} target=${practice.contentId}',
-      );
       if (practice.state == PracticeState.analyzing) {
-        debugPrint('[WordGameUI] tap ignored: analyzing');
         return;
       }
       if (practice.state == PracticeState.recording) {
-        debugPrint('[WordGameUI] tap stops recording');
         notifier.stopRecording();
         return;
       }
-      debugPrint('[WordGameUI] tap starts recording for selected word');
       notifier.selectFallingWord(word.id);
       notifier.startRecording();
     }
@@ -560,7 +648,7 @@ class WordGameScreen extends ConsumerWidget {
               if (practice.wordGameStatus == WordGameStatus.ready)
                 const Center(
                   child: Text(
-                    '게임 시작',
+                    '연습 시작',
                     style: TextStyle(
                       color: Colors.white54,
                       fontSize: 22,
@@ -717,6 +805,13 @@ class WordGameScreen extends ConsumerWidget {
     PracticeProgress practice,
     PracticeNotifier notifier,
   ) {
+    if (practice.wordGameStatus == WordGameStatus.paused) {
+      return FilledButton.icon(
+        onPressed: notifier.resumeWordGame,
+        icon: const Icon(Icons.play_arrow),
+        label: const Text('연습 이어가기'),
+      );
+    }
     if (practice.wordGameStatus != WordGameStatus.running) {
       return SizedBox(
         width: double.infinity,
@@ -727,7 +822,7 @@ class WordGameScreen extends ConsumerWidget {
           label: Text(
             practice.wordGameStatus == WordGameStatus.gameOver
                 ? '다시 시작'
-                : '게임 시작',
+                : '연습 시작',
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.greenAccent,
@@ -783,8 +878,15 @@ class WordGameScreen extends ConsumerWidget {
           _buildLatestRecordingControls(context, practice, notifier),
         ],
         const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: isBusy || isRecording ? null : notifier.pauseWordGame,
+          icon: const Icon(Icons.pause),
+          label: const Text('잠시 쉬기'),
+        ),
         TextButton.icon(
-          onPressed: () => notifier.resetFallingWordGame(),
+          onPressed: isBusy || isRecording
+              ? null
+              : () => notifier.resetFallingWordGame(),
           icon: const Icon(Icons.stop_circle_outlined),
           label: const Text('그만하기'),
           style: TextButton.styleFrom(foregroundColor: Colors.white54),
@@ -874,54 +976,61 @@ class WordGameScreen extends ConsumerWidget {
         ? '판정 중'
         : '말하기 시작';
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        width: 220,
-        height: 220,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildRecognizedSpeechToast(practice),
-            ),
-            Positioned(bottom: 0, child: AnimatedOrb(state: orbState)),
-            Positioned(
-              bottom: 52,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 9,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: accent.withValues(alpha: 0.55)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, color: accent, size: 18),
-                    const SizedBox(width: 7),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
+    return Semantics(
+      button: true,
+      enabled: !isAnalyzing,
+      label: isRecording ? '녹음 마치고 텍스트 비교' : '단어 말하기 시작',
+      onTap: isAnalyzing ? null : onTap,
+      child: GestureDetector(
+        key: const ValueKey('word-game-microphone'),
+        behavior: HitTestBehavior.opaque,
+        onTap: isAnalyzing ? null : onTap,
+        child: SizedBox(
+          width: 220,
+          height: 220,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildRecognizedSpeechToast(practice),
+              ),
+              Positioned(bottom: 0, child: AnimatedOrb(state: orbState)),
+              Positioned(
+                bottom: 52,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: accent.withValues(alpha: 0.55)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, color: accent, size: 18),
+                      const SizedBox(width: 7),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -981,7 +1090,7 @@ class WordGameScreen extends ConsumerWidget {
           Icon(Icons.hearing_outlined, color: color, size: 18),
           const SizedBox(width: 8),
           const Text(
-            '인식된 발음',
+            '인식된 글',
             style: TextStyle(
               color: Colors.white54,
               fontSize: 12,
@@ -1035,7 +1144,7 @@ class WordGameScreen extends ConsumerWidget {
     final started = ref.read(practiceProvider.notifier).startFailedWordReview();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(started ? '틀린 단어 복습을 시작합니다.' : '복습할 틀린 단어가 없습니다.'),
+        content: Text(started ? '다시 볼 단어 복습을 시작합니다.' : '복습할 다시 볼 단어가 없습니다.'),
       ),
     );
   }

@@ -48,6 +48,9 @@ class VoiceSignalAnalyzer {
       clipping: peak >= 0.98,
       pitchHz: pitch.$1,
       pitchConfidence: pitch.$2,
+      sampleDuration: Duration(
+        microseconds: samples.length * 1000000 ~/ sampleRate,
+      ),
     );
   }
 

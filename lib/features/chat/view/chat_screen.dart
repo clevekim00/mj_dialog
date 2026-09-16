@@ -1,286 +1,258 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
-import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
-import 'package:speech_rehab/features/chat/view/widgets/feedback_card.dart';
 import 'package:speech_rehab/features/practice/view/widgets/mouth_video_preview_sheet.dart';
 
-class ChatScreen extends ConsumerWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<String?>(
-      chatControllerProvider.select((session) => session.errorMessage),
-      (previous, next) {
-        if (next == null || next == previous) return;
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(next)));
-        ref.read(chatControllerProvider.notifier).clearError();
-      },
-    );
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+}
 
-    final session = ref.watch(chatControllerProvider);
-    final notifier = ref.read(chatControllerProvider.notifier);
-    final state = session.conversationState;
+class _ChatScreenState extends ConsumerState<ChatScreen>
+    with WidgetsBindingObserver {
+  final _textController = TextEditingController();
+  bool _closing = false;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Top Bar with Back Button
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.white54,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.graphic_eq,
-                        color: Colors.white.withValues(alpha: 0.5),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'SPEECH REHAB',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white.withValues(alpha: 0.5),
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      session.mouthVideoEnabled
-                          ? Icons.videocam
-                          : Icons.videocam_outlined,
-                      color: session.mouthVideoEnabled
-                          ? Colors.greenAccent
-                          : Colors.white54,
-                    ),
-                    tooltip: '입모양 촬영',
-                    onPressed: state == ConversationState.listening
-                        ? null
-                        : () => notifier.setMouthVideoEnabled(
-                            !session.mouthVideoEnabled,
-                          ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Central Orb - The focus of the conversation
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AnimatedOrb(state: state),
-                  const SizedBox(height: 48),
-                  // Helpful status text
-                  Text(
-                    _getStatusText(state),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  if (session.mouthVideoError != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      session.mouthVideoError!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.orangeAccent,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                  if (session.mouthVideoEnabled &&
-                      session.isMouthVideoReady &&
-                      notifier.mouthVideoController != null) ...[
-                    const SizedBox(height: 16),
-                    _buildCameraPreview(notifier.mouthVideoController!),
-                  ],
-                ],
-              ),
-            ),
-
-            // Live Text / Response Text Display - Higher for readability
-            Positioned(
-              bottom: 220,
-              left: 32,
-              right: 32,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity:
-                    session.liveText.isNotEmpty ||
-                        state == ConversationState.listening
-                    ? 1.0
-                    : 0.0,
-                child: Text(
-                  session.liveText.isEmpty ? '듣고 있어요...' : session.liveText,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ),
-
-            // Feedback Card
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOutQuart,
-              bottom: state == ConversationState.feedback ? 160 : -400,
-              left: 24,
-              right: 24,
-              child: session.feedback != null
-                  ? FeedbackCard(
-                      aiResponse: session.feedback!,
-                      onDismiss: () {
-                        ref
-                            .read(chatControllerProvider.notifier)
-                            .dismissFeedback();
-                      },
-                    )
-                  : const SizedBox.shrink(),
-            ),
-
-            // Bottom Mic Button - Simplified, no text input
-            Positioned(
-              bottom: session.lastMouthVideoPath == null ? 40 : 96,
-              left: 0,
-              right: 0,
-              child: Center(child: _buildMicButton(ref, state)),
-            ),
-            if (session.lastMouthVideoPath != null)
-              Positioned(
-                bottom: 32,
-                left: 32,
-                right: 32,
-                child: SizedBox(
-                  height: 46,
-                  child: OutlinedButton.icon(
-                    onPressed: () => MouthVideoPreviewSheet.show(
-                      context,
-                      session.lastMouthVideoPath!,
-                    ),
-                    icon: const Icon(Icons.video_library_outlined),
-                    label: const Text('입모양 영상 보기'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.greenAccent,
-                      side: BorderSide(
-                        color: Colors.greenAccent.withValues(alpha: 0.35),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  String _getStatusText(ConversationState state) {
-    switch (state) {
-      case ConversationState.idle:
-        return '준비되었어요';
-      case ConversationState.listening:
-        return '말씀해 주세요';
-      case ConversationState.thinking:
-        return '생각 중이에요';
-      case ConversationState.speaking:
-        return '말하는 중이에요';
-      case ConversationState.feedback:
-        return '피드백 확인 중';
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle == AppLifecycleState.paused ||
+        lifecycle == AppLifecycleState.hidden) {
+      unawaited(ref.read(chatControllerProvider.notifier).endConversation());
     }
   }
 
-  Widget _buildMicButton(WidgetRef ref, ConversationState state) {
-    final isListening = state == ConversationState.listening;
-
-    return GestureDetector(
-      onTap: () {
-        ref
-            .read(chatControllerProvider.notifier)
-            .toggleVoiceInput(isVoiceSupported: true);
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isListening ? Colors.redAccent : Colors.white10,
-              border: Border.all(
-                color: isListening ? Colors.redAccent : Colors.white24,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (isListening ? Colors.redAccent : Colors.white10)
-                      .withValues(alpha: 0.2),
-                  blurRadius: 24,
-                  spreadRadius: 8,
-                ),
-              ],
-            ),
-            child: Icon(
-              isListening ? Icons.stop_rounded : Icons.mic_rounded,
-              size: 40,
-              color: isListening ? Colors.white : Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isListening ? '완료하려면 탭' : '탭하여 시작',
-            style: const TextStyle(
-              color: Colors.white38,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
+  Future<void> _finishAndClose() async {
+    if (_closing) return;
+    setState(() => _closing = true);
+    await ref.read(chatControllerProvider.notifier).endConversation();
+    if (!mounted) return;
+    setState(() => _closing = false);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.maybePop(context);
   }
 
-  Widget _buildCameraPreview(CameraController controller) {
-    return SizedBox(
-      width: 180,
-      child: AspectRatio(
-        aspectRatio: controller.value.aspectRatio,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: CameraPreview(controller),
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+    _textController.clear();
+    await ref.read(chatControllerProvider.notifier).submitText(text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<String?>(
+      chatControllerProvider.select((value) => value.errorMessage),
+      (previous, next) {
+        if (next == null || next == previous) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next)));
+        ref.read(chatControllerProvider.notifier).clearError();
+      },
+    );
+    final session = ref.watch(chatControllerProvider);
+    final notifier = ref.read(chatControllerProvider.notifier);
+    final listening = session.conversationState == ConversationState.listening;
+    final busy =
+        session.isProcessing || session.currentSession == null || _closing;
+    final canType = !busy && !listening;
+    final camera = notifier.mouthVideoController;
+
+    return PopScope(
+      canPop: !listening && !busy,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          unawaited(notifier.endConversation());
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('소리와 녹음을 멈추려면 대화 마치기를 눌러 주세요.')),
+        );
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('대화 연습'),
+          actions: [
+            IconButton(
+              tooltip: '새 대화',
+              onPressed: busy || listening ? null : notifier.createNewSession,
+              icon: const Icon(Icons.add_comment_outlined),
+            ),
+            IconButton(
+              tooltip: session.mouthVideoEnabled ? '입모양 촬영 끄기' : '입모양 촬영 켜기',
+              onPressed: busy || listening
+                  ? null
+                  : () => notifier.setMouthVideoEnabled(
+                      !session.mouthVideoEnabled,
+                    ),
+              icon: Icon(
+                session.mouthVideoEnabled
+                    ? Icons.videocam
+                    : Icons.videocam_outlined,
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    const Text(
+                      '말하기, 글 입력, 준비된 문장 중 편한 방법을 선택하세요. 대화에서는 발음 점수를 매기지 않습니다.',
+                    ),
+                    const SizedBox(height: 16),
+                    for (final message
+                        in session.currentSession?.messages ??
+                            <ChatMessage>[]) ...[
+                      Align(
+                        alignment: message.role == ChatRole.user
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              message.text,
+                              style: const TextStyle(fontSize: 18, height: 1.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (listening)
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          session.liveText.isEmpty
+                              ? '듣고 있어요. 편안한 속도로 말씀하세요.'
+                              : session.liveText,
+                        ),
+                      ),
+                    if (session.isProcessing) const Text('응답을 준비하고 있어요.'),
+                    if (session.mouthVideoError != null)
+                      Text(session.mouthVideoError!),
+                    if (session.mouthVideoEnabled &&
+                        session.isMouthVideoReady &&
+                        camera != null)
+                      SizedBox(
+                        height: 150,
+                        child: AspectRatio(
+                          aspectRatio: camera.value.aspectRatio,
+                          child: CameraPreview(camera),
+                        ),
+                      ),
+                    if (session.lastMouthVideoPath != null)
+                      OutlinedButton.icon(
+                        onPressed: () => MouthVideoPreviewSheet.show(
+                          context,
+                          session.lastMouthVideoPath!,
+                        ),
+                        icon: const Icon(Icons.video_library_outlined),
+                        label: const Text('입모양 영상 보기'),
+                      ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final text in [
+                          '잠시 쉬고 싶어요.',
+                          '천천히 이야기해 주세요.',
+                          '오늘 있었던 일을 이야기할게요.',
+                        ])
+                          ActionChip(
+                            label: Text(text),
+                            onPressed: canType
+                                ? () => notifier.submitText(
+                                    text,
+                                    inputMethod: 'prepared',
+                                  )
+                                : null,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _textController,
+                            enabled: canType,
+                            minLines: 1,
+                            maxLines: 3,
+                            textInputAction: TextInputAction.send,
+                            onSubmitted: (_) => _send(),
+                            decoration: const InputDecoration(
+                              labelText: '글로 이야기하기',
+                              hintText: '전하고 싶은 말을 입력하세요.',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton.filled(
+                          tooltip: '입력한 글 보내기',
+                          onPressed: canType ? _send : null,
+                          icon: const Icon(Icons.send),
+                          constraints: const BoxConstraints(
+                            minHeight: 56,
+                            minWidth: 56,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: FilledButton.icon(
+                        onPressed: busy
+                            ? null
+                            : () => notifier.toggleVoiceInput(
+                                isVoiceSupported: true,
+                              ),
+                        icon: Icon(listening ? Icons.stop : Icons.mic),
+                        label: Text(listening ? '말하기 마치고 보내기' : '말로 이야기하기'),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _closing ? null : _finishAndClose,
+                      child: Text(_closing ? '대화를 마치고 있어요.' : '대화 마치기'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
