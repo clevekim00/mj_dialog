@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "language": "ko-KR",
-  "version": "2026.08.1",
+  "version": "2026.09.2",
   "url": "https://cdn.example.invalid/pronunciation/ko_consonant_core.json",
-  "sha256": "52456e9928d3e319b783c3d4b8e9081a514f145ce4b8e692fa9484ca5cdea743"
+  "sha256": "fa10d8e67d177a4243250cff338e3d135ffd983a65aa5c5cd2e01a99c93fd14e"
 }

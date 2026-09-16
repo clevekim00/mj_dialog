@@ -98,6 +98,8 @@ class GuidedTrainingExerciseResult {
   }
 }
 
+enum GuidedTrainingSessionStatus { completed, paused, stopped }
+
 class GuidedTrainingSession {
   const GuidedTrainingSession({
     required this.id,
@@ -108,7 +110,15 @@ class GuidedTrainingSession {
     required this.fatigueAfter,
     required this.results,
     this.schemaVersion = 1,
-    this.contentVersion = '2026.08',
+    this.contentVersion = '2026.09',
+    this.status = GuidedTrainingSessionStatus.completed,
+    this.activeDurationSeconds,
+    this.exerciseIds = const [],
+    this.exerciseIndex = 0,
+    this.currentCompletedLoops = 0,
+    this.repeatCount = 5,
+    this.currentTargetLoops = 5,
+    this.playbackSpeed = 0.75,
   });
 
   final String id;
@@ -121,14 +131,47 @@ class GuidedTrainingSession {
   final int schemaVersion;
   final String contentVersion;
 
+  final GuidedTrainingSessionStatus status;
+  final int? activeDurationSeconds;
+  final List<String> exerciseIds;
+  final int exerciseIndex;
+  final int currentCompletedLoops;
+  final int repeatCount;
+  final int currentTargetLoops;
+  final double playbackSpeed;
+
   bool get completed =>
-      results.isNotEmpty && results.any((result) => result.completedLoops > 0);
+      status == GuidedTrainingSessionStatus.completed &&
+      results.isNotEmpty &&
+      (exerciseIds.isEmpty || results.length == exerciseIds.length) &&
+      results.every(
+        (result) =>
+            !result.skipped &&
+            result.targetLoops > 0 &&
+            result.completedLoops >= result.targetLoops,
+      );
+  bool get canResume =>
+      status != GuidedTrainingSessionStatus.completed &&
+      exerciseIds.isNotEmpty &&
+      exerciseIndex < exerciseIds.length;
+  String get statusLabel => switch (status) {
+    GuidedTrainingSessionStatus.completed => completed ? '완료' : '부분완료',
+    GuidedTrainingSessionStatus.paused => '쉬는 중',
+    GuidedTrainingSessionStatus.stopped => '부분완료',
+  };
 
   int get completedExerciseCount => results
-      .where((result) => !result.skipped && result.completedLoops > 0)
+      .where(
+        (result) =>
+            !result.skipped &&
+            result.targetLoops > 0 &&
+            result.completedLoops >= result.targetLoops,
+      )
       .length;
 
-  int get durationSeconds => completedAt.difference(startedAt).inSeconds;
+  int get durationSeconds =>
+      activeDurationSeconds ??
+      completedAt.difference(startedAt).inSeconds.clamp(0, 86400);
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -140,6 +183,14 @@ class GuidedTrainingSession {
     'results': results.map((result) => result.toJson()).toList(),
     'schemaVersion': schemaVersion,
     'contentVersion': contentVersion,
+    'status': status.name,
+    'activeDurationSeconds': activeDurationSeconds,
+    'exerciseIds': exerciseIds,
+    'exerciseIndex': exerciseIndex,
+    'currentCompletedLoops': currentCompletedLoops,
+    'repeatCount': repeatCount,
+    'currentTargetLoops': currentTargetLoops,
+    'playbackSpeed': playbackSpeed,
   };
 
   factory GuidedTrainingSession.fromJson(Map<String, dynamic> json) {
@@ -160,6 +211,25 @@ class GuidedTrainingSession {
           .toList(),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
       contentVersion: json['contentVersion'] as String? ?? '2026.08',
+      status: GuidedTrainingSessionStatus.values.firstWhere(
+        (value) => value.name == json['status'],
+        orElse: () => GuidedTrainingSessionStatus.completed,
+      ),
+      activeDurationSeconds: json['activeDurationSeconds'] as int?,
+      exerciseIds: (json['exerciseIds'] as List<dynamic>? ?? [])
+          .whereType<String>()
+          .toList(),
+      exerciseIndex: (json['exerciseIndex'] as int? ?? 0).clamp(0, 100),
+      currentCompletedLoops: (json['currentCompletedLoops'] as int? ?? 0).clamp(
+        0,
+        100,
+      ),
+      repeatCount: (json['repeatCount'] as int? ?? 5).clamp(1, 30),
+      currentTargetLoops: (json['currentTargetLoops'] as int? ?? 5).clamp(
+        1,
+        100,
+      ),
+      playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? 0.75,
     );
   }
 }

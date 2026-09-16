@@ -6,6 +6,7 @@ import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/services/guided_training/guided_training_history_service.dart';
 import 'package:speech_rehab/services/practice_content_service.dart';
 import '../provider/practice_provider.dart';
+import 'package:speech_rehab/services/practice_history_service.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,15 +16,16 @@ class DashboardScreen extends ConsumerWidget {
     final practice = ref.watch(practiceProvider);
     final guidedTraining = ref.watch(guidedTrainingSessionsProvider);
     final contentService = ref.watch(practiceContentServiceProvider);
-    final history = practice.history;
+    final history = practice.history.where((s) => s.isRecordedAttempt).toList();
+    final scored = history.where((s) => s.hasComparableScore).toList();
 
     final totalPractices = history.length;
-    final avgScore = history.isEmpty
-        ? 0
-        : history.map((s) => s.score).reduce((a, b) => a + b) ~/ history.length;
-    final bestScore = history.isEmpty
-        ? 0
-        : history.map((s) => s.score).reduce((a, b) => a > b ? a : b);
+    final avgScore = scored.isEmpty
+        ? null
+        : scored.map((s) => s.score!).reduce((a, b) => a + b) ~/ scored.length;
+    final bestScore = scored.isEmpty
+        ? null
+        : scored.map((s) => s.score!).reduce((a, b) => a > b ? a : b);
     final activeDays = _countActiveDays(history);
     final avgFatigue = history.isEmpty
         ? 0
@@ -60,9 +62,9 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _buildWeeklyChart(history),
             const SizedBox(height: 32),
-            _buildSectionTitle('발음 점수 분포'),
+            _buildSectionTitle('텍스트 일치도 분포'),
             const SizedBox(height: 16),
-            _buildScoreDistribution(history),
+            _buildScoreDistribution(scored),
             const SizedBox(height: 32),
             _buildRecentSessions(history),
           ],
@@ -82,7 +84,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryGrid(int total, int avg, int best) {
+  Widget _buildSummaryGrid(int total, int? avg, int? best) {
     return GridView.count(
       crossAxisCount: 3,
       shrinkWrap: true,
@@ -91,8 +93,16 @@ class DashboardScreen extends ConsumerWidget {
       childAspectRatio: 0.8,
       children: [
         _buildStatCard('연습 횟수', total.toString(), Colors.blueAccent),
-        _buildStatCard('평균 점수', '$avg점', Colors.greenAccent),
-        _buildStatCard('최고 점수', '$best점', Colors.orangeAccent),
+        _buildStatCard(
+          '평균 일치도',
+          avg == null ? '기록 없음' : '$avg%',
+          Colors.greenAccent,
+        ),
+        _buildStatCard(
+          '최고 일치도',
+          best == null ? '기록 없음' : '$best%',
+          Colors.orangeAccent,
+        ),
       ],
     );
   }
@@ -200,11 +210,9 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildModeSummary(List<dynamic> history) {
+  Widget _buildModeSummary(List<PracticeSession> history) {
     final wordCount = history.where((s) => s.mode == 'wordGame').length;
-    final shortCount = history
-        .where((s) => s.mode == 'shortSentence' || s.mode == null)
-        .length;
+    final shortCount = history.where((s) => s.mode == 'shortSentence').length;
     final longCount = history.where((s) => s.mode == 'longSentence').length;
     final freeCount = history.where((s) => s.mode == 'freeSpeech').length;
 
@@ -288,7 +296,7 @@ class DashboardScreen extends ConsumerWidget {
               Icon(Icons.record_voice_over_outlined, color: Colors.greenAccent),
               SizedBox(width: 8),
               Text(
-                '어려웠던 발음군',
+                '인식 차이가 있었던 단어',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -324,16 +332,18 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildRecommendedAction(
     BuildContext context,
     WidgetRef ref,
-    List<dynamic> history,
+    List<PracticeSession> history,
   ) {
-    final lowScoreCount = history.where((session) => session.score < 75).length;
+    final lowScoreCount = history
+        .where((session) => session.hasComparableScore && session.score! < 75)
+        .length;
     final mode = lowScoreCount > 0
         ? PracticeMode.wordGame
         : PracticeMode.shortSentence;
-    final title = lowScoreCount > 0 ? '어려웠던 발음부터 다시 연습' : '짧은 문장으로 감각 유지';
+    final title = lowScoreCount > 0 ? '인식 차이가 있었던 단어 확인' : '짧은 문장으로 감각 유지';
     final body = lowScoreCount > 0
-        ? '낮은 점수 기록이 있어 단어 게임으로 발음군을 좁혀보는 것이 좋습니다.'
-        : '최근 흐름이 안정적입니다. 짧은 문장으로 오늘 연습을 이어가세요.';
+        ? '인식된 글과 목표 글에 차이가 있었습니다. 녹음을 먼저 듣고 다시 연습할 단어를 골라보세요.'
+        : '편안한 짧은 문장으로 오늘 연습을 이어가세요.';
     final color = mode == PracticeMode.wordGame
         ? Colors.greenAccent
         : Colors.blueAccent;
@@ -431,7 +441,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeeklyChart(List<dynamic> history) {
+  Widget _buildWeeklyChart(List<PracticeSession> history) {
     final now = DateTime.now();
     final last7Days = List.generate(
       7,
@@ -524,7 +534,7 @@ class DashboardScreen extends ConsumerWidget {
     return '$minutes분 ${remainingSeconds.toString().padLeft(2, '0')}초';
   }
 
-  int _countActiveDays(List<dynamic> history) {
+  int _countActiveDays(List<PracticeSession> history) {
     final now = DateTime.now();
     final recentDays = List.generate(7, (i) {
       final date = now.subtract(Duration(days: i));
@@ -540,10 +550,10 @@ class DashboardScreen extends ConsumerWidget {
         .length;
   }
 
-  Widget _buildScoreDistribution(List<dynamic> history) {
-    final excellent = history.where((s) => s.score >= 90).length;
-    final good = history.where((s) => s.score >= 70 && s.score < 90).length;
-    final poor = history.where((s) => s.score < 70).length;
+  Widget _buildScoreDistribution(List<PracticeSession> history) {
+    final excellent = history.where((s) => s.score! >= 90).length;
+    final good = history.where((s) => s.score! >= 70 && s.score! < 90).length;
+    final poor = history.where((s) => s.score! < 70).length;
     final total = history.isEmpty ? 1 : history.length;
 
     return Container(
@@ -554,11 +564,11 @@ class DashboardScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildDistRow('매우 좋음 (90+)', excellent, total, Colors.greenAccent),
+          _buildDistRow('일치도 90% 이상', excellent, total, Colors.greenAccent),
           const SizedBox(height: 12),
-          _buildDistRow('좋음 (70-89)', good, total, Colors.orangeAccent),
+          _buildDistRow('일치도 70–89%', good, total, Colors.orangeAccent),
           const SizedBox(height: 12),
-          _buildDistRow('연습 필요 (<70)', poor, total, Colors.redAccent),
+          _buildDistRow('일치도 70% 미만', poor, total, Colors.redAccent),
         ],
       ),
     );
@@ -597,7 +607,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentSessions(List<dynamic> history) {
+  Widget _buildRecentSessions(List<PracticeSession> history) {
     final recent = history.take(3).toList();
     if (recent.isEmpty) return const SizedBox.shrink();
 
@@ -654,9 +664,9 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  '${s.score}점',
+                  s.scoreDisplay,
                   style: TextStyle(
-                    color: s.score >= 90
+                    color: s.score != null && s.score! >= 90
                         ? Colors.greenAccent
                         : Colors.orangeAccent,
                     fontWeight: FontWeight.bold,

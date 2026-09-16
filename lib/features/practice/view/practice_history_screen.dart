@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../provider/practice_provider.dart';
+import 'package:speech_rehab/services/practice_history_service.dart';
 
 class PracticeHistoryScreen extends ConsumerWidget {
   const PracticeHistoryScreen({super.key});
@@ -38,7 +39,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
 
   Widget _buildHistoryCard(
     BuildContext context,
-    dynamic session,
+    PracticeSession session,
     PracticeNotifier notifier,
   ) {
     final dateStr = DateFormat('yyyy.MM.dd HH:mm').format(session.timestamp);
@@ -54,8 +55,11 @@ class PracticeHistoryScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
             children: [
               Text(
                 dateStr,
@@ -77,7 +81,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
                       border: Border.all(color: _getScoreColor(session.score)),
                     ),
                     child: Text(
-                      '${session.score}점',
+                      session.scoreDisplay,
                       style: TextStyle(
                         color: _getScoreColor(session.score),
                         fontWeight: FontWeight.bold,
@@ -121,7 +125,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
               _buildMetaChip(Icons.flag_outlined, session.sessionGoal),
               _buildMetaChip(
                 Icons.battery_3_bar_outlined,
-                '피로도 ${session.fatigueBefore}/5',
+                '시작 피로도 ${session.fatigueBefore}/5 · 종료 ${session.fatigueAfter == null ? '미기록' : '${session.fatigueAfter}/5'}',
               ),
               if (session.durationSeconds > 0)
                 _buildMetaChip(
@@ -132,7 +136,7 @@ class PracticeHistoryScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '인식된 발음: "${session.spokenText}"',
+            '인식된 글: "${session.spokenText}"',
             style: const TextStyle(color: Colors.blueAccent, fontSize: 14),
           ),
           const SizedBox(height: 16),
@@ -245,7 +249,8 @@ class PracticeHistoryScreen extends ConsumerWidget {
     );
   }
 
-  Color _getScoreColor(int score) {
+  Color _getScoreColor(int? score) {
+    if (score == null) return Colors.white54;
     if (score >= 90) return Colors.greenAccent;
     if (score >= 70) return Colors.orangeAccent;
     return Colors.redAccent;

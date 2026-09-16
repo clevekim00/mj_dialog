@@ -7,7 +7,24 @@ class PracticeSession {
   final String spokenText;
   final String audioFilePath;
   final String? videoFilePath;
-  final int score;
+  final int? score;
+  final String evaluationMethod;
+  final String evaluationVersion;
+
+  bool get hasComparableScore =>
+      evaluationMethod == 'textMatch' && score != null;
+  bool get isRecordedAttempt =>
+      audioFilePath.isNotEmpty || spokenText.trim().isNotEmpty;
+  String get scoreLabel => switch (evaluationMethod) {
+    'textMatch' => '텍스트 일치도',
+    'legacy' => '이전 방식 점수',
+    'unavailable' => '분석 불가',
+    _ => '점수 없음',
+  };
+  String get scoreDisplay => score == null
+      ? scoreLabel
+      : '$scoreLabel $score${evaluationMethod == 'textMatch' ? '%' : '점'}';
+
   final String feedback;
   final List<Map<String, dynamic>>? phonemeAccuracy;
   final String? intonationFeedback;
@@ -34,6 +51,8 @@ class PracticeSession {
     required this.audioFilePath,
     this.videoFilePath,
     required this.score,
+    this.evaluationMethod = 'legacy',
+    this.evaluationVersion = 'legacy',
     required this.feedback,
     this.phonemeAccuracy,
     this.intonationFeedback,
@@ -61,6 +80,8 @@ class PracticeSession {
     'audioFilePath': audioFilePath,
     'videoFilePath': videoFilePath,
     'score': score,
+    'evaluationMethod': evaluationMethod,
+    'evaluationVersion': evaluationVersion,
     'feedback': feedback,
     'phonemeAccuracy': phonemeAccuracy,
     'intonationFeedback': intonationFeedback,
@@ -88,7 +109,9 @@ class PracticeSession {
         spokenText: json['spokenText'] as String,
         audioFilePath: json['audioFilePath'] as String,
         videoFilePath: json['videoFilePath'] as String?,
-        score: json['score'] as int,
+        score: (json['score'] as num?)?.toInt(),
+        evaluationMethod: json['evaluationMethod'] as String? ?? 'legacy',
+        evaluationVersion: json['evaluationVersion'] as String? ?? 'legacy',
         feedback: json['feedback'] as String,
         phonemeAccuracy: (json['phonemeAccuracy'] as List?)
             ?.cast<Map<String, dynamic>>(),
@@ -136,6 +159,26 @@ class PracticeHistoryService {
     } catch (e) {
       return [];
     }
+  }
+
+  Future<void> updateFatigueAfter(String id, int value) async {
+    if (value < 1 || value > 5) throw ArgumentError.value(value, 'value');
+    final sessions = await loadPractices();
+    final updated = sessions
+        .map(
+          (session) => session.id == id
+              ? PracticeSession.fromJson({
+                  ...session.toJson(),
+                  'fatigueAfter': value,
+                })
+              : session,
+        )
+        .toList();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _storageKey,
+      jsonEncode(updated.map((s) => s.toJson()).toList()),
+    );
   }
 
   Future<void> deletePractice(String id) async {

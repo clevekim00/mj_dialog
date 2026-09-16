@@ -234,6 +234,7 @@ class PronunciationAnalysisResult {
     required this.signalAccepted,
     required this.disclaimer,
     this.language = 'ko-KR',
+    this.scoreValidated = false,
     this.message,
   });
 
@@ -248,9 +249,11 @@ class PronunciationAnalysisResult {
   final bool signalAccepted;
   final String disclaimer;
   final String language;
+  final bool scoreValidated;
   final String? message;
 
   bool get hasReliableScore =>
+      scoreValidated &&
       status == PronunciationAnalysisStatus.completed &&
       signalAccepted &&
       overallPracticeScore != null &&
@@ -260,6 +263,7 @@ class PronunciationAnalysisResult {
     final signal = json['signalQuality'] as Map<String, dynamic>?;
     return PronunciationAnalysisResult(
       jobId: json['jobId'] as String? ?? '',
+      scoreValidated: json['scoreValidated'] == true,
       status: switch (json['status']) {
         'queued' => PronunciationAnalysisStatus.queued,
         'processing' => PronunciationAnalysisStatus.processing,
@@ -311,7 +315,9 @@ class ConsonantTrainingAttempt {
     required this.audioFilePath,
     required this.createdAt,
     required this.analysis,
-  });
+    String? language,
+    this.fatigue,
+  }) : _language = language;
 
   final String id;
   final String targetId;
@@ -321,9 +327,28 @@ class ConsonantTrainingAttempt {
   final String audioFilePath;
   final DateTime createdAt;
   final PronunciationAnalysisResult analysis;
+  final String? _language;
+  String get language => _language ?? analysis.language;
+  final int? fatigue;
+
+  ConsonantTrainingAttempt withAnalysis(PronunciationAnalysisResult result) =>
+      ConsonantTrainingAttempt(
+        id: id,
+        targetId: targetId,
+        contentId: contentId,
+        text: text,
+        level: level,
+        audioFilePath: audioFilePath,
+        createdAt: createdAt,
+        analysis: result,
+        language: language,
+        fatigue: fatigue,
+      );
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'language': language,
+    'fatigue': fatigue,
     'targetId': targetId,
     'contentId': contentId,
     'text': text,
@@ -332,6 +357,7 @@ class ConsonantTrainingAttempt {
     'createdAt': createdAt.toIso8601String(),
     'analysis': {
       'jobId': analysis.jobId,
+      'scoreValidated': analysis.scoreValidated,
       'status': analysis.status.name,
       'modelVersion': analysis.modelVersion,
       'contentVersion': analysis.contentVersion,
@@ -372,6 +398,11 @@ class ConsonantTrainingAttempt {
   factory ConsonantTrainingAttempt.fromJson(Map<String, dynamic> json) =>
       ConsonantTrainingAttempt(
         id: json['id'] as String,
+        language:
+            json['language'] as String? ??
+            (json['analysis'] as Map?)?['language'] as String? ??
+            'ko-KR',
+        fatigue: json['fatigue'] as int?,
         targetId: json['targetId'] as String,
         contentId: json['contentId'] as String,
         text: json['text'] as String,

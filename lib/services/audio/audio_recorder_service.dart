@@ -12,14 +12,21 @@ final audioRecorderServiceProvider = Provider<AudioRecorderService>((ref) {
 });
 
 class AudioRecorderService {
+  AudioRecorderService({bool? useIosNative})
+    : _useIosNative = useIosNative ?? (!kIsWeb && Platform.isIOS);
+  final bool _useIosNative;
   static const MethodChannel _iosRecorderChannel = MethodChannel(
     'speech_rehab/audio_recorder',
   );
 
-  final AudioRecorder _recorder = AudioRecorder();
+  // Native iOS uses the custom channel and must not initialize the separate
+  // record plugin merely by constructing this service.
+  AudioRecorder? _platformRecorder;
+  AudioRecorder get _recorder => _platformRecorder ??= AudioRecorder();
+  bool _isRecording = false;
 
   Future<bool> hasPermission() async {
-    if (Platform.isIOS) {
+    if (_useIosNative) {
       return await _iosRecorderChannel.invokeMethod<bool>('hasPermission') ??
           false;
     }
@@ -30,8 +37,7 @@ class AudioRecorderService {
   Future<void> startRecording(String fileName) async {
     try {
       if (!await hasPermission()) {
-        debugPrint('Recording permission was not granted.');
-        return;
+        throw StateError('마이크 권한이 없어 녹음을 시작하지 못했습니다.');
       }
 
       final directory = await getApplicationDocumentsDirectory();
@@ -42,10 +48,11 @@ class AudioRecorderService {
 
       final filePath = path.join(recordingsDir.path, '$fileName.m4a');
 
-      if (Platform.isIOS) {
+      if (_useIosNative) {
         await _iosRecorderChannel.invokeMethod<void>('start', {
           'path': filePath,
         });
+        _isRecording = true;
         debugPrint('Recording started: $filePath');
         return;
       }
@@ -54,15 +61,18 @@ class AudioRecorderService {
           RecordConfig(); // Default config: AAC LC, 44.1kHz, 128kbps, mono
 
       await _recorder.start(config, path: filePath);
+      _isRecording = true;
       debugPrint('Recording started: $filePath');
     } catch (e) {
+      _isRecording = false;
       debugPrint('Error starting recording: $e');
+      rethrow;
     }
   }
 
   Future<String?> stopRecording() async {
     try {
-      if (Platform.isIOS) {
+      if (_useIosNative) {
         final path = await _iosRecorderChannel.invokeMethod<String>('stop');
         debugPrint('Recording stopped. File saved at: $path');
         return path;
@@ -74,22 +84,21 @@ class AudioRecorderService {
     } catch (e) {
       debugPrint('Error stopping recording: $e');
       return null;
+    } finally {
+      _isRecording = false;
     }
   }
 
   Future<void> dispose() async {
-    if (Platform.isIOS) {
+    _isRecording = false;
+    if (_useIosNative) {
       await _iosRecorderChannel.invokeMethod<void>('dispose');
       return;
     }
 
-    await _recorder.dispose();
+    await _platformRecorder?.dispose();
+    _platformRecorder = null;
   }
 
-  bool isRecording() {
-    // Record version 5.0+ uses an async check or stream,
-    // but we can track state in the provider if needed.
-    // For now, keeping it simple.
-    return false; // This is a limitation of the current service design, state should be managed.
-  }
+  bool isRecording() => _isRecording;
 }

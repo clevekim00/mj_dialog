@@ -367,6 +367,8 @@ PracticeSession _wordSession({
     spokenText: targetText,
     audioFilePath: '/tmp/$contentId.m4a',
     score: score,
+    evaluationMethod: 'textMatch',
+    evaluationVersion: 'text-match-v1',
     feedback: '테스트 피드백',
     timestamp: timestamp,
     mode: PracticeMode.wordGame.storageValue,

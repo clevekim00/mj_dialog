@@ -26,6 +26,10 @@ final class SafeFlutterViewController: FlutterViewController {
   private let speechAudioEngine = AVAudioEngine()
   private var speechRecognitionRequest: SFSpeechAudioBufferRecognitionRequest?
   private var speechRecognitionTask: SFSpeechRecognitionTask?
+  private var speechSessionID: UUID?
+  private var lastSpeechText = ""
+  private var pendingSpeechStop: FlutterResult?
+  private var speechStopDeadline: DispatchWorkItem?
   private var didConfigureFlutterChannels = false
 
   override func application(
@@ -629,8 +633,7 @@ final class SafeFlutterViewController: FlutterViewController {
         }
         self.startSpeechRecognition(result: result)
       case "stopListening":
-        self.stopSpeechRecognition()
-        result(nil)
+        self.stopSpeechRecognition(result: result)
       case "cancelListening":
         self.cancelSpeechRecognition()
         result(nil)
@@ -701,23 +704,29 @@ final class SafeFlutterViewController: FlutterViewController {
         self?.speechRecognitionRequest?.append(buffer)
       }
 
+      let sessionID = UUID()
+      speechSessionID = sessionID
+      lastSpeechText = ""
       speechRecognitionTask = recognizer.recognitionTask(with: request) { [weak self] recognitionResult, error in
-        guard let self else { return }
-
-        if let recognitionResult {
-          self.speechEventSink?([
+        DispatchQueue.main.async {
+          guard let self, self.speechSessionID == sessionID else { return }
+          if let recognitionResult {
+            self.lastSpeechText = recognitionResult.bestTranscription.formattedString
+            self.speechEventSink?([
             "text": recognitionResult.bestTranscription.formattedString,
             "isFinal": recognitionResult.isFinal,
           ])
 
-          if recognitionResult.isFinal {
-            self.stopSpeechRecognition()
+            if recognitionResult.isFinal {
+              self.finishSpeechRecognition()
+              return
+            }
           }
-        }
-
-        if let error {
-          debugPrint("Speech recognition failed: \(error.localizedDescription)")
-          self.stopSpeechRecognition()
+          if let error {
+            debugPrint("Speech recognition failed: \(error.localizedDescription)")
+            self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true])
+            self.finishSpeechRecognition()
+          }
         }
       }
 
@@ -731,17 +740,35 @@ final class SafeFlutterViewController: FlutterViewController {
     }
   }
 
-  private func stopSpeechRecognition() {
+  private func stopSpeechRecognition(result: @escaping FlutterResult) {
+    guard speechRecognitionTask != nil else {
+      result(nil)
+      return
+    }
+    guard pendingSpeechStop == nil else {
+      result(FlutterError(code: "stop_pending", message: "Speech stop already pending.", details: nil))
+      return
+    }
+    pendingSpeechStop = result
     if speechAudioEngine.isRunning {
       speechAudioEngine.stop()
       speechAudioEngine.inputNode.removeTap(onBus: 0)
     }
+    // Keep request/task alive for the recognizer's final result.
     speechRecognitionRequest?.endAudio()
-    speechRecognitionRequest = nil
-    speechRecognitionTask = nil
+    let deadline = DispatchWorkItem { [weak self] in
+      guard let self, self.pendingSpeechStop != nil else { return }
+      self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true])
+      self.finishSpeechRecognition()
+    }
+    speechStopDeadline = deadline
+    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: deadline)
   }
 
-  private func cancelSpeechRecognition() {
+  private func finishSpeechRecognition() {
+    speechStopDeadline?.cancel()
+    speechStopDeadline = nil
+    speechSessionID = nil
     if speechAudioEngine.isRunning {
       speechAudioEngine.stop()
       speechAudioEngine.inputNode.removeTap(onBus: 0)
@@ -750,7 +777,18 @@ final class SafeFlutterViewController: FlutterViewController {
     speechRecognitionRequest = nil
     speechRecognitionTask?.cancel()
     speechRecognitionTask = nil
+    let completion = pendingSpeechStop
+    pendingSpeechStop = nil
+    completion?(nil)
   }
+
+  private func cancelSpeechRecognition() {
+    if speechSessionID != nil {
+      speechEventSink?(["text": lastSpeechText, "isFinal": false, "done": true])
+    }
+    finishSpeechRecognition()
+  }
+
 }
 
 final class ClosureStreamHandler: NSObject, FlutterStreamHandler {

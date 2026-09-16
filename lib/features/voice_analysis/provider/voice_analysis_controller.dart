@@ -31,6 +31,7 @@ class VoiceAnalysisController extends ChangeNotifier {
   StreamSubscription<Uint8List>? _subscription;
   Stopwatch? _watch;
   int _ringBytes = 0;
+  int _analyzedSamples = 0;
 
   VoiceAnalysisStatus status = VoiceAnalysisStatus.idle;
   VoiceAnalysisFrame? latestFrame;
@@ -52,6 +53,9 @@ class VoiceAnalysisController extends ChangeNotifier {
         return;
       }
       _frames.clear();
+      _pending.clear();
+      _analyzedSamples = 0;
+      latestFrame = null;
       _ringChunks.clear();
       _ringBytes = 0;
       _watch = Stopwatch()..start();
@@ -84,14 +88,18 @@ class VoiceAnalysisController extends ChangeNotifier {
       final recentNoise = _frames.isEmpty
           ? -80.0
           : _frames
-                .take(20)
+                .skip(_frames.length > 20 ? _frames.length - 20 : 0)
                 .map((frame) => frame.dbfs)
                 .reduce((a, b) => a < b ? a : b);
       final frame = _analyzer.analyzePcm16(
         chunk,
-        timestamp: _watch?.elapsed ?? Duration.zero,
+        timestamp: Duration(
+          microseconds:
+              (_analyzedSamples + frameBytes ~/ 2) * 1000000 ~/ sampleRate,
+        ),
         noiseFloorDbfs: recentNoise,
       );
+      _analyzedSamples += frameBytes ~/ 2;
       _frames.add(frame);
       latestFrame = frame;
       offset += frameBytes;
@@ -118,6 +126,9 @@ class VoiceAnalysisController extends ChangeNotifier {
     if (bytes.length <= maxRingBytes) return bytes;
     return Uint8List.sublistView(bytes, bytes.length - maxRingBytes);
   }
+
+  Duration get recordingDuration =>
+      Duration(microseconds: _analyzedSamples * 1000000 ~/ sampleRate);
 
   VoiceAnalysisMetrics get metrics => VoiceAnalysisMetrics.fromFrames(_frames);
 

@@ -73,7 +73,26 @@ void main() {
 
     expect(metrics.medianPitchHz, closeTo(180, 5));
     expect(metrics.voicedFrameRatio, 1);
-    expect(metrics.phonationDurationMs, 300);
+    expect(metrics.phonationDurationMs, 768);
     expect(metrics.analysisConfidence, greaterThan(0.8));
+  });
+  test('발성 시간에서 무음과 처리 지연을 제외한다', () {
+    final frames = [
+      analyzer.analyzePcm16(
+        sineWave(180),
+        timestamp: const Duration(seconds: 1),
+      ),
+      analyzer.analyzePcm16(
+        Uint8List(8192),
+        timestamp: const Duration(seconds: 20),
+      ),
+      analyzer.analyzePcm16(
+        sineWave(180),
+        timestamp: const Duration(seconds: 40),
+      ),
+    ];
+    final metrics = VoiceAnalysisMetrics.fromFrames(frames);
+    expect(metrics.phonationDurationMs, 512);
+    expect(metrics.voicedFrameRatio, closeTo(2 / 3, .001));
   });
 }

@@ -5,6 +5,13 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+Future<Directory> voiceAnalysisRecordingDirectory() async {
+  final documents = await getApplicationDocumentsDirectory();
+  final directory = Directory(path.join(documents.path, 'voice_analysis'));
+  await directory.create(recursive: true);
+  return directory;
+}
+
 class WavFileService {
   const WavFileService();
 
@@ -12,8 +19,17 @@ class WavFileService {
     Uint8List pcm, {
     required String fileName,
     int sampleRate = 16000,
+    bool persistent = true,
   }) async {
-    final directory = await getTemporaryDirectory();
+    if (pcm.isEmpty ||
+        pcm.length.isOdd ||
+        sampleRate <= 0 ||
+        fileName != path.basename(fileName)) {
+      throw ArgumentError('Invalid PCM data, sample rate or file name.');
+    }
+    final directory = persistent
+        ? await voiceAnalysisRecordingDirectory()
+        : await getTemporaryDirectory();
     final filePath = path.join(directory.path, '$fileName.wav');
     final header = _wavHeader(pcm.length, sampleRate: sampleRate);
     await File(filePath).writeAsBytes([...header, ...pcm], flush: true);
@@ -41,6 +57,7 @@ class WavFileService {
     return writePcm16(
       data.buffer.asUint8List(),
       fileName: 'target_tone_${frequencyHz.round()}',
+      persistent: false,
       sampleRate: sampleRate,
     );
   }

@@ -19,6 +19,58 @@ void main() {
     expect(loaded.single.analysis.overallPracticeScore, 72);
   });
 
+  test('분석 업데이트는 같은 녹음을 중복 추가하지 않는다', () async {
+    final service = ConsonantTrainingHistoryService();
+    final original = _attempt(72, id: 'same');
+    await service.add(original);
+    await service.add(
+      original.withAnalysis(
+        PronunciationAnalysisResult.unavailable('cancelled'),
+      ),
+    );
+    final loaded = await service.load();
+    expect(loaded, hasLength(1));
+    expect(loaded.single.analysis.overallPracticeScore, isNull);
+  });
+
+  test('과거 검증 표시가 없는 자동 점수는 기준선에 포함하지 않는다', () {
+    final legacy = _attempt(90).toJson();
+    (legacy['analysis'] as Map).remove('scoreValidated');
+    final restored = ConsonantTrainingAttempt.fromJson(legacy);
+    expect(restored.analysis.hasReliableScore, isFalse);
+    expect(
+      ConsonantTrainingHistoryService().baselineFor([
+        restored,
+        restored,
+        restored,
+      ], 'onset_g'),
+      isNull,
+    );
+  });
+
+  test('이전 녹음 비교는 언어와 현재 원문이 모두 같은 기록만 고른다', () async {
+    final service = ConsonantTrainingHistoryService();
+    final same = _attempt(72, id: 'same');
+    await service.add(same);
+    await service.add(_attempt(90, id: 'other-language', language: 'en-US'));
+    final result = await service.previousFor(
+      targetId: 'onset_g',
+      contentId: 'item',
+      text: '가',
+      language: 'ko-KR',
+    );
+    expect(result?.id, 'same');
+    expect(
+      await service.previousFor(
+        targetId: 'onset_g',
+        contentId: 'item',
+        text: '고',
+        language: 'ko-KR',
+      ),
+      isNull,
+    );
+  });
+
   test('신뢰 가능한 3회부터 중앙값 기준선을 계산한다', () async {
     final service = ConsonantTrainingHistoryService(
       preferences: await SharedPreferences.getInstance(),
@@ -49,10 +101,7 @@ void main() {
       _attempt(70, language: 'en-US'),
     ];
 
-    expect(
-      service.baselineFor(attempts, 'onset_g', language: 'ko-KR'),
-      isNull,
-    );
+    expect(service.baselineFor(attempts, 'onset_g', language: 'ko-KR'), isNull);
   });
 }
 
@@ -71,6 +120,7 @@ ConsonantTrainingAttempt _attempt(
     createdAt: DateTime(2026),
     analysis: PronunciationAnalysisResult(
       jobId: 'job',
+      scoreValidated: true,
       status: PronunciationAnalysisStatus.completed,
       modelVersion: 'test-model',
       contentVersion: '1.0.0',

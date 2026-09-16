@@ -12,6 +12,7 @@ except (ImportError, RuntimeError):
 
 
 class FakeBackend:
+    score_validated = True
     model_version = "validated-test-model"
     ready = True
 
@@ -67,7 +68,10 @@ def make_wav():
 class ApiTests(unittest.TestCase):
     def setUp(self):
         configure_backend(FakeBackend())
-        self.client = TestClient(app)
+        from app import main, security
+        main._jobs.clear()
+        security._rates.clear()
+        self.client = TestClient(app, client=("127.0.0.1", 50000))
 
     def test_create_and_read_analysis_job(self):
         response = self.client.post(

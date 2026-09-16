@@ -52,18 +52,29 @@ class ConsonantContentRepository {
     final directory = await _packDirectory();
     final downloaded = File(path.join(directory.path, 'current.json'));
     final previous = File(path.join(directory.path, 'previous.json'));
+    final candidates = <PronunciationContentPack>[];
     for (final candidate in [downloaded, previous]) {
       if (!await candidate.exists()) continue;
       try {
-        return _decode(
-          await candidate.readAsString(),
-          source: candidate == downloaded ? 'downloaded' : 'rollback',
+        candidates.add(
+          _decode(
+            await candidate.readAsString(),
+            source: candidate == downloaded ? 'downloaded' : 'rollback',
+          ),
         );
       } catch (_) {
-        // 손상된 업데이트는 무시하고 이전 버전 또는 앱 내장본으로 복구합니다.
+        // A damaged download cannot displace valid bundled content.
       }
     }
-    return _decode(await _bundledTextLoader(bundledAsset), source: 'bundled');
+    try {
+      candidates.add(
+        _decode(await _bundledTextLoader(bundledAsset), source: 'bundled'),
+      );
+    } catch (_) {
+      if (candidates.isEmpty) rethrow;
+    }
+    candidates.sort((a, b) => _compareVersions(b.version, a.version));
+    return candidates.first;
   }
 
   Future<ContentUpdateResult> updateIfAvailable() async {

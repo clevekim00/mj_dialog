@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -299,6 +300,7 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
   final _player = AudioPlayerService();
   DateTime? _startedAt;
   bool _saved = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -327,12 +329,13 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
     }
   }
 
-  Future<String?> _writeRecentAudio() async {
+  Future<String?> _writeRecentAudio({bool persistent = false}) async {
     final pcm = _controller.recentPcm();
     if (pcm.isEmpty) return null;
     return _wav.writePcm16(
       pcm,
-      fileName: 'voice_recent_${DateTime.now().millisecondsSinceEpoch}',
+      fileName: 'voice_recent_${DateTime.now().microsecondsSinceEpoch}',
+      persistent: persistent,
     );
   }
 
@@ -343,25 +346,49 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
 
   Future<void> _save({bool reference = false}) async {
     final startedAt = _startedAt;
-    if (startedAt == null || _controller.frames.isEmpty) return;
-    final path = reference ? await _writeRecentAudio() : null;
-    final session = VoiceAnalysisSession(
-      id: const Uuid().v4(),
-      taskType: widget.taskType,
-      startedAt: startedAt,
-      durationSeconds: _controller.metrics.phonationDurationMs ~/ 1000,
-      metrics: _controller.metrics,
-      analysisVersion: '1.0.0',
-      promptId: widget.promptId,
-      audioPath: path,
-      isReference: reference,
-    );
-    await _repository.save(session);
-    if (!mounted) return;
-    setState(() => _saved = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(reference ? '기준 음성으로 저장했습니다.' : '분석 기록을 저장했습니다.')),
-    );
+    if (_saving || startedAt == null || _controller.frames.isEmpty) return;
+    setState(() => _saving = true);
+    final metrics = _controller.metrics;
+    final duration = _controller.recordingDuration;
+    String? audioPath;
+    try {
+      audioPath = reference ? await _writeRecentAudio(persistent: true) : null;
+      final session = VoiceAnalysisSession(
+        id: const Uuid().v4(),
+        taskType: widget.taskType,
+        startedAt: startedAt,
+        durationSeconds: duration.inSeconds,
+        metrics: metrics,
+        analysisVersion: '1.1.0',
+        promptId: widget.promptId,
+        audioPath: audioPath,
+        isReference: reference,
+      );
+      await _repository.save(session);
+      if (!mounted) return;
+      setState(() => _saved = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            reference ? '최근 10초를 기준 음성으로 저장했습니다.' : '분석 기록을 저장했습니다.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (audioPath != null) {
+        try {
+          await File(audioPath).delete();
+        } catch (_) {
+          /* A missing file needs no cleanup. */
+        }
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('기록을 저장하지 못했습니다. 다시 시도해 주세요.')),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -399,7 +426,9 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
             height: 56,
             child: FilledButton.icon(
               onPressed:
-                  _controller.status == VoiceAnalysisStatus.requestingPermission
+                  _saving ||
+                      _controller.status ==
+                          VoiceAnalysisStatus.requestingPermission
                   ? null
                   : _toggle,
               icon: Icon(listening ? Icons.stop : Icons.mic),
@@ -416,15 +445,15 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
               ),
             if (widget.saveEnabled)
               OutlinedButton.icon(
-                onPressed: _saved ? null : () => _save(),
+                onPressed: _saved || _saving ? null : () => _save(),
                 icon: const Icon(Icons.save_outlined),
                 label: const Text('분석 기록 저장'),
               ),
             if (widget.saveEnabled)
               TextButton.icon(
-                onPressed: () => _save(reference: true),
+                onPressed: _saving ? null : () => _save(reference: true),
                 icon: const Icon(Icons.bookmark_add_outlined),
-                label: const Text('기준 음성으로 저장'),
+                label: const Text('최근 10초를 기준 음성으로 저장'),
               ),
           ],
           const SizedBox(height: 16),
@@ -458,8 +487,16 @@ class _VoiceAnalysisHistoryScreenState
   void _reload() => _future = _repository.load();
 
   Future<void> _delete(String id) async {
-    await _repository.delete(id);
-    setState(_reload);
+    try {
+      await _player.stop();
+      await _repository.delete(id);
+      if (mounted) setState(_reload);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('녹음 또는 기록을 삭제하지 못했습니다. 다시 시도해 주세요.')),
+      );
+    }
   }
 
   @override
@@ -619,10 +656,15 @@ class _VoiceChartPainter extends CustomPainter {
         : frames;
     if (values.length < 2) return;
     final path = Path();
+    var hasPreviousPoint = false;
     for (var index = 0; index < values.length; index++) {
+      if (mode == VoiceChartMode.pitch && !values[index].hasReliablePitch) {
+        hasPreviousPoint = false;
+        continue;
+      }
       final x = index * size.width / (values.length - 1);
       final value = switch (mode) {
-        VoiceChartMode.pitch => values[index].pitchHz ?? 60,
+        VoiceChartMode.pitch => values[index].pitchHz!,
         VoiceChartMode.volume || VoiceChartMode.quality => values[index].dbfs,
         _ => 0,
       };
@@ -632,11 +674,12 @@ class _VoiceChartPainter extends CustomPainter {
                   : ((value + 80) / 80).clamp(0, 1))
               .toDouble();
       final y = size.height * (1 - normalized);
-      if (index == 0) {
+      if (!hasPreviousPoint) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
+      hasPreviousPoint = true;
     }
     canvas.drawPath(
       path,

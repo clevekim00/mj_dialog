@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -31,6 +32,35 @@ class _FakeAudioRecorderService extends AudioRecorderService {
     stopped = true;
     return '/tmp/word_game_orb_test.m4a';
   }
+}
+
+class _ControlledAudioRecorderService extends _FakeAudioRecorderService {
+  final permissionGate = Completer<bool>();
+  final startGate = Completer<void>();
+  int startCalls = 0;
+  int stopCalls = 0;
+  bool recording = false;
+  @override
+  Future<bool> hasPermission() => permissionGate.future;
+  @override
+  Future<void> startRecording(String fileName) async {
+    startCalls++;
+    await startGate.future;
+    recording = true;
+  }
+
+  @override
+  Future<String?> stopRecording() async {
+    stopCalls++;
+    recording = false;
+    return '/tmp/serialized-start-stop.m4a';
+  }
+}
+
+class _FailingAudioRecorderService extends _FakeAudioRecorderService {
+  @override
+  Future<void> startRecording(String fileName) async =>
+      throw StateError('device unavailable');
 }
 
 class _FakeSttService extends SttService {
@@ -79,6 +109,8 @@ class _FakeAiService extends AiService {
     return const AiResponse(
       replyText: '테스트 판정 완료',
       pronunciationScore: 92,
+      evaluationMethod: 'textMatch',
+      evaluationVersion: AiService.textMatchVersion,
       pronunciationFeedback: '좋습니다.',
     );
   }
@@ -102,12 +134,260 @@ class _TranscriptScoringAiService extends AiService {
     return AiResponse(
       replyText: '테스트 판정 완료',
       pronunciationScore: score,
+      evaluationMethod: 'textMatch',
+      evaluationVersion: AiService.textMatchVersion,
       pronunciationFeedback: score >= 70 ? '좋습니다.' : '다시 말해 주세요.',
     );
   }
 }
 
 void main() {
+  testWidgets(
+    'recording blocks navigation; background stops audio and pauses game',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final recorder = _FakeAudioRecorderService();
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(recorder),
+            sttServiceProvider.overrideWithValue(_FakeSttService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: MaterialApp(
+            navigatorKey: navigator,
+            home: const Scaffold(body: Text('홈')),
+          ),
+        ),
+      );
+      navigator.currentState!.push(
+        MaterialPageRoute<void>(builder: (_) => const WordGameScreen()),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      final notifier = container.read(practiceProvider.notifier);
+      await notifier.setMode(PracticeMode.wordGame);
+      notifier.setWordGameTimed(true);
+      notifier.startFallingWordGame();
+      await notifier.startRecording();
+      await tester.pump();
+      expect(recorder.started, isTrue);
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.library_music),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.bar_chart),
+            )
+            .onPressed,
+        isNull,
+      );
+      await navigator.currentState!.maybePop();
+      await tester.pump();
+      expect(find.byType(WordGameScreen), findsOneWidget);
+      expect(find.text('녹음을 끝낸 뒤 나갈 수 있어요.'), findsOneWidget);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expect(recorder.stopped, isTrue);
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.paused,
+      );
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      notifier.resumeWordGame();
+      await tester.pump();
+      await navigator.currentState!.maybePop();
+      await tester.pumpAndSettle();
+      expect(find.byType(WordGameScreen), findsNothing);
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.paused,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'stop waits for pending permission and start; duplicate start and mode changes cannot race it',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final recorder = _ControlledAudioRecorderService();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(recorder),
+            sttServiceProvider.overrideWithValue(_FakeSttService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: const MaterialApp(home: WordGameScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      final notifier = container.read(practiceProvider.notifier);
+      await notifier.setMode(PracticeMode.shortSentence);
+      final started = notifier.startRecording();
+      final duplicateStart = notifier.startRecording();
+      expect(container.read(practiceProvider).state, PracticeState.recording);
+      final stopped = notifier.stopRecording();
+      final duplicateStop = notifier.stopRecording();
+      expect(container.read(practiceProvider).state, PracticeState.analyzing);
+      await notifier.setMode(PracticeMode.freeSpeech);
+      expect(container.read(practiceProvider).mode, PracticeMode.shortSentence);
+      recorder.permissionGate.complete(true);
+      await tester.pump();
+      expect(recorder.startCalls, 1);
+      expect(recorder.stopCalls, 0);
+      recorder.startGate.complete();
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      await Future.wait([started, duplicateStart, stopped, duplicateStop]);
+      expect(recorder.startCalls, 1);
+      expect(recorder.stopCalls, 1);
+      expect(recorder.recording, isFalse);
+      expect(container.read(practiceProvider).state, PracticeState.completed);
+      expect(container.read(practiceProvider).history.single.score, isNull);
+    },
+  );
+
+  testWidgets(
+    'recorder start failure leaves an error and no fabricated attempt',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(
+              _FailingAudioRecorderService(),
+            ),
+            sttServiceProvider.overrideWithValue(_FakeSttService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: const MaterialApp(home: WordGameScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      final notifier = container.read(practiceProvider.notifier);
+      await notifier.setMode(PracticeMode.shortSentence);
+      await notifier.startRecording();
+      expect(container.read(practiceProvider).state, PracticeState.error);
+      expect(
+        container.read(practiceProvider).feedback?.pronunciationScore,
+        isNull,
+      );
+      expect(container.read(practiceProvider).history, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'untimed is default and pausing preserves words; timed expiration is not a practice attempt',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: WordGameScreen())),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      final notifier = container.read(practiceProvider.notifier);
+      await notifier.setMode(PracticeMode.wordGame);
+      notifier.startFallingWordGame();
+      final word = container.read(practiceProvider).fallingWords.single;
+      expect(container.read(practiceProvider).wordGameTimed, isFalse);
+      await tester.pump(const Duration(seconds: 40));
+      expect(
+        container.read(practiceProvider).fallingWords.single.progress,
+        word.progress,
+      );
+      notifier.pauseWordGame();
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.paused,
+      );
+      notifier.resumeWordGame();
+      expect(container.read(practiceProvider).fallingWords.single.id, word.id);
+      notifier.resetFallingWordGame();
+      notifier.setWordGameTimed(true);
+      notifier.startFallingWordGame();
+      for (var tick = 0; tick < 35; tick++) {
+        await tester.pump(const Duration(milliseconds: 650));
+      }
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.gameOver,
+      );
+      expect(container.read(practiceProvider).history, isEmpty);
+      expect(await PracticeHistoryService().loadPractices(), isEmpty);
+    },
+  );
+
+  testWidgets(
+    'free speech STT failure never fabricates transcript and ending fatigue updates the attempt',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(
+              _FakeAudioRecorderService(),
+            ),
+            sttServiceProvider.overrideWithValue(_FakeSttService()),
+            aiServiceProvider.overrideWithValue(const _FakeAiService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: const MaterialApp(home: WordGameScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      final notifier = container.read(practiceProvider.notifier);
+      await notifier.setMode(PracticeMode.freeSpeech);
+      await notifier.startRecording();
+      await tester.pump(const Duration(seconds: 1));
+      final stopped = notifier.stopRecording();
+      await tester.pump(const Duration(seconds: 2));
+      await stopped;
+      final saved = container.read(practiceProvider).history.single;
+      expect(saved.spokenText, isEmpty);
+      expect(saved.score, isNull);
+      expect(saved.evaluationMethod, 'unavailable');
+      expect(saved.fatigueAfter, isNull);
+      await notifier.saveFatigueAfter(4);
+      expect(
+        (await PracticeHistoryService().loadPractices()).single.fatigueAfter,
+        4,
+      );
+    },
+  );
+
   testWidgets('uses falling words instead of a separate record button', (
     tester,
   ) async {
@@ -186,7 +466,7 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
 
     expect(recorder.started, isTrue);
@@ -233,12 +513,12 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('인식된 발음'), findsNothing);
+    expect(find.text('인식된 글'), findsNothing);
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
 
-    expect(find.text('인식된 발음'), findsOneWidget);
+    expect(find.text('인식된 글'), findsOneWidget);
     expect(find.text('물'), findsWidgets);
     await tester.pump(const Duration(milliseconds: 500));
   });
@@ -285,7 +565,9 @@ void main() {
     );
     await tester.pump();
 
-    final orbCenter = tester.getCenter(find.byType(AnimatedOrb));
+    final orbCenter = tester.getCenter(
+      find.byKey(const ValueKey('word-game-microphone')),
+    );
     await tester.tapAt(orbCenter);
     await tester.pump();
     expect(container.read(practiceProvider).state, PracticeState.recording);
@@ -339,11 +621,11 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
     expect(container.read(practiceProvider).state, PracticeState.recording);
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
 
     expect(recorder.stopped, isFalse);
@@ -392,7 +674,7 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
 
     expect(find.text('판정하기'), findsOneWidget);
@@ -461,16 +743,18 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
-    await tester.tap(find.byType(AnimatedOrb));
+    await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
 
     final practice = container.read(practiceProvider);
     expect(practice.spokenText, isEmpty);
+    expect(practice.feedback?.pronunciationScore, isNull);
+    expect(practice.history.single.score, isNull);
     expect(practice.wordGameHits, 0);
-    expect(practice.wordGameMisses, 1);
+    expect(practice.wordGameMisses, 0);
     expect(practice.fallingWords.length, initialWords);
   });
 
@@ -521,9 +805,9 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(AnimatedOrb));
+      await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
       await tester.pump();
-      await tester.tap(find.byType(AnimatedOrb));
+      await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
       await tester.pump();
       await tester.pump(const Duration(seconds: 2));
 
@@ -580,7 +864,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(AnimatedOrb));
+      await tester.tap(find.byKey(const ValueKey('word-game-microphone')));
       await tester.pump();
 
       expect(find.text('실시간 인식 권한 필요'), findsOneWidget);
@@ -600,6 +884,8 @@ void main() {
       spokenText: '불',
       audioFilePath: '/tmp/failed_word_water.m4a',
       score: 52,
+      evaluationMethod: 'textMatch',
+      evaluationVersion: AiService.textMatchVersion,
       feedback: '복습이 필요합니다.',
       timestamp: DateTime(2026, 6, 9, 10),
       mode: PracticeMode.wordGame.storageValue,
@@ -626,8 +912,8 @@ void main() {
         .setMode(PracticeMode.wordGame);
     await tester.pumpAndSettle();
 
-    expect(find.text('틀린 단어 1개 복습'), findsOneWidget);
-    expect(find.text('실패 1회 · 최근 52점'), findsOneWidget);
+    expect(find.text('다시 볼 단어 1개 복습'), findsOneWidget);
+    expect(find.text('인식 차이 1회 · 일치도 52%'), findsOneWidget);
     expect(find.text('녹음 듣기'), findsOneWidget);
 
     final started = container

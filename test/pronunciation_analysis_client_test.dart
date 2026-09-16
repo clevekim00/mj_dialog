@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -18,6 +19,7 @@ void main() {
     final client = PronunciationAnalysisClient(
       dio: Dio()..httpClientAdapter = adapter,
       baseUrl: 'https://analysis.test',
+      accessTokenProvider: () async => 'short-lived-test-token',
       pollInterval: Duration.zero,
     );
 
@@ -50,6 +52,84 @@ void main() {
     expect(result.language, 'en-US');
     expect(adapter.statusReads, 2);
     expect(adapter.sentLanguage, 'en-US');
+  });
+
+  Future<PronunciationAnalysisResult> runClient(
+    PronunciationAnalysisClient client, {
+    CancelToken? cancelToken,
+  }) async {
+    final audio = File(
+      '${Directory.systemTemp.path}/analysis_${DateTime.now().microsecondsSinceEpoch}.m4a',
+    );
+    await audio.writeAsBytes([1, 2, 3]);
+    addTearDown(() async {
+      if (await audio.exists()) await audio.delete();
+    });
+    return client.analyze(
+      audioFilePath: audio.path,
+      item: const PronunciationContentItem(
+        id: 'i',
+        targetId: 't',
+        level: ConsonantTrainingLevel.syllable,
+        text: '가',
+        pronunciation: ['k'],
+        difficulty: 1,
+        category: 'test',
+        targetOccurrenceCount: 1,
+      ),
+      target: const ConsonantTrainingTarget(
+        id: 't',
+        grapheme: 'ㄱ',
+        phone: 'k',
+        position: PhonemePosition.onset,
+        description: '',
+      ),
+      contentVersion: '1',
+      language: 'ko-KR',
+      cancelToken: cancelToken,
+    );
+  }
+
+  test('전체 deadline은 업로드가 응답하지 않아도 끝난다', () async {
+    final adapter = _HangingAdapter();
+    final result = await runClient(
+      PronunciationAnalysisClient(
+        dio: Dio()..httpClientAdapter = adapter,
+        timeout: const Duration(milliseconds: 200),
+      ),
+    );
+    expect(result.status, PronunciationAnalysisStatus.unavailable);
+    await adapter.didCancel.future.timeout(const Duration(seconds: 1));
+    expect(adapter.cancelled, isTrue);
+  });
+
+  test('외부 HTTP 또는 인증 없는 외부 요청은 전송하지 않는다', () async {
+    final adapter = _HangingAdapter();
+    for (final url in ['http://analysis.test', 'https://analysis.test']) {
+      final result = await runClient(
+        PronunciationAnalysisClient(
+          dio: Dio()..httpClientAdapter = adapter,
+          baseUrl: url,
+        ),
+      );
+      expect(result.status, PronunciationAnalysisStatus.unavailable);
+    }
+    expect(adapter.calls, 0);
+  });
+
+  test('사용자가 진행 중 업로드를 취소할 수 있다', () async {
+    final adapter = _HangingAdapter();
+    final token = CancelToken();
+    final pending = runClient(
+      PronunciationAnalysisClient(dio: Dio()..httpClientAdapter = adapter),
+      cancelToken: token,
+    );
+    await adapter.started.future.timeout(const Duration(seconds: 1));
+    token.cancel('user');
+    final result = await pending;
+    expect(result.status, PronunciationAnalysisStatus.unavailable);
+    await adapter.didCancel.future.timeout(const Duration(seconds: 1));
+    expect(adapter.cancelled, isTrue);
   });
 
   test('MFA 정렬 결과는 점수 없이 음소 구간으로 파싱한다', () {
@@ -107,6 +187,7 @@ class _AnalysisAdapter implements HttpClientAdapter {
           .value;
       return _json({'jobId': 'job-1', 'status': 'queued'});
     }
+    if (options.method == 'DELETE') return _json({});
     statusReads++;
     if (statusReads == 1) {
       return _json({'jobId': 'job-1', 'status': 'processing'});
@@ -118,6 +199,7 @@ class _AnalysisAdapter implements HttpClientAdapter {
       'modelVersion': 'test-model',
       'contentVersion': '1.0.0',
       'overallPracticeScore': 84,
+      'scoreValidated': true,
       'confidence': 0.9,
       'signalQuality': {'accepted': true},
       'baselineDelta': null,
@@ -147,6 +229,29 @@ class _AnalysisAdapter implements HttpClientAdapter {
       Headers.contentTypeHeader: ['application/json'],
     },
   );
+
+  @override
+  void close({bool force = false}) {}
+}
+
+class _HangingAdapter implements HttpClientAdapter {
+  int calls = 0;
+  bool cancelled = false;
+  final started = Completer<void>();
+  final didCancel = Completer<void>();
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    calls++;
+    started.complete();
+    await cancelFuture;
+    cancelled = true;
+    didCancel.complete();
+    throw DioException(requestOptions: options, type: DioExceptionType.cancel);
+  }
 
   @override
   void close({bool force = false}) {}

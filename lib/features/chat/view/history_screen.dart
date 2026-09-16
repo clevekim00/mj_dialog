@@ -238,7 +238,7 @@ class HistoryScreen extends ConsumerWidget {
             ),
           ),
           Text(
-            '$dateStr • ${session.score}점',
+            '$dateStr • ${session.scoreDisplay}',
             style: const TextStyle(color: Colors.white38, fontSize: 12),
           ),
         ],

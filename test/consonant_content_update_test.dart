@@ -29,6 +29,25 @@ void main() {
     expect(installed.source, 'downloaded');
   });
 
+  test('새 내장 버전은 오래된 다운로드보다 우선한다', () async {
+    final directory = await Directory.systemTemp.createTemp('content_upgrade');
+    addTearDown(() => directory.delete(recursive: true));
+    final packDirectory = Directory(
+      '${directory.path}/pronunciation_content/ko-KR',
+    );
+    await packDirectory.create(recursive: true);
+    await File(
+      '${packDirectory.path}/current.json',
+    ).writeAsString(_pack('1.0.0'));
+    final repository = ConsonantContentRepository(
+      bundledTextLoader: (_) async => _pack('3.0.0'),
+      supportDirectoryLoader: () async => directory,
+    );
+    final loaded = await repository.load();
+    expect(loaded.version, '3.0.0');
+    expect(loaded.source, 'bundled');
+  });
+
   test('체크섬이 다르면 기존 내장 콘텐츠를 유지한다', () async {
     final directory = await Directory.systemTemp.createTemp('content_reject');
     addTearDown(() => directory.delete(recursive: true));

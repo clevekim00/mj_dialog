@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/features/navigation/view/adaptive_app_shell.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 
-class RehabOnboardingScreen extends StatefulWidget {
+class RehabOnboardingScreen extends ConsumerStatefulWidget {
   const RehabOnboardingScreen({super.key});
 
   @override
-  State<RehabOnboardingScreen> createState() => _RehabOnboardingScreenState();
+  ConsumerState<RehabOnboardingScreen> createState() =>
+      _RehabOnboardingScreenState();
 }
 
-class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
+class _RehabOnboardingScreenState extends ConsumerState<RehabOnboardingScreen> {
   String _practiceStage = '3-6개월';
   String _primaryGoal = '또렷하게 말하기';
   int _dailyPracticeMinutes = 5;
@@ -31,8 +33,9 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
       return;
     }
 
+    ref.invalidate(rehabProfileProvider);
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const PracticeModeSelectionScreen()),
+      MaterialPageRoute(builder: (_) => const AdaptiveAppShell()),
     );
   }
 
@@ -101,7 +104,7 @@ class _RehabOnboardingScreenState extends State<RehabOnboardingScreen> {
                 ),
               ),
               subtitle: const Text(
-                '보호자 모드와 공유 리포트 개선에 활용할 수 있습니다.',
+                '함께 예시를 듣고 내 녹음을 비교할 수 있어요.',
                 style: TextStyle(color: Colors.white38),
               ),
               value: _hasCaregiverSupport,

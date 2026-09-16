@@ -44,7 +44,7 @@ def normalize_to_wav(source: Path, destination: Path) -> Path:
             shutil.copyfile(source, destination)
             return destination
     command = [
-        "ffmpeg", "-y", "-i", str(source), "-ac", "1", "-ar", "16000",
+        "ffmpeg", "-y", "-i", str(source), "-t", "21", "-ac", "1", "-ar", "16000",
         "-sample_fmt", "s16", str(destination),
     ]
     try:
@@ -61,6 +61,8 @@ def inspect_signal(wav_path: Path) -> SignalQuality:
             width = reader.getsampwidth()
             rate = reader.getframerate()
             frames = reader.getnframes()
+            if rate > 0 and frames / rate > 20:
+                return SignalQuality(False, round(frames / rate * 1000), 0, 0, "too_long")
             raw = reader.readframes(frames)
     except (wave.Error, EOFError) as error:
         raise ValueError("지원하지 않는 WAV 파일입니다.") from error

@@ -39,6 +39,45 @@ class GuidedTrainingHubScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
+          for (final session
+              in (sessions.asData?.value ?? <GuidedTrainingSession>[])
+                  .where((s) => s.canResume)
+                  .take(1)) ...[
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.play_circle_outline),
+                title: Text('${session.routineName} 이어하기'),
+                subtitle: Text(
+                  '${session.exerciseIndex + 1}번째 운동 · ${session.currentCompletedLoops}회 진행 · ${session.statusLabel}',
+                ),
+                onTap: () {
+                  final exercises = session.exerciseIds
+                      .map(guidedExerciseById)
+                      .whereType<GuidedTrainingExercise>()
+                      .toList();
+                  if (exercises.length != session.exerciseIds.length) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('운동 구성이 바뀌었어요. 새 연습을 시작해 주세요.'),
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => GuidedTrainingPlayerScreen(
+                        exercises: exercises,
+                        routineName: session.routineName,
+                        resumeSession: session,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           _HeroCard(
             completedToday:
                 sessions.whenOrNull(data: (items) => items.isTodayCompleted) ??
@@ -208,7 +247,7 @@ class GuidedTrainingHistoryScreen extends ConsumerWidget {
                       ),
                       title: Text(session.routineName),
                       subtitle: Text(
-                        '${session.startedAt.year}.${session.startedAt.month}.${session.startedAt.day} · '
+                        '${session.startedAt.year}.${session.startedAt.month}.${session.startedAt.day} · ${session.statusLabel} · '
                         '${session.completedExerciseCount}개 · ${session.durationSeconds ~/ 60}분 '
                         '· 피로도 ${session.fatigueBefore}→${session.fatigueAfter ?? '-'}',
                       ),

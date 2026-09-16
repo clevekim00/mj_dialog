@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:speech_rehab/services/rehab_profile_service.dart';
+import 'package:speech_rehab/features/consonant_training/services/consonant_training_session_service.dart';
+import 'package:speech_rehab/features/consonant_training/model/consonant_training_models.dart';
+import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
 import 'package:speech_rehab/features/chat/view/chat_screen.dart';
@@ -66,13 +70,13 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
-          _buildTodaySummary(practice),
+          _buildTodaySummary(practice, ref.watch(rehabSessionProvider)),
+          const SizedBox(height: 16),
+          _buildConsonantTrainingCard(context),
           const SizedBox(height: 16),
           _buildRecommendedPractice(context, ref, practice),
           const SizedBox(height: 16),
           _buildGuidedTrainingCard(context, practice, guidedTraining),
-          const SizedBox(height: 16),
-          _buildConsonantTrainingCard(context),
           const SizedBox(height: 22),
           _buildSectionTitle('다른 연습 선택'),
           const SizedBox(height: 12),
@@ -96,48 +100,17 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildConsonantTrainingCard(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, '/consonant_training'),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.blueAccent.withValues(alpha: 0.09),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.25)),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.record_voice_over, color: Colors.lightBlueAccent),
-            SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '자음 집중 훈련',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '초성·받침을 음절, 단어, 짧은 문장으로 반복 연습해요.',
-                    style: TextStyle(color: Colors.white60, fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right, color: Colors.white38),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildConsonantTrainingCard(BuildContext context) =>
+      const _ConsonantHomeCard();
 
-  Widget _buildTodaySummary(PracticeProgress practice) {
+  Widget _buildTodaySummary(
+    PracticeProgress practice,
+    RehabSessionPreferences plan,
+  ) {
     final today = DateTime.now();
     final todayCount = practice.history.where((session) {
-      return session.timestamp.year == today.year &&
+      return session.isRecordedAttempt &&
+          session.timestamp.year == today.year &&
           session.timestamp.month == today.month &&
           session.timestamp.day == today.day;
     }).length;
@@ -158,7 +131,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  todayCount == 0 ? '오늘 0회 연습' : '오늘 $todayCount회 연습',
+                  todayCount == 0 ? '오늘의 말하기 연습' : '오늘 발화 $todayCount회',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -166,7 +139,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '목표 5분 · ${practice.sessionGoal} · 피로도 ${practice.fatigueBefore}/5',
+                  '하루 목표 ${plan.dailyMinutes}분 · ${plan.goal}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.white54, fontSize: 12),
@@ -179,14 +152,16 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
               color: _fatigueStatusColor(
-                practice.fatigueBefore,
+                (plan.fatigueBefore ?? 0),
               ).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              _fatigueStatusLabel(practice.fatigueBefore),
+              plan.fatigueBefore == null
+                  ? '상태 확인 전'
+                  : _fatigueStatusLabel(plan.fatigueBefore!),
               style: TextStyle(
-                color: _fatigueStatusColor(practice.fatigueBefore),
+                color: _fatigueStatusColor(plan.fatigueBefore ?? 0),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -207,7 +182,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     final failedCount = practice.history
         .where(
           (session) =>
-              session.audioFilePath.trim().isNotEmpty && session.score < 70,
+              session.audioFilePath.trim().isNotEmpty &&
+              session.hasComparableScore &&
+              session.score! < 70,
         )
         .length;
 
@@ -249,7 +226,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                   Text(
                     recordingCount == 0
                         ? '연습한 녹음을 모아서 다시 들어보세요.'
-                        : '저장된 녹음 $recordingCount개 · 실패 녹음 $failedCount개',
+                        : '저장된 녹음 $recordingCount개 · 다시 들어볼 녹음 $failedCount개',
                     style: const TextStyle(color: Colors.white60, fontSize: 13),
                   ),
                 ],
@@ -268,7 +245,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     PracticeSession session,
   ) {
     final mode = PracticeModeLabel.fromStorageValue(session.mode);
-    final color = session.score < 70 ? Colors.redAccent : Colors.amberAccent;
+    final color = session.hasComparableScore && session.score! < 70
+        ? Colors.redAccent
+        : Colors.amberAccent;
 
     return Container(
       width: double.infinity,
@@ -295,7 +274,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
                 ),
               ),
               Text(
-                '${session.score}점',
+                session.scoreDisplay,
                 style: TextStyle(color: color, fontWeight: FontWeight.w900),
               ),
             ],
@@ -363,10 +342,14 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     WidgetRef ref,
     PracticeProgress practice,
   ) {
-    final recommendation = _recommendMode(practice);
+    final plan = ref.watch(rehabSessionProvider);
+    final recommendation = (plan.fatigueBefore ?? 0) >= 4
+        ? PracticeMode.shortSentence
+        : _recommendMode(practice);
     final today = DateTime.now();
     final todayCount = practice.history.where((session) {
-      return session.timestamp.year == today.year &&
+      return session.isRecordedAttempt &&
+          session.timestamp.year == today.year &&
           session.timestamp.month == today.month &&
           session.timestamp.day == today.day;
     }).length;
@@ -416,7 +399,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            _recommendedTitle(recommendation),
+            '${_recommendedTitle(recommendation)} · ${plan.durationMinutes}분',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 26,
@@ -426,7 +409,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            reason,
+            (plan.fatigueBefore ?? 0) >= 4 ? '오늘은 짧게 연습하거나 쉬어도 괜찮아요.' : reason,
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
@@ -438,13 +421,19 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildInfoChip(Icons.flag_outlined, practice.sessionGoal, color),
+              _buildInfoChip(Icons.flag_outlined, plan.goal, color),
               _buildInfoChip(
                 Icons.local_fire_department_outlined,
-                '피로도 ${practice.fatigueBefore}/5',
+                plan.fatigueBefore == null
+                    ? '시작 전 상태 확인'
+                    : '피로도 ${plan.fatigueBefore}/5',
                 color,
               ),
-              _buildInfoChip(Icons.timer_outlined, '5분', color),
+              _buildInfoChip(
+                Icons.timer_outlined,
+                '${plan.durationMinutes}분',
+                color,
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -611,12 +600,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           icon: Icons.sports_esports_outlined,
           title: '단어 게임',
           subtitle: '짧게 말하기',
-          note: '틀린 단어 복습 가능',
+          note: '내가 고른 단어 다시 연습',
           color: Colors.greenAccent,
-          onTap: () {
-            ref.read(practiceProvider.notifier).setMode(PracticeMode.wordGame);
-            Navigator.pushNamed(context, '/word_game');
-          },
+          onTap: () => _openRecommended(context, ref, PracticeMode.wordGame),
         ),
         _buildCompactModeCard(
           icon: Icons.short_text,
@@ -726,12 +712,19 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
 
   Widget _buildWeeklyProgress(BuildContext context, PracticeProgress practice) {
     final activeDays = _countActiveDays(practice);
-    final averageScore = practice.history.isEmpty
-        ? 0
-        : practice.history
-                  .map((session) => session.score)
+    final cutoff = DateTime.now().subtract(const Duration(days: 7));
+    final scoredSessions = practice.history
+        .where(
+          (session) =>
+              session.hasComparableScore && session.timestamp.isAfter(cutoff),
+        )
+        .toList();
+    final averageScore = scoredSessions.isEmpty
+        ? null
+        : scoredSessions
+                  .map((session) => session.score!)
                   .reduce((a, b) => a + b) ~/
-              practice.history.length;
+              scoredSessions.length;
 
     return Container(
       width: double.infinity,
@@ -768,9 +761,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            averageScore == 0
-                ? '점수 기록이 쌓이면 흐름을 보여드릴게요.'
-                : '평균 점수 $averageScore점 · 피로도 ${practice.fatigueBefore}/5',
+            averageScore == null
+                ? '연습 기록을 쌓으며 나의 변화를 살펴보세요.'
+                : '최근 7일 인식 문장 일치도 평균 $averageScore%',
             style: const TextStyle(color: Colors.white54, fontSize: 12),
           ),
           const SizedBox(height: 12),
@@ -858,10 +851,10 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
 
   String _recommendedTitle(PracticeMode mode) {
     return switch (mode) {
-      PracticeMode.wordGame => '단어 게임 5분',
-      PracticeMode.shortSentence => '짧은 문장 5분',
-      PracticeMode.longSentence => '긴 문장 10분',
-      PracticeMode.freeSpeech => '자유 말하기 5분',
+      PracticeMode.wordGame => '단어 연습',
+      PracticeMode.shortSentence => '짧은 문장',
+      PracticeMode.longSentence => '긴 문장',
+      PracticeMode.freeSpeech => '자유 말하기',
     };
   }
 
@@ -885,8 +878,10 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     if (todayCount == 0) {
       return '오늘 첫 연습은 부담이 적은 ${recommendation.label}부터 시작해 보세요.';
     }
-    if (practice.history.any((session) => session.score < 75)) {
-      return '낮은 점수 기록이 있어 어려웠던 발음부터 가볍게 좁혀봅니다.';
+    if (practice.history.any(
+      (session) => session.hasComparableScore && session.score! < 75,
+    )) {
+      return '인식 결과를 다시 확인할 단어가 있어요. 내 속도로 연습해 보세요.';
     }
     return '최근 기록을 이어가며 ${recommendation.label}로 한 번 더 마무리해요.';
   }
@@ -898,7 +893,7 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     if (fatigue >= 3) {
       return '천천히';
     }
-    return '상태 양호';
+    return '입력 완료';
   }
 
   Color _fatigueStatusColor(int fatigue) {
@@ -914,7 +909,12 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
   int _countActiveDays(PracticeProgress practice) {
     final now = DateTime.now();
     return practice.history
-        .where((session) => now.difference(session.timestamp).inDays < 7)
+        .where(
+          (session) =>
+              session.isRecordedAttempt &&
+              !session.timestamp.isAfter(now) &&
+              now.difference(session.timestamp).inDays < 7,
+        )
         .map(
           (session) => DateTime(
             session.timestamp.year,
@@ -932,7 +932,9 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     }
 
     final recent = practice.history.take(3).toList();
-    final hasLowScore = recent.any((session) => session.score < 75);
+    final hasLowScore = recent.any(
+      (session) => session.hasComparableScore && session.score! < 75,
+    );
     if (hasLowScore) {
       return PracticeMode.wordGame;
     }
@@ -954,7 +956,8 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
           mode == PracticeMode.longSentence;
       return isReadableMode &&
           session.audioFilePath.trim().isNotEmpty &&
-          (session.score < 70 || session.retryCount > 0);
+          session.hasComparableScore &&
+          (session.score! < 70 || session.retryCount > 0);
     }).toList();
 
     if (candidates.isEmpty) {
@@ -964,19 +967,34 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     return candidates.first;
   }
 
-  void _openPractice(BuildContext context, WidgetRef ref, PracticeMode mode) {
-    ref.read(practiceProvider.notifier).setMode(mode);
-    Navigator.pushNamed(context, '/practice');
-  }
-
-  void _openRecommended(
+  Future<void> _openPractice(
     BuildContext context,
     WidgetRef ref,
     PracticeMode mode,
-  ) {
+  ) async {
+    _applySessionPreferences(ref);
+    await ref.read(practiceProvider.notifier).setMode(mode);
+    if (context.mounted) Navigator.pushNamed(context, '/practice');
+  }
+
+  void _applySessionPreferences(WidgetRef ref) {
+    final plan = ref.read(rehabSessionProvider);
+    final notifier = ref.read(practiceProvider.notifier);
+    notifier.setSessionGoal(plan.goal);
+    if (plan.fatigueBefore != null) {
+      notifier.setFatigueBefore(plan.fatigueBefore!);
+    }
+  }
+
+  Future<void> _openRecommended(
+    BuildContext context,
+    WidgetRef ref,
+    PracticeMode mode,
+  ) async {
+    _applySessionPreferences(ref);
     if (mode == PracticeMode.wordGame) {
-      ref.read(practiceProvider.notifier).setMode(PracticeMode.wordGame);
-      Navigator.pushNamed(context, '/word_game');
+      await ref.read(practiceProvider.notifier).setMode(PracticeMode.wordGame);
+      if (context.mounted) Navigator.pushNamed(context, '/word_game');
       return;
     }
     if (mode == PracticeMode.freeSpeech) {
@@ -989,4 +1007,92 @@ class PracticeModeSelectionScreen extends ConsumerWidget {
     }
     _openPractice(context, ref, mode);
   }
+}
+
+class _ConsonantHomeCard extends StatefulWidget {
+  const _ConsonantHomeCard();
+  @override
+  State<_ConsonantHomeCard> createState() => _ConsonantHomeCardState();
+}
+
+class _ConsonantHomeCardState extends State<_ConsonantHomeCard> {
+  String? _language;
+  Future<ConsonantTrainingProgress?>? _progress;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final language = Localizations.localeOf(context).languageCode == 'ko'
+        ? 'ko-KR'
+        : 'en-US';
+    if (_language != language) {
+      _language = language;
+      _progress = ConsonantTrainingSessionService().load(language: language);
+    }
+  }
+
+  Future<void> _open(bool resume) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConsonantTrainingHubScreen(autoResume: resume),
+      ),
+    );
+    if (mounted) {
+      setState(
+        () => _progress = ConsonantTrainingSessionService().load(
+          language: _language!,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: const Color(0xFF122338),
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            '자음 골라 연습하기',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '원하는 자음을 고르고 음절 · 단어 · 문장으로 연습해요.',
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(54),
+            ),
+            onPressed: () => _open(false),
+            icon: const Icon(Icons.record_voice_over),
+            label: const Text('자음 선택하기'),
+          ),
+          FutureBuilder<ConsonantTrainingProgress?>(
+            future: _progress,
+            builder: (context, snapshot) {
+              final progress = snapshot.data;
+              if (progress == null || progress.completed) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: OutlinedButton.icon(
+                  onPressed: () => _open(true),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(
+                    '${progress.grapheme} ${progress.position.label} · ${progress.level.label} 이어하기',
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }

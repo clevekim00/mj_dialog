@@ -11,7 +11,7 @@ class TrainingSettingsService {
   static const _hapticsEnabledKey = 'training_haptics_enabled';
   static const _customRoutineKey = 'training_custom_routine_ids';
 
-  static const defaultRepeatCount = 20;
+  static const defaultRepeatCount = 5;
   static const defaultPlaybackSpeed = 0.75;
 
   static Future<int> loadDefaultRepeatCount() async {

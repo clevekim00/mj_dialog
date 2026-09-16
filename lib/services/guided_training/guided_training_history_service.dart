@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:synchronized/synchronized.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,18 +16,22 @@ final guidedTrainingSessionsProvider =
     );
 
 class GuidedTrainingHistoryService {
+  static final _writeLock = Lock();
   static const storageKey = 'guided_training_history_v1';
   static const legacyTongueStorageKey = 'tongue_exercise_history';
 
-  Future<void> saveSession(GuidedTrainingSession session) async {
-    final sessions = await loadSessions();
-    sessions.insert(0, session);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      storageKey,
-      jsonEncode(sessions.map((item) => item.toJson()).toList()),
-    );
-  }
+  Future<void> saveSession(GuidedTrainingSession session) =>
+      _writeLock.synchronized(() async {
+        final sessions = await loadSessions();
+        sessions.removeWhere((item) => item.id == session.id);
+        sessions.insert(0, session);
+        final prefs = await SharedPreferences.getInstance();
+        final saved = await prefs.setString(
+          storageKey,
+          jsonEncode(sessions.map((item) => item.toJson()).toList()),
+        );
+        if (!saved) throw StateError('훈련 기록을 저장하지 못했습니다.');
+      });
 
   Future<List<GuidedTrainingSession>> loadSessions() async {
     final prefs = await SharedPreferences.getInstance();

@@ -106,7 +106,9 @@ class _RecordingLibraryScreenState
     final recordings = history
         .where((session) => session.audioFilePath.trim().isNotEmpty)
         .toList();
-    final failed = recordings.where((session) => session.score < 70).length;
+    final failed = recordings
+        .where((session) => session.hasComparableScore && session.score! < 70)
+        .length;
     final saved = recordings
         .where(
           (session) => ref
@@ -230,11 +232,11 @@ class _RecordingLibraryScreenState
                   ),
                   DropdownMenuItem(
                     value: _RecordingSort.lowScore,
-                    child: Text('점수 낮은 순'),
+                    child: Text('일치도 낮은 순'),
                   ),
                   DropdownMenuItem(
                     value: _RecordingSort.highScore,
-                    child: Text('점수 높은 순'),
+                    child: Text('일치도 높은 순'),
                   ),
                 ],
               ),
@@ -402,7 +404,7 @@ class _RecordingLibraryScreenState
                     ],
                   ),
                 ),
-                _buildScoreBadge(session.score),
+                _buildScoreBadge(session),
               ],
             ),
             const SizedBox(height: 12),
@@ -421,7 +423,7 @@ class _RecordingLibraryScreenState
             if (session.spokenText.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '인식된 발음: ${session.spokenText}',
+                '인식된 글: ${session.spokenText}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.blueAccent, fontSize: 13),
@@ -438,7 +440,7 @@ class _RecordingLibraryScreenState
                     Icons.timer_outlined,
                     '${session.durationSeconds}초',
                   ),
-                if (session.score < 70)
+                if (session.hasComparableScore && session.score! < 70)
                   _buildMetaChip(Icons.error_outline, '다시 연습 추천'),
                 if (isSavedForReview)
                   _buildMetaChip(Icons.bookmark_added_outlined, '반복 저장'),
@@ -614,8 +616,11 @@ class _RecordingLibraryScreenState
       );
   }
 
-  Widget _buildScoreBadge(int score) {
-    final color = score >= 90
+  Widget _buildScoreBadge(PracticeSession session) {
+    final score = session.score;
+    final color = score == null
+        ? Colors.white54
+        : score >= 90
         ? Colors.greenAccent
         : score >= 70
         ? Colors.orangeAccent
@@ -628,7 +633,7 @@ class _RecordingLibraryScreenState
         border: Border.all(color: color.withValues(alpha: 0.55)),
       ),
       child: Text(
-        '$score점',
+        session.scoreDisplay,
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.w900,
@@ -669,7 +674,8 @@ class _RecordingLibraryScreenState
         session.mode == PracticeMode.shortSentence.storageValue,
       _RecordingFilter.long =>
         session.mode == PracticeMode.longSentence.storageValue,
-      _RecordingFilter.failed => session.score < 70,
+      _RecordingFilter.failed =>
+        session.hasComparableScore && session.score! < 70,
       _RecordingFilter.saved =>
         ref.watch(practiceProvider).savedReviewSessionIds.contains(session.id),
     };
@@ -682,14 +688,17 @@ class _RecordingLibraryScreenState
         return;
       case _RecordingSort.lowScore:
         recordings.sort((a, b) {
-          final scoreCompare = a.score.compareTo(b.score);
+          final scoreCompare = (a.hasComparableScore ? a.score! : 101)
+              .compareTo(b.hasComparableScore ? b.score! : 101);
           if (scoreCompare != 0) return scoreCompare;
           return b.timestamp.compareTo(a.timestamp);
         });
         return;
       case _RecordingSort.highScore:
         recordings.sort((a, b) {
-          final scoreCompare = b.score.compareTo(a.score);
+          final scoreCompare = (b.hasComparableScore ? b.score! : -1).compareTo(
+            a.hasComparableScore ? a.score! : -1,
+          );
           if (scoreCompare != 0) return scoreCompare;
           return b.timestamp.compareTo(a.timestamp);
         });

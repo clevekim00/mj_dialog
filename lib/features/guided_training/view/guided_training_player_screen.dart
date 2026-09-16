@@ -17,10 +17,12 @@ class GuidedTrainingPlayerScreen extends ConsumerStatefulWidget {
     super.key,
     required this.exercises,
     this.routineName = '구강·호흡 훈련',
+    this.resumeSession,
   });
 
   final List<GuidedTrainingExercise> exercises;
   final String routineName;
+  final GuidedTrainingSession? resumeSession;
 
   @override
   ConsumerState<GuidedTrainingPlayerScreen> createState() =>
@@ -38,9 +40,10 @@ class _GuidedTrainingPlayerScreenState
   _PlayerPhase _phase = _PlayerPhase.setup;
   int _exerciseIndex = 0;
   int _completedLoops = 0;
-  int _targetLoops = 20;
-  int _fatigueBefore = 1;
-  int _fatigueAfter = 1;
+  int _targetLoops = 5;
+  int _sessionRepeats = 5;
+  int? _fatigueBefore;
+  int? _fatigueAfter;
   double _speed = 0.75;
   double _captionScale = 1;
   bool _captionsEnabled = true;
@@ -52,6 +55,15 @@ class _GuidedTrainingPlayerScreenState
   int _videoCueBand = -1;
   bool _exerciseDone = false;
   bool _saved = false;
+  bool _settingsReady = false;
+  bool _transitioning = false;
+  bool _allowPop = false;
+  String? _saveError;
+  String _sessionId = const Uuid().v4();
+  final _activeClock = Stopwatch();
+  int _restoredActiveSeconds = 0;
+  GuidedTrainingSession? _resumable;
+  late final GuidedTrainingHistoryService _history;
 
   GuidedTrainingExercise get _exercise => widget.exercises[_exerciseIndex];
   bool get _isLocked =>
@@ -61,11 +73,16 @@ class _GuidedTrainingPlayerScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _history = ref.read(guidedTrainingHistoryServiceProvider);
     _fallbackController = AnimationController(
       vsync: this,
-      duration: _effectiveLoopDuration,
+      duration: widget.exercises.isEmpty
+          ? const Duration(seconds: 1)
+          : _effectiveLoopDuration,
     )..addStatusListener(_onFallbackStatus);
-    _loadSettings();
+    if (widget.exercises.isNotEmpty) {
+      _loadSettings();
+    }
   }
 
   Duration get _effectiveLoopDuration => Duration(
@@ -81,8 +98,23 @@ class _GuidedTrainingPlayerScreenState
       TrainingSettingsService.loadTtsEnabled(),
       TrainingSettingsService.loadHapticsEnabled(),
     ]);
+    final sessions = await _history.loadSessions();
+    final ids = widget.exercises.map((e) => e.id).toList();
+    final candidates = sessions.where(
+      (session) =>
+          session.canResume &&
+          session.exerciseIds.length == ids.length &&
+          List.generate(
+            ids.length,
+            (i) => session.exerciseIds[i] == ids[i],
+          ).every((same) => same),
+    );
     if (!context.mounted) return;
     setState(() {
+      _resumable =
+          widget.resumeSession ??
+          (candidates.isEmpty ? null : candidates.first);
+      _settingsReady = true;
       final storedRepeat = values[0] as int;
       _targetLoops = const [5, 10, 20].contains(storedRepeat)
           ? storedRepeat
@@ -105,6 +137,7 @@ class _GuidedTrainingPlayerScreenState
 
   Future<void> _prepareVideo({required bool autoPlay}) async {
     await _videoController?.dispose();
+    if (!mounted || _allowPop) return;
     _videoController = null;
     _videoFailed = false;
     _videoInitializing = false;
@@ -116,7 +149,7 @@ class _GuidedTrainingPlayerScreenState
     final asset = _exercise.videoAsset;
     if (asset == null) {
       setState(() => _videoFailed = true);
-      if (autoPlay) _startFallbackLoop();
+      if (autoPlay && _phase == _PlayerPhase.playing) _startFallbackLoop();
       return;
     }
 
@@ -130,7 +163,7 @@ class _GuidedTrainingPlayerScreenState
       await controller.setPlaybackSpeed(_speed);
       controller.addListener(_onVideoTick);
       setState(() => _videoInitializing = false);
-      if (autoPlay) await controller.play();
+      if (autoPlay && _phase == _PlayerPhase.playing) await controller.play();
     } catch (_) {
       await controller.dispose();
       if (!mounted || controller != _videoController) return;
@@ -139,11 +172,12 @@ class _GuidedTrainingPlayerScreenState
         _videoInitializing = false;
         _videoFailed = true;
       });
-      if (autoPlay) _startFallbackLoop();
+      if (autoPlay && _phase == _PlayerPhase.playing) _startFallbackLoop();
     }
   }
 
   void _onVideoTick() {
+    if (_phase != _PlayerPhase.playing || _transitioning) return;
     final controller = _videoController;
     if (controller == null || !controller.value.isInitialized || _loopHandled) {
       return;
@@ -177,14 +211,27 @@ class _GuidedTrainingPlayerScreenState
   }
 
   Future<void> _completeLoop() async {
-    if (!mounted || _phase != _PlayerPhase.playing || _exerciseDone) return;
-    if (_hapticsEnabled) await HapticFeedback.selectionClick();
+    if (!mounted ||
+        _phase != _PlayerPhase.playing ||
+        _exerciseDone ||
+        _transitioning) {
+      return;
+    }
+    final completedExerciseIndex = _exerciseIndex;
+    if (_hapticsEnabled) unawaited(HapticFeedback.selectionClick());
     setState(() {
       _completedLoops += 1;
       _exerciseDone = _completedLoops >= _targetLoops;
     });
 
+    await _persist(GuidedTrainingSessionStatus.paused);
+    if (!mounted ||
+        _exerciseIndex != completedExerciseIndex ||
+        _phase == _PlayerPhase.complete) {
+      return;
+    }
     if (_exerciseDone) {
+      _activeClock.stop();
       await _videoController?.pause();
       _fallbackController.stop();
       return;
@@ -202,16 +249,105 @@ class _GuidedTrainingPlayerScreenState
   }
 
   void _startFallbackLoop() {
+    if (!mounted || _phase != _PlayerPhase.playing || _allowPop) return;
     _fallbackController.duration = _effectiveLoopDuration;
     _fallbackController.forward(from: 0);
   }
 
   Future<void> _start() async {
-    if (_isLocked) return;
+    if (_isLocked ||
+        !_settingsReady ||
+        _transitioning ||
+        _fatigueBefore == null) {
+      return;
+    }
+    _transitioning = true;
+    _sessionRepeats = _targetLoops;
     _startedAt = DateTime.now();
     setState(() => _phase = _PlayerPhase.playing);
+    await _persist(GuidedTrainingSessionStatus.paused);
+    if (!mounted) return;
     await _prepareVideo(autoPlay: true);
-    await _speakInstruction();
+    if (!mounted) return;
+    setState(() => _transitioning = false);
+    if (_phase == _PlayerPhase.playing) {
+      _activeClock.start();
+      await _speakInstruction();
+    }
+  }
+
+  Future<void> _resumeSaved() async {
+    final saved = _resumable;
+    if (saved == null ||
+        !saved.canResume ||
+        saved.exerciseIndex >= widget.exercises.length) {
+      return;
+    }
+    setState(() {
+      _sessionId = saved.id;
+      _startedAt = saved.startedAt;
+      _results.addAll(saved.results);
+      _exerciseIndex = saved.exerciseIndex;
+      _completedLoops = saved.currentCompletedLoops;
+      _targetLoops = saved.currentTargetLoops;
+      _sessionRepeats = saved.repeatCount;
+      _speed = const [0.5, 0.75, 1.0].contains(saved.playbackSpeed)
+          ? saved.playbackSpeed
+          : 0.75;
+      _fatigueBefore = saved.fatigueBefore;
+      _restoredActiveSeconds = saved.durationSeconds;
+      _exerciseDone = _completedLoops >= _targetLoops;
+      _phase = _PlayerPhase.paused;
+    });
+    await _prepareVideo(autoPlay: false);
+  }
+
+  GuidedTrainingSession _snapshot(GuidedTrainingSessionStatus status) =>
+      GuidedTrainingSession(
+        id: _sessionId,
+        startedAt: _startedAt ?? DateTime.now(),
+        completedAt: DateTime.now(),
+        routineName: widget.routineName,
+        fatigueBefore: _fatigueBefore ?? 1,
+        fatigueAfter: _fatigueAfter,
+        results: List.unmodifiable(_results),
+        schemaVersion: 2,
+        status: status,
+        activeDurationSeconds:
+            _restoredActiveSeconds + _activeClock.elapsed.inSeconds,
+        exerciseIds: widget.exercises.map((e) => e.id).toList(),
+        exerciseIndex: _exerciseIndex,
+        currentCompletedLoops: _completedLoops,
+        repeatCount: _sessionRepeats,
+        currentTargetLoops: _targetLoops,
+        playbackSpeed: _speed,
+      );
+
+  Future<bool> _persist(GuidedTrainingSessionStatus status) async {
+    if (_startedAt == null || _allowPop) return true;
+    final snapshot = _snapshot(
+      _phase == _PlayerPhase.complete
+          ? GuidedTrainingSessionStatus.completed
+          : status,
+    );
+    try {
+      await _history.saveSession(snapshot);
+      if (mounted) {
+        if (_saveError != null) setState(() => _saveError = null);
+        ref.invalidate(guidedTrainingSessionsProvider);
+      }
+      return true;
+    } catch (_) {
+      if (mounted) setState(() => _saveError = '기록을 저장하지 못했어요. 다시 저장해 주세요.');
+      return false;
+    }
+  }
+
+  Future<void> _close() async {
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _speakInstruction() async {
@@ -227,18 +363,28 @@ class _GuidedTrainingPlayerScreenState
   }
 
   Future<void> _pause() async {
-    await _videoController?.pause();
-    _fallbackController.stop();
+    if (_phase == _PlayerPhase.complete || _phase == _PlayerPhase.setup) return;
+    _activeClock.stop();
     if (mounted) setState(() => _phase = _PlayerPhase.paused);
+    _fallbackController.stop();
+    await _videoController?.pause();
+    try {
+      await _tts.stop();
+    } catch (_) {}
+    await _persist(GuidedTrainingSessionStatus.paused);
   }
 
   Future<void> _resume() async {
+    if (_exerciseDone || _transitioning) return;
     setState(() => _phase = _PlayerPhase.playing);
     if (_videoController != null && !_videoFailed) {
-      await _videoController!.play();
+      _loopHandled = false;
+      _onVideoTick();
+      if (!_exerciseDone) await _videoController!.play();
     } else {
       _fallbackController.forward();
     }
+    if (mounted && _phase == _PlayerPhase.playing) _activeClock.start();
   }
 
   Future<void> _setSpeed(double value) async {
@@ -248,9 +394,16 @@ class _GuidedTrainingPlayerScreenState
     });
     await TrainingSettingsService.savePlaybackSpeed(value);
     await _videoController?.setPlaybackSpeed(value);
+    await _persist(GuidedTrainingSessionStatus.paused);
   }
 
   Future<void> _advance({bool skipped = false}) async {
+    if (_transitioning) return;
+    setState(() => _transitioning = true);
+    _activeClock.stop();
+    await _videoController?.pause();
+    _fallbackController.stop();
+    if (!mounted) return;
     _results.add(
       GuidedTrainingExerciseResult(
         exerciseId: _exercise.id,
@@ -264,7 +417,11 @@ class _GuidedTrainingPlayerScreenState
     if (_exerciseIndex >= widget.exercises.length - 1) {
       await _videoController?.pause();
       _fallbackController.stop();
-      setState(() => _phase = _PlayerPhase.complete);
+      setState(() {
+        _phase = _PlayerPhase.complete;
+        _transitioning = false;
+      });
+      await _persist(GuidedTrainingSessionStatus.completed);
       return;
     }
 
@@ -273,43 +430,48 @@ class _GuidedTrainingPlayerScreenState
       _completedLoops = 0;
       _exerciseDone = false;
     });
-    final savedRepeat = await TrainingSettingsService.loadRepeatCount(
-      _exercise.id,
-    );
-    if (!mounted) return;
-    setState(() => _targetLoops = savedRepeat);
+    _targetLoops = _sessionRepeats;
     if (_isLocked) {
+      _transitioning = false;
       await _advance(skipped: true);
       return;
     }
+    setState(() => _phase = _PlayerPhase.playing);
+    await _persist(GuidedTrainingSessionStatus.paused);
+    if (!mounted) return;
     await _prepareVideo(autoPlay: true);
-    await _speakInstruction();
+    if (!mounted) return;
+    setState(() => _transitioning = false);
+    if (_phase == _PlayerPhase.playing) {
+      _activeClock.start();
+      await _speakInstruction();
+    }
   }
 
   Future<void> _saveAndClose() async {
     if (_saved) return;
     setState(() => _saved = true);
-    final now = DateTime.now();
-    final session = GuidedTrainingSession(
-      id: const Uuid().v4(),
-      startedAt: _startedAt ?? now,
-      completedAt: now,
-      routineName: widget.routineName,
-      fatigueBefore: _fatigueBefore,
-      fatigueAfter: _fatigueAfter,
-      results: List.unmodifiable(_results),
-    );
-    await ref.read(guidedTrainingHistoryServiceProvider).saveSession(session);
-    ref.invalidate(guidedTrainingSessionsProvider);
-    if (mounted) Navigator.pop(context);
+    final success = await _persist(GuidedTrainingSessionStatus.completed);
+    if (!mounted) return;
+    setState(() => _saved = false);
+    if (success) await _close();
   }
 
   @override
   void dispose() {
+    _activeClock.stop();
+    if (_startedAt != null && !_allowPop) {
+      final snapshot = _snapshot(
+        _phase == _PlayerPhase.complete
+            ? GuidedTrainingSessionStatus.completed
+            : GuidedTrainingSessionStatus.paused,
+      );
+      unawaited(_history.saveSession(snapshot).catchError((Object _) {}));
+    }
     WidgetsBinding.instance.removeObserver(this);
     _videoController?.dispose();
     _fallbackController.dispose();
-    _tts.stop();
+    unawaited(_tts.stop().catchError((Object _) => null));
     super.dispose();
   }
 
@@ -318,22 +480,49 @@ class _GuidedTrainingPlayerScreenState
     if (widget.exercises.isEmpty) {
       return const Scaffold(body: Center(child: Text('선택한 훈련이 없습니다.')));
     }
-    return Scaffold(
-      backgroundColor: const Color(0xFF0C1319),
-      appBar: AppBar(
-        title: Text(widget.routineName),
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => _confirmExit(context),
+    return PopScope(
+      canPop: _allowPop || _phase == _PlayerPhase.setup,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmExit(context);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0C1319),
+        appBar: AppBar(
+          title: Text(widget.routineName),
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: '진행 저장하고 닫기',
+            onPressed: () => _confirmExit(context),
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: switch (_phase) {
-          _PlayerPhase.setup => _buildSetup(),
-          _PlayerPhase.playing || _PlayerPhase.paused => _buildPlayer(),
-          _PlayerPhase.complete => _buildComplete(),
-        },
+        body: SafeArea(
+          child: Column(
+            children: [
+              if (_saveError != null)
+                MaterialBanner(
+                  content: Text(_saveError!),
+                  actions: [
+                    TextButton(
+                      onPressed: () => _persist(
+                        _phase == _PlayerPhase.complete
+                            ? GuidedTrainingSessionStatus.completed
+                            : GuidedTrainingSessionStatus.paused,
+                      ),
+                      child: const Text('다시 저장'),
+                    ),
+                  ],
+                ),
+              Expanded(
+                child: switch (_phase) {
+                  _PlayerPhase.setup => _buildSetup(),
+                  _PlayerPhase.playing || _PlayerPhase.paused => _buildPlayer(),
+                  _PlayerPhase.complete => _buildComplete(),
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -341,7 +530,10 @@ class _GuidedTrainingPlayerScreenState
   Widget _buildSetup() {
     final estimatedSeconds = widget.exercises.fold<int>(
       0,
-      (sum, item) => sum + item.loopDuration.inSeconds * _targetLoops,
+      (sum, item) =>
+          sum +
+          (item.loopDuration.inMilliseconds * _targetLoops / _speed / 1000)
+              .ceil(),
     );
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -356,8 +548,33 @@ class _GuidedTrainingPlayerScreenState
           style: const TextStyle(color: Colors.white60, fontSize: 16),
         ),
         const SizedBox(height: 22),
+        if (_resumable != null) ...[
+          Card(
+            child: ListTile(
+              title: const Text('지난 연습을 이어할까요?'),
+              subtitle: Text(
+                '${_resumable!.exerciseIndex + 1}번째 운동 · ${_resumable!.currentCompletedLoops}회 진행',
+              ),
+              trailing: FilledButton(
+                onPressed: _resumeSaved,
+                child: const Text('이어하기'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        if ((_fatigueBefore ?? 0) >= 4) ...[
+          const Text(
+            '피곤하면 반복을 줄이거나 쉬어도 괜찮아요.',
+            style: TextStyle(color: Colors.orangeAccent),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _targetLoops = 5),
+            child: const Text('5회씩 짧게 연습하기'),
+          ),
+        ],
         _selectorCard(
-          title: '시작 전 피로도',
+          title: '시작 전 피로도 · 1 편안함 / 5 매우 피곤함',
           child: _fatigueSelector(
             value: _fatigueBefore,
             onChanged: (value) => setState(() => _fatigueBefore = value),
@@ -365,7 +582,7 @@ class _GuidedTrainingPlayerScreenState
         ),
         const SizedBox(height: 14),
         _selectorCard(
-          title: '반복 횟수',
+          title: '모든 운동의 반복 횟수',
           child: SegmentedButton<int>(
             segments: const [
               ButtonSegment(value: 5, label: Text('5회')),
@@ -386,9 +603,17 @@ class _GuidedTrainingPlayerScreenState
         const _SafetyNotice(),
         const SizedBox(height: 22),
         FilledButton.icon(
-          onPressed: _start,
+          onPressed: _settingsReady && !_isLocked && _fatigueBefore != null
+              ? _start
+              : null,
           icon: const Icon(Icons.play_arrow),
-          label: const Text('훈련 시작'),
+          label: Text(
+            !_settingsReady
+                ? '설정 불러오는 중…'
+                : _fatigueBefore == null
+                ? '시작 전 피로도를 골라주세요'
+                : '훈련 시작',
+          ),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
         ),
       ],
@@ -507,24 +732,28 @@ class _GuidedTrainingPlayerScreenState
             runSpacing: 10,
             children: [
               OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _targetLoops += 5;
-                    _exerciseDone = false;
-                  });
-                  if (_videoFailed) {
-                    _startFallbackLoop();
-                  } else {
-                    _loopHandled = false;
-                    _videoController
-                        ?.seekTo(Duration.zero)
-                        .then((_) => _videoController?.play());
-                  }
-                },
+                onPressed: _transitioning || _targetLoops >= 100
+                    ? null
+                    : () {
+                        setState(() {
+                          _phase = _PlayerPhase.playing;
+                          _activeClock.start();
+                          _targetLoops = (_targetLoops + 5).clamp(1, 100);
+                          _exerciseDone = false;
+                        });
+                        if (_videoFailed) {
+                          _startFallbackLoop();
+                        } else {
+                          _loopHandled = false;
+                          _videoController
+                              ?.seekTo(Duration.zero)
+                              .then((_) => _videoController?.play());
+                        }
+                      },
                 child: const Text('5회 더'),
               ),
               FilledButton.icon(
-                onPressed: () => _advance(),
+                onPressed: _transitioning ? null : () => _advance(),
                 icon: Icon(
                   _exerciseIndex == widget.exercises.length - 1
                       ? Icons.check
@@ -543,7 +772,11 @@ class _GuidedTrainingPlayerScreenState
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: paused ? _resume : _pause,
+                  onPressed: _transitioning
+                      ? null
+                      : paused
+                      ? _resume
+                      : _pause,
                   icon: Icon(paused ? Icons.play_arrow : Icons.pause),
                   label: Text(paused ? '계속하기' : '일시정지'),
                   style: OutlinedButton.styleFrom(
@@ -554,7 +787,9 @@ class _GuidedTrainingPlayerScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: TextButton.icon(
-                  onPressed: () => _confirmSkip(context),
+                  onPressed: _transitioning
+                      ? null
+                      : () => _confirmSkip(context),
                   icon: const Icon(Icons.skip_next),
                   label: const Text('건너뛰기'),
                   style: TextButton.styleFrom(
@@ -635,17 +870,20 @@ class _GuidedTrainingPlayerScreenState
         ),
         const SizedBox(height: 28),
         _selectorCard(
-          title: '종료 후 피로도',
+          title: '종료 후 피로도 (선택) · 1 편안함 / 5 매우 피곤함',
           child: _fatigueSelector(
             value: _fatigueAfter,
-            onChanged: (value) => setState(() => _fatigueAfter = value),
+            onChanged: (value) {
+              setState(() => _fatigueAfter = value);
+              _persist(GuidedTrainingSessionStatus.completed);
+            },
           ),
         ),
         const SizedBox(height: 20),
         FilledButton.icon(
           onPressed: _saved ? null : _saveAndClose,
           icon: const Icon(Icons.save_outlined),
-          label: Text(_saved ? '저장 중…' : '기록 저장하고 완료'),
+          label: Text(_saved ? '저장 중…' : '완료'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
         ),
       ],
@@ -663,7 +901,7 @@ class _GuidedTrainingPlayerScreenState
   );
 
   Widget _fatigueSelector({
-    required int value,
+    required int? value,
     required ValueChanged<int> onChanged,
   }) => Wrap(
     spacing: 8,
@@ -692,6 +930,8 @@ class _GuidedTrainingPlayerScreenState
   );
 
   Future<void> _confirmSkip(BuildContext context) async {
+    await _pause();
+    if (!context.mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -713,8 +953,12 @@ class _GuidedTrainingPlayerScreenState
   }
 
   Future<void> _confirmExit(BuildContext context) async {
-    if (_phase == _PlayerPhase.setup || _phase == _PlayerPhase.complete) {
-      Navigator.pop(context);
+    if (_phase == _PlayerPhase.setup) {
+      await _close();
+      return;
+    }
+    if (_phase == _PlayerPhase.complete) {
+      await _saveAndClose();
       return;
     }
     await _pause();
@@ -722,8 +966,8 @@ class _GuidedTrainingPlayerScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('훈련을 종료할까요?'),
-        content: const Text('저장하지 않은 진행 내용은 사라집니다.'),
+        title: const Text('진행을 저장하고 쉴까요?'),
+        content: const Text('지금까지의 반복은 기록에 남고 다음에 이어할 수 있어요.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -731,17 +975,16 @@ class _GuidedTrainingPlayerScreenState
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('종료'),
+            child: const Text('저장하고 마치기'),
           ),
         ],
       ),
     );
     if (!context.mounted) return;
     if (confirmed == true) {
-      Navigator.pop(context);
-    } else {
-      await _resume();
+      if (await _persist(GuidedTrainingSessionStatus.stopped)) await _close();
     }
+    // Dismissing the dialog leaves the session paused; resuming is explicit.
   }
 
   String _durationLabel(int seconds) {

@@ -20,6 +20,7 @@ class VoiceAnalysisFrame {
     required this.clipping,
     this.pitchHz,
     this.pitchConfidence = 0,
+    this.sampleDuration = Duration.zero,
   });
 
   final Duration timestamp;
@@ -31,6 +32,7 @@ class VoiceAnalysisFrame {
   final bool clipping;
   final double? pitchHz;
   final double pitchConfidence;
+  final Duration sampleDuration;
 
   bool get hasReliablePitch =>
       pitchHz != null && pitchConfidence >= 0.55 && pitchHz! >= 60;
@@ -124,7 +126,14 @@ class VoiceAnalysisMetrics {
       noiseFloorDbfs: _median(noiseFloors),
       clippingRatio:
           frames.where((frame) => frame.clipping).length / frames.length,
-      phonationDurationMs: frames.last.timestamp.inMilliseconds,
+      phonationDurationMs:
+          frames
+              .where((frame) => frame.hasReliablePitch)
+              .fold<int>(
+                0,
+                (total, frame) => total + frame.sampleDuration.inMicroseconds,
+              ) ~/
+          1000,
       analysisConfidence: _mean(confidences).clamp(0, 1),
     );
   }

@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import asyncio
+import contextlib
+import os
+import time
 import tempfile
 import uuid
 from pathlib import Path
-from threading import Lock
+from threading import BoundedSemaphore, Lock
+from contextlib import asynccontextmanager
+from dataclasses import dataclass
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 
 from .acoustic import AcousticBackend, BackendUnavailable
+from .security import AnalysisBodyLimitMiddleware, MAX_AUDIO_BYTES, require_client
 from .audio import inspect_signal, normalize_to_wav
 from .language_registry import (
     BackendRegistry,
@@ -15,9 +22,43 @@ from .language_registry import (
     registry_from_environment,
 )
 
-app = FastAPI(title="Speech Rehab Pronunciation Analysis", version="0.1.0")
-_jobs: dict[str, dict] = {}
+@dataclass
+class AnalysisJob:
+    owner: str
+    expires_at: float
+    result: dict
+
+
+def _expire_jobs() -> None:
+    now = time.monotonic()
+    with _lock:
+        for key in list(_jobs):
+            if _jobs[key].expires_at <= now:
+                del _jobs[key]
+
+
+@asynccontextmanager
+async def lifespan(app):
+    async def sweep():
+        while True:
+            await asyncio.sleep(30)
+            _expire_jobs()
+    task = asyncio.create_task(sweep())
+    try:
+        yield
+    finally:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+        with _lock:
+            _jobs.clear()
+
+
+app = FastAPI(title="Speech Rehab Pronunciation Analysis", version="0.2.0", lifespan=lifespan)
+app.add_middleware(AnalysisBodyLimitMiddleware)
+_jobs: dict[str, AnalysisJob] = {}
 _lock = Lock()
+_worker_slots = BoundedSemaphore(2)
 _registry = registry_from_environment()
 
 
@@ -55,6 +96,7 @@ async def create_job(
     target_occurrence: int = Form(0),
     content_version: str = Form(...),
     baseline_score: float | None = Form(None),
+    owner: str = Depends(require_client),
 ) -> dict:
     if position not in {"onset", "medial", "coda"}:
         raise HTTPException(422, "position은 onset, medial 또는 coda여야 합니다.")
@@ -67,20 +109,39 @@ async def create_job(
             422,
             {"code": "unsupported_language", "language": language},
         ) from error
+    if len(text) > 500 or len(target_phone) > 32 or len(content_version) > 100:
+        raise HTTPException(422, "Analysis metadata is too long.")
     if not text.strip() or not target_phone.strip():
         raise HTTPException(422, "text와 target_phone은 필수입니다.")
-    payload = await audio.read()
-    if not payload or len(payload) > 20 * 1024 * 1024:
+    payload = await audio.read(MAX_AUDIO_BYTES + 1)
+    await audio.close()
+    if not payload or len(payload) > MAX_AUDIO_BYTES:
         raise HTTPException(413, "오디오 크기는 1바이트 이상 20MB 이하여야 합니다.")
     job_id = str(uuid.uuid4())
+    _expire_jobs()
     with _lock:
-        _jobs[job_id] = {"jobId": job_id, "status": "queued"}
+        active = [job for job in _jobs.values() if job.result["status"] in {"queued", "processing"}]
+        if len(active) >= 2 or any(job.owner == owner for job in active):
+            raise HTTPException(429, "An analysis is already running. Please wait.", headers={"Retry-After": "5"})
+        if len(_jobs) >= 100:
+            raise HTTPException(503, "Analysis capacity is temporarily full.")
+        ttl = min(900, max(30, int(os.getenv("PRONUNCIATION_RESULT_TTL_SECONDS", "300"))))
+        if not _worker_slots.acquire(blocking=False):
+            raise HTTPException(429, "Analysis workers are busy.", headers={"Retry-After": "5"})
+        _jobs[job_id] = AnalysisJob(owner, time.monotonic() + ttl, {"jobId": job_id, "status": "queued"})
     background_tasks.add_task(
-        _analyze_job, job_id, payload, audio.filename or "recording.m4a", text,
+        _run_reserved_job, job_id, payload, audio.filename or "recording.m4a", text,
         language, target_phone, position, target_occurrence, content_version,
         baseline_score, backend,
     )
     return {"jobId": job_id, "status": "queued"}
+
+
+def _run_reserved_job(*args) -> None:
+    try:
+        _analyze_job(*args)
+    finally:
+        _worker_slots.release()
 
 
 def _analyze_job(
@@ -97,10 +158,13 @@ def _analyze_job(
     backend: AcousticBackend,
 ) -> None:
     with _lock:
-        _jobs[job_id] = {"jobId": job_id, "status": "processing"}
+        job = _jobs.get(job_id)
+        if job is None or job.expires_at <= time.monotonic():
+            return
+        job.result = {"jobId": job_id, "status": "processing"}
     try:
         with tempfile.TemporaryDirectory(prefix="speech_rehab_") as directory:
-            source = Path(directory) / Path(filename).name
+            source = Path(directory) / ("input" + Path(filename).suffix[:12])
             source.write_bytes(payload)
             wav_path = Path(directory) / "normalized.wav"
             normalize_to_wav(source, wav_path)
@@ -121,7 +185,11 @@ def _analyze_job(
                     raise BackendUnavailable(
                         _message(language, "occurrence", str(target_occurrence + 1))
                     )
-                phonemes = [matches[target_occurrence]]
+                score_validated = bool(getattr(backend, "score_validated", False))
+                phonemes = [dict(matches[target_occurrence])]
+                if not score_validated:
+                    for phone in phonemes:
+                        phone.update(practiceScore=None, gop=None, scoreAvailable=False)
                 scores = [item["practiceScore"] for item in phonemes if item.get("practiceScore") is not None]
                 score = round(sum(scores) / len(scores)) if scores else None
                 confidences = [float(item.get("confidence", 0)) for item in phonemes]
@@ -131,6 +199,7 @@ def _analyze_job(
                     "modelVersion": backend.model_version,
                     "contentVersion": content_version, "overallPracticeScore": score,
                     "confidence": confidence, "phonemes": phonemes,
+                    "scoreValidated": score_validated,
                     "baselineDelta": score - baseline_score if score is not None and baseline_score is not None else None,
                     "signalQuality": quality.to_dict(),
                     "message": None if score is not None else _message(language, "aligned"),
@@ -156,23 +225,30 @@ def _analyze_job(
             "disclaimer": _disclaimer(language),
         }
     with _lock:
-        _jobs[job_id] = result
+        job = _jobs.get(job_id)
+        # Cancellation or expiry must not resurrect a deleted health record.
+        if job is not None and job.expires_at > time.monotonic():
+            job.result = result
 
 
 @app.get("/v1/analysis/jobs/{job_id}")
-def get_job(job_id: str) -> dict:
+def get_job(job_id: str, owner: str = Depends(require_client)) -> dict:
+    _expire_jobs()
     with _lock:
-        result = _jobs.get(job_id)
-    if result is None:
-        raise HTTPException(404, "분석 작업을 찾을 수 없습니다.")
-    return result
+        job = _jobs.get(job_id)
+        if job is None or job.owner != owner:
+            raise HTTPException(404, "분석 작업을 찾을 수 없습니다.")
+        return dict(job.result)
 
 
 @app.delete("/v1/analysis/jobs/{job_id}", status_code=204)
-def delete_job(job_id: str) -> None:
+def delete_job(job_id: str, owner: str = Depends(require_client)) -> None:
+    _expire_jobs()
     with _lock:
-        if _jobs.pop(job_id, None) is None:
+        job = _jobs.get(job_id)
+        if job is None or job.owner != owner:
             raise HTTPException(404, "분석 작업을 찾을 수 없습니다.")
+        del _jobs[job_id]
 
 
 def _disclaimer(language: str) -> str:
@@ -192,6 +268,6 @@ def _message(language: str, kind: str, detail: str = "") -> str:
     return {
         "quality": f"녹음 품질을 확인해 주세요: {detail}",
         "occurrence": f"목표 음소의 {detail}번째 구간을 찾지 못했습니다.",
-        "aligned": "MFA 음소 정렬을 완료했습니다. 정확도 점수는 CTC/GoP 모델을 연결한 뒤 제공합니다.",
+        "aligned": "MFA 음소 정렬을 완료했습니다. 정확도 점수는 환자 발화에 대해 검증된 채점 모델이 준비된 뒤 제공합니다.",
         "failed": "오디오 분석에 실패했습니다.",
     }[kind]

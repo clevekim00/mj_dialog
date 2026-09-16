@@ -24,9 +24,14 @@ void main() {
 
     expect(find.text('오늘의 연습'), findsOneWidget);
     expect(find.text('오늘 추천 연습'), findsOneWidget);
+    expect(find.text('자음 골라 연습하기'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('구강·호흡 준비운동'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('구강·호흡 준비운동'), findsOneWidget);
     expect(find.text('오늘의 통합 루틴'), findsOneWidget);
-    expect(find.text('자음 집중 훈련'), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.text('다른 연습 선택'),
