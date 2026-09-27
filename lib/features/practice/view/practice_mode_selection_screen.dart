@@ -1,1098 +1,190 @@
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
-import 'package:speech_rehab/features/consonant_training/services/consonant_training_session_service.dart';
-import 'package:speech_rehab/features/consonant_training/model/consonant_training_models.dart';
-import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
-import 'package:speech_rehab/features/chat/view/chat_screen.dart';
-import 'package:speech_rehab/features/chat/view/history_screen.dart';
-import 'package:speech_rehab/features/practice/model/practice_mode.dart';
-import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
-import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
-import 'package:speech_rehab/services/guided_training/guided_training_history_service.dart';
-import 'package:speech_rehab/services/practice_history_service.dart';
+import 'package:speech_rehab/features/rehab/model/rehab_session.dart';
+import 'package:speech_rehab/features/rehab/services/rehab_session_repository.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_setup_screen.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_ui.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_records_screen.dart';
 
-class PracticeModeSelectionScreen extends ConsumerWidget {
+/// Home offers one selected plan. Catalog browsing belongs in Training.
+class PracticeModeSelectionScreen extends ConsumerStatefulWidget {
   const PracticeModeSelectionScreen({super.key});
+  @override
+  ConsumerState<PracticeModeSelectionScreen> createState() => _HomeState();
+}
+
+class _HomeState extends ConsumerState<PracticeModeSelectionScreen> {
+  late Future<({String scenarioId, int repetitions})> _plan;
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  void _reload() {
+    _plan = ref.read(rehabRepositoryProvider).loadPlan();
+  }
+
+  Future<void> _open(Widget page) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => page),
+    );
+    if (!mounted) return;
+    ref.invalidate(rehabSessionsProvider);
+    setState(_reload);
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final practice = ref.watch(practiceProvider);
-    final guidedTraining = ref.watch(guidedTrainingSessionsProvider);
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
-      appBar: AppBar(
-        title: const Text('오늘의 연습'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          if (MediaQuery.sizeOf(context).width >= 700)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: TextButton.icon(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/voice_analysis_menu'),
-                icon: const Icon(Icons.graphic_eq),
-                label: const Text('음성도구'),
-              ),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.graphic_eq),
-              tooltip: '음성도구',
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/voice_analysis_menu'),
+  Widget build(BuildContext context) {
+    final l = rehabL10n(context), en = rehabEnglish(context);
+    final sessions = ref.watch(rehabSessionsProvider);
+    final profile = ref.watch(rehabProfileProvider).asData?.value;
+    return RehabPage(
+      title: l.rehabToday,
+      children: [
+        Text(l.rehabIdentity, style: Theme.of(context).textTheme.titleLarge),
+        if (profile != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              en
+                  ? 'Daily goal: ${profile.dailyPracticeMinutes} minutes · this plan uses a repetition target.'
+                  : '하루 목표 ${profile.dailyPracticeMinutes}분 · 이번 계획은 반복 횟수를 기준으로 해요.',
             ),
-          IconButton(
-            icon: const Icon(Icons.library_music),
-            tooltip: '녹음 보관함',
-            onPressed: () => Navigator.pushNamed(context, '/recording_library'),
           ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: '히스토리',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+        const SizedBox(height: 24),
+        sessions.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => Column(
+            children: [
+              Text(l.rehabLoadingError),
+              TextButton(
+                onPressed: () => ref.invalidate(rehabSessionsProvider),
+                child: Text(l.rehabRetry),
+              ),
+            ],
+          ),
+          data: (items) => FutureBuilder<({String scenarioId, int repetitions})>(
+            future: _plan,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Column(
+                  children: [
+                    Text(l.rehabLoadingError),
+                    TextButton(
+                      onPressed: () => setState(_reload),
+                      child: Text(l.rehabRetry),
+                    ),
+                  ],
+                );
+              }
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final plan = snapshot.data!;
+              final scenario = rehabScenarios.firstWhere(
+                (s) => s.id == plan.scenarioId,
+                orElse: () => rehabScenarios.first,
+              );
+              final ongoing = items
+                  .where(
+                    (s) =>
+                        s.canResume && s.language == (en ? 'en-US' : 'ko-KR'),
+                  )
+                  .firstOrNull;
+              final today = items
+                  .where((s) => s.localDate == rehabDate(DateTime.now()))
+                  .toList();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(l.rehabPlan),
+                          const SizedBox(height: 12),
+                          Text(
+                            ongoing?.title ?? scenario.title(en),
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            ongoing != null
+                                ? ongoing.tasks.map((t) => t.title).join(' → ')
+                                : l.rehabSequence,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            en
+                                ? '${ongoing?.tasks.length ?? 3} tasks · ${ongoing?.repetitions ?? plan.repetitions} recordings each'
+                                : '${ongoing?.tasks.length ?? 3}개 과제 · 과제마다 ${ongoing?.repetitions ?? plan.repetitions}번 녹음',
+                          ),
+                          const SizedBox(height: 24),
+                          FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(56),
+                            ),
+                            onPressed: () => _open(
+                              RehabSetupScreen(
+                                resume: ongoing,
+                                scenarioId: scenario.id,
+                                repetitions: plan.repetitions,
+                              ),
+                            ),
+                            icon: Icon(
+                              ongoing == null
+                                  ? Icons.play_arrow
+                                  : Icons.play_circle_outline,
+                            ),
+                            label: Text(
+                              ongoing == null ? l.rehabStart : l.rehabResume,
+                            ),
+                          ),
+                          if (ongoing == null)
+                            TextButton(
+                              onPressed: () => _open(
+                                RehabSetupScreen(
+                                  scenarioId: scenario.id,
+                                  repetitions: plan.repetitions,
+                                ),
+                              ),
+                              child: Text(l.rehabChangePlan),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    en
+                        ? '${today.expand((s) => s.takes).length} recordings in today’s plans'
+                        : '오늘 계획에서 녹음 ${today.expand((s) => s.takes).length}번',
+                  ),
+                  const SizedBox(height: 12),
+                  RehabCard(
+                    title: l.rehabRecent,
+                    subtitle: en
+                        ? 'View practice and previous recordings'
+                        : '연습 기록과 이전 녹음을 확인하세요',
+                    icon: Icons.history,
+                    onTap: () => _open(const RehabRecordsScreen()),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(l.rehabSafety),
+                ],
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.bar_chart),
-            tooltip: '성과 대시보드',
-            onPressed: () => Navigator.pushNamed(context, '/dashboard'),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
-          _buildTodaySummary(practice, ref.watch(rehabSessionProvider)),
-          const SizedBox(height: 16),
-          _buildConsonantTrainingCard(context),
-          const SizedBox(height: 16),
-          _buildRecommendedPractice(context, ref, practice),
-          const SizedBox(height: 16),
-          _buildGuidedTrainingCard(context, practice, guidedTraining),
-          const SizedBox(height: 22),
-          _buildSectionTitle('다른 연습 선택'),
-          const SizedBox(height: 12),
-          _buildCompactModeGrid(context, ref),
-          const SizedBox(height: 22),
-          _buildRecordingLibraryCard(context, practice),
-          if (_latestRepeatCandidate(practice) != null) ...[
-            const SizedBox(height: 16),
-            _buildRepeatCandidateCard(
-              context,
-              ref,
-              _latestRepeatCandidate(practice)!,
-            ),
-          ],
-          const SizedBox(height: 16),
-          _buildWeeklyProgress(context, practice),
-          const SizedBox(height: 16),
-          _buildSafetyNotice(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConsonantTrainingCard(BuildContext context) =>
-      const _ConsonantHomeCard();
-
-  Widget _buildTodaySummary(
-    PracticeProgress practice,
-    RehabSessionPreferences plan,
-  ) {
-    final today = DateTime.now();
-    final todayCount = practice.history.where((session) {
-      return session.isRecordedAttempt &&
-          session.timestamp.year == today.year &&
-          session.timestamp.month == today.month &&
-          session.timestamp.day == today.day;
-    }).length;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.today_outlined, color: Colors.white70),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  todayCount == 0 ? '오늘의 말하기 연습' : '오늘 발화 $todayCount회',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '하루 목표 ${plan.dailyMinutes}분 · ${plan.goal}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              color: _fatigueStatusColor(
-                (plan.fatigueBefore ?? 0),
-              ).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              plan.fatigueBefore == null
-                  ? '상태 확인 전'
-                  : _fatigueStatusLabel(plan.fatigueBefore!),
-              style: TextStyle(
-                color: _fatigueStatusColor(plan.fatigueBefore ?? 0),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecordingLibraryCard(
-    BuildContext context,
-    PracticeProgress practice,
-  ) {
-    final recordingCount = practice.history
-        .where((session) => session.audioFilePath.trim().isNotEmpty)
-        .length;
-    final failedCount = practice.history
-        .where(
-          (session) =>
-              session.audioFilePath.trim().isNotEmpty &&
-              session.hasComparableScore &&
-              session.score! < 70,
-        )
-        .length;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, '/recording_library'),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.greenAccent.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.22)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: Colors.greenAccent.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(Icons.library_music, color: Colors.greenAccent),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '녹음 보관함',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    recordingCount == 0
-                        ? '연습한 녹음을 모아서 다시 들어보세요.'
-                        : '저장된 녹음 $recordingCount개 · 다시 들어볼 녹음 $failedCount개',
-                    style: const TextStyle(color: Colors.white60, fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: Colors.white38),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRepeatCandidateCard(
-    BuildContext context,
-    WidgetRef ref,
-    PracticeSession session,
-  ) {
-    final mode = PracticeModeLabel.fromStorageValue(session.mode);
-    final color = session.hasComparableScore && session.score! < 70
-        ? Colors.redAccent
-        : Colors.amberAccent;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.replay_circle_filled_outlined, color: color),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  '어려웠던 문장 다시 읽기',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              Text(
-                session.scoreDisplay,
-                style: TextStyle(color: color, fontWeight: FontWeight.w900),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            session.targetText,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${mode.label} · ${session.category} · 재시도 ${session.retryCount}회',
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ref
-                        .read(practiceProvider.notifier)
-                        .practiceAgainFromSession(session);
-                    Navigator.pushNamed(
-                      context,
-                      mode == PracticeMode.wordGame
-                          ? '/word_game'
-                          : '/practice',
-                    );
-                  },
-                  icon: const Icon(Icons.record_voice_over_outlined),
-                  label: const Text('다시 읽기'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              IconButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/recording_library'),
-                icon: const Icon(Icons.library_music, color: Colors.white70),
-                tooltip: '녹음 보기',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendedPractice(
-    BuildContext context,
-    WidgetRef ref,
-    PracticeProgress practice,
-  ) {
-    final plan = ref.watch(rehabSessionProvider);
-    final recommendation = (plan.fatigueBefore ?? 0) >= 4
-        ? PracticeMode.shortSentence
-        : _recommendMode(practice);
-    final today = DateTime.now();
-    final todayCount = practice.history.where((session) {
-      return session.isRecordedAttempt &&
-          session.timestamp.year == today.year &&
-          session.timestamp.month == today.month &&
-          session.timestamp.day == today.day;
-    }).length;
-    final reason = _recommendationReason(
-      practice: practice,
-      recommendation: recommendation,
-      todayCount: todayCount,
-    );
-    final color = switch (recommendation) {
-      PracticeMode.wordGame => Colors.greenAccent,
-      PracticeMode.shortSentence => Colors.blueAccent,
-      PracticeMode.longSentence => Colors.orangeAccent,
-      PracticeMode.freeSpeech => Colors.purpleAccent,
-    };
-    final icon = switch (recommendation) {
-      PracticeMode.wordGame => Icons.sports_esports_outlined,
-      PracticeMode.shortSentence => Icons.short_text,
-      PracticeMode.longSentence => Icons.notes_outlined,
-      PracticeMode.freeSpeech => Icons.forum_outlined,
-    };
-
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: color.withValues(alpha: 0.24)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  '오늘 추천 연습',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '${_recommendedTitle(recommendation)} · ${plan.durationMinutes}분',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            (plan.fatigueBefore ?? 0) >= 4 ? '오늘은 짧게 연습하거나 쉬어도 괜찮아요.' : reason,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildInfoChip(Icons.flag_outlined, plan.goal, color),
-              _buildInfoChip(
-                Icons.local_fire_department_outlined,
-                plan.fatigueBefore == null
-                    ? '시작 전 상태 확인'
-                    : '피로도 ${plan.fatigueBefore}/5',
-                color,
-              ),
-              _buildInfoChip(
-                Icons.timer_outlined,
-                '${plan.durationMinutes}분',
-                color,
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: () => _openRecommended(context, ref, recommendation),
-              icon: const Icon(Icons.play_arrow),
-              label: Text(_recommendedCta(recommendation)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 18,
-        fontWeight: FontWeight.w800,
-      ),
-    );
-  }
-
-  Widget _buildGuidedTrainingCard(
-    BuildContext context,
-    PracticeProgress practice,
-    AsyncValue<List<GuidedTrainingSession>> sessions,
-  ) {
-    final isCompleted =
-        sessions.whenOrNull(data: (items) => items.isTodayCompleted) ?? false;
-    final isHighFatigue = practice.fatigueBefore >= 4;
-    final status = isCompleted
-        ? '오늘 완료'
-        : isHighFatigue
-        ? '피로도 높음 · 천천히'
-        : '운동 메뉴';
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, '/guided_training'),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.tealAccent.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.tealAccent.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.tealAccent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                isCompleted
-                    ? Icons.check_circle_outline
-                    : Icons.self_improvement,
-                color: Colors.tealAccent,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          '구강·호흡 준비운동',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.tealAccent.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: Text(
-                          status,
-                          style: const TextStyle(
-                            color: Colors.tealAccent,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 7),
-                  const Text(
-                    '오늘의 통합 루틴',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    isCompleted
-                        ? '오늘 루틴을 완료했어요. 필요하면 같은 속도로 반복하세요.'
-                        : '영상과 자막을 보며 혀·입술·호흡을 천천히 준비해요.',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Icon(Icons.chevron_right, color: Colors.white38),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactModeGrid(BuildContext context, WidgetRef ref) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.45,
-      children: [
-        _buildCompactModeCard(
-          icon: Icons.sports_esports_outlined,
-          title: '단어 게임',
-          subtitle: '짧게 말하기',
-          note: '내가 고른 단어 다시 연습',
-          color: Colors.greenAccent,
-          onTap: () => _openRecommended(context, ref, PracticeMode.wordGame),
-        ),
-        _buildCompactModeCard(
-          icon: Icons.short_text,
-          title: '짧은 문장 읽기',
-          subtitle: '일상 표현',
-          note: '부담 적은 반복',
-          color: Colors.blueAccent,
-          onTap: () => _openPractice(context, ref, PracticeMode.shortSentence),
-        ),
-        _buildCompactModeCard(
-          icon: Icons.notes_outlined,
-          title: '긴 문장 읽기',
-          subtitle: '긴 호흡 연습',
-          note: '내 문장 관리',
-          color: Colors.orangeAccent,
-          onTap: () => _openPractice(context, ref, PracticeMode.longSentence),
-        ),
-        _buildCompactModeCard(
-          icon: Icons.forum_outlined,
-          title: '자유 대화',
-          subtitle: '상황 말하기',
-          note: '주제 없이 편하게',
-          color: Colors.purpleAccent,
-          onTap: () {
-            ref.read(chatControllerProvider.notifier).createNewSession();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ChatScreen()),
-            );
-          },
         ),
       ],
     );
   }
-
-  Widget _buildCompactModeCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String note,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      height: 1.15,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              note,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white38, fontSize: 11),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWeeklyProgress(BuildContext context, PracticeProgress practice) {
-    final activeDays = _countActiveDays(practice);
-    final cutoff = DateTime.now().subtract(const Duration(days: 7));
-    final scoredSessions = practice.history
-        .where(
-          (session) =>
-              session.hasComparableScore && session.timestamp.isAfter(cutoff),
-        )
-        .toList();
-    final averageScore = scoredSessions.isEmpty
-        ? null
-        : scoredSessions
-                  .map((session) => session.score!)
-                  .reduce((a, b) => a + b) ~/
-              scoredSessions.length;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.blueAccent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.18)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  '이번 주 흐름',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/dashboard'),
-                child: const Text('대시보드 보기'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '최근 7일 중 $activeDays일 연습했습니다.',
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            averageScore == null
-                ? '연습 기록을 쌓으며 나의 변화를 살펴보세요.'
-                : '최근 7일 인식 문장 일치도 평균 $averageScore%',
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              minHeight: 8,
-              value: (activeDays / 7).clamp(0, 1),
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: const AlwaysStoppedAnimation(Colors.blueAccent),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSafetyNotice() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.orangeAccent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.18)),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.health_and_safety_outlined, color: Colors.orangeAccent),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '쉬어야 할 때',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  '사레, 호흡 불편, 갑작스러운 말 변화가 있으면 연습을 멈추고 전문가에게 문의하세요.',
-                  style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.24)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _recommendedTitle(PracticeMode mode) {
-    return switch (mode) {
-      PracticeMode.wordGame => '단어 연습',
-      PracticeMode.shortSentence => '짧은 문장',
-      PracticeMode.longSentence => '긴 문장',
-      PracticeMode.freeSpeech => '자유 말하기',
-    };
-  }
-
-  String _recommendedCta(PracticeMode mode) {
-    return switch (mode) {
-      PracticeMode.wordGame => '단어 게임 시작하기',
-      PracticeMode.shortSentence => '짧은 문장 시작하기',
-      PracticeMode.longSentence => '긴 문장 시작하기',
-      PracticeMode.freeSpeech => '자유 말하기 시작하기',
-    };
-  }
-
-  String _recommendationReason({
-    required PracticeProgress practice,
-    required PracticeMode recommendation,
-    required int todayCount,
-  }) {
-    if (practice.fatigueBefore >= 4) {
-      return '피로도가 높으니 짧게 시작하고, 불편하면 바로 쉬어 주세요.';
-    }
-    if (todayCount == 0) {
-      return '오늘 첫 연습은 부담이 적은 ${recommendation.label}부터 시작해 보세요.';
-    }
-    if (practice.history.any(
-      (session) => session.hasComparableScore && session.score! < 75,
-    )) {
-      return '인식 결과를 다시 확인할 단어가 있어요. 내 속도로 연습해 보세요.';
-    }
-    return '최근 기록을 이어가며 ${recommendation.label}로 한 번 더 마무리해요.';
-  }
-
-  String _fatigueStatusLabel(int fatigue) {
-    if (fatigue >= 4) {
-      return '짧게 연습';
-    }
-    if (fatigue >= 3) {
-      return '천천히';
-    }
-    return '입력 완료';
-  }
-
-  Color _fatigueStatusColor(int fatigue) {
-    if (fatigue >= 4) {
-      return Colors.orangeAccent;
-    }
-    if (fatigue >= 3) {
-      return Colors.amberAccent;
-    }
-    return Colors.blueAccent;
-  }
-
-  int _countActiveDays(PracticeProgress practice) {
-    final now = DateTime.now();
-    return practice.history
-        .where(
-          (session) =>
-              session.isRecordedAttempt &&
-              !session.timestamp.isAfter(now) &&
-              now.difference(session.timestamp).inDays < 7,
-        )
-        .map(
-          (session) => DateTime(
-            session.timestamp.year,
-            session.timestamp.month,
-            session.timestamp.day,
-          ),
-        )
-        .toSet()
-        .length;
-  }
-
-  PracticeMode _recommendMode(PracticeProgress practice) {
-    if (practice.history.isEmpty) {
-      return PracticeMode.shortSentence;
-    }
-
-    final recent = practice.history.take(3).toList();
-    final hasLowScore = recent.any(
-      (session) => session.hasComparableScore && session.score! < 75,
-    );
-    if (hasLowScore) {
-      return PracticeMode.wordGame;
-    }
-
-    final lastMode = PracticeModeLabel.fromStorageValue(recent.first.mode);
-    return switch (lastMode) {
-      PracticeMode.wordGame => PracticeMode.shortSentence,
-      PracticeMode.shortSentence => PracticeMode.longSentence,
-      PracticeMode.longSentence => PracticeMode.freeSpeech,
-      PracticeMode.freeSpeech => PracticeMode.shortSentence,
-    };
-  }
-
-  PracticeSession? _latestRepeatCandidate(PracticeProgress practice) {
-    final candidates = practice.history.where((session) {
-      final mode = PracticeModeLabel.fromStorageValue(session.mode);
-      final isReadableMode =
-          mode == PracticeMode.shortSentence ||
-          mode == PracticeMode.longSentence;
-      return isReadableMode &&
-          session.audioFilePath.trim().isNotEmpty &&
-          session.hasComparableScore &&
-          (session.score! < 70 || session.retryCount > 0);
-    }).toList();
-
-    if (candidates.isEmpty) {
-      return null;
-    }
-    candidates.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return candidates.first;
-  }
-
-  Future<void> _openPractice(
-    BuildContext context,
-    WidgetRef ref,
-    PracticeMode mode,
-  ) async {
-    _applySessionPreferences(ref);
-    await ref.read(practiceProvider.notifier).setMode(mode);
-    if (context.mounted) Navigator.pushNamed(context, '/practice');
-  }
-
-  void _applySessionPreferences(WidgetRef ref) {
-    final plan = ref.read(rehabSessionProvider);
-    final notifier = ref.read(practiceProvider.notifier);
-    notifier.setSessionGoal(plan.goal);
-    if (plan.fatigueBefore != null) {
-      notifier.setFatigueBefore(plan.fatigueBefore!);
-    }
-  }
-
-  Future<void> _openRecommended(
-    BuildContext context,
-    WidgetRef ref,
-    PracticeMode mode,
-  ) async {
-    _applySessionPreferences(ref);
-    if (mode == PracticeMode.wordGame) {
-      await ref.read(practiceProvider.notifier).setMode(PracticeMode.wordGame);
-      if (context.mounted) Navigator.pushNamed(context, '/word_game');
-      return;
-    }
-    if (mode == PracticeMode.freeSpeech) {
-      ref.read(chatControllerProvider.notifier).createNewSession();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ChatScreen()),
-      );
-      return;
-    }
-    _openPractice(context, ref, mode);
-  }
-}
-
-class _ConsonantHomeCard extends StatefulWidget {
-  const _ConsonantHomeCard();
-  @override
-  State<_ConsonantHomeCard> createState() => _ConsonantHomeCardState();
-}
-
-class _ConsonantHomeCardState extends State<_ConsonantHomeCard> {
-  String? _language;
-  Future<ConsonantTrainingProgress?>? _progress;
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final language = Localizations.localeOf(context).languageCode == 'ko'
-        ? 'ko-KR'
-        : 'en-US';
-    if (_language != language) {
-      _language = language;
-      _progress = ConsonantTrainingSessionService().load(language: language);
-    }
-  }
-
-  Future<void> _open(bool resume) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ConsonantTrainingHubScreen(autoResume: resume),
-      ),
-    );
-    if (mounted) {
-      setState(
-        () => _progress = ConsonantTrainingSessionService().load(
-          language: _language!,
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Card(
-    color: const Color(0xFF122338),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            '자음 골라 연습하기',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '원하는 자음을 고르고 음절 · 단어 · 문장으로 연습해요.',
-            style: TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(54),
-            ),
-            onPressed: () => _open(false),
-            icon: const Icon(Icons.record_voice_over),
-            label: const Text('자음 선택하기'),
-          ),
-          FutureBuilder<ConsonantTrainingProgress?>(
-            future: _progress,
-            builder: (context, snapshot) {
-              final progress = snapshot.data;
-              if (progress == null || progress.completed) {
-                return const SizedBox.shrink();
-              }
-              return Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: OutlinedButton.icon(
-                  onPressed: () => _open(true),
-                  icon: const Icon(Icons.play_arrow),
-                  label: Text(
-                    '${progress.grapheme} ${progress.position.label} · ${progress.level.label} 이어하기',
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    ),
-  );
 }

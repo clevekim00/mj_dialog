@@ -77,21 +77,21 @@ void main() {
         _session('fall-1', score: 0, retries: 1, recorded: false),
         _session('fall-2', score: 0, retries: 1, recorded: false),
       ]);
-      expect(find.text('오늘 발화 1회'), findsOneWidget);
+      expect(find.text('오늘 계획에서 녹음 0번'), findsOneWidget);
       expect(find.text('오늘 발화 3회'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets(
-    'a new comparable low text-match score can be reviewed with its method label',
-    (tester) async {
-      await _showHome(tester, [
-        _session('new', score: 45, method: 'textMatch', retries: 1),
-      ]);
-      expect(find.text('어려웠던 문장 다시 읽기'), findsOneWidget);
-      expect(find.text('텍스트 일치도 45%'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('low recognition scores never drive home recommendations', (
+    tester,
+  ) async {
+    await _showHome(tester, [
+      _session('new', score: 45, method: 'textMatch', retries: 1),
+    ]);
+    expect(find.text('어려웠던 문장 다시 읽기'), findsNothing);
+    expect(find.text('텍스트 일치도 45%'), findsNothing);
+    expect(find.text('오늘 연습 시작'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

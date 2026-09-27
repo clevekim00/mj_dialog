@@ -92,7 +92,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       child: Scaffold(
         backgroundColor: const Color(0xFF0D0D0D),
         appBar: AppBar(
-          title: const Text('단어 게임'),
+          title: const Text('단어 말하기'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [

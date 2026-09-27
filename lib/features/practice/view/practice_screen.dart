@@ -168,9 +168,15 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen>
             ),
             const SizedBox(height: 16),
             if (practice.feedback != null) ...[
-              FeedbackCard(
-                aiResponse: practice.feedback!,
-                onDismiss: () => notifier.dismissFeedback(),
+              ExpansionTile(
+                title: const Text('음성인식 참고 결과'),
+                subtitle: const Text('인식 결과는 발음 능력이나 회복 정도를 뜻하지 않아요.'),
+                children: [
+                  FeedbackCard(
+                    aiResponse: practice.feedback!,
+                    onDismiss: () => notifier.dismissFeedback(),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
             ],

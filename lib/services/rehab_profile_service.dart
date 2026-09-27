@@ -103,10 +103,10 @@ class RehabSessionController extends Notifier<RehabSessionPreferences> {
           (profile == null
               ? '또렷하게 말하기'
               : switch (profile.primaryGoal) {
-                  'clearSpeech' => '또렷하게 말하기',
-                  'slowSpeech' => '천천히 말하기',
-                  'loudSpeech' => '크게 말하기',
-                  'breathing' => '숨 조절하기',
+                  'clearSpeech' || '또렷하게 말하기' => '또렷하게 말하기',
+                  'slowSpeech' || '천천히 말하기' => '천천히 말하기',
+                  'loudSpeech' || '크게 말하기' || '편안하게 소리 내기' => '편안하게 소리 내기',
+                  'breathing' || '숨 조절하기' => '숨 조절하기',
                   _ => '또렷하게 말하기',
                 }),
       fatigueBefore: _selectedFatigue,

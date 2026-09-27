@@ -34,6 +34,10 @@ class _RehabOnboardingScreenState extends ConsumerState<RehabOnboardingScreen> {
     }
 
     ref.invalidate(rehabProfileProvider);
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const AdaptiveAppShell()),
     );
@@ -77,7 +81,7 @@ class _RehabOnboardingScreenState extends ConsumerState<RehabOnboardingScreen> {
             const SizedBox(height: 24),
             _buildSectionTitle('오늘의 주 목표'),
             _buildChoiceWrap(
-              values: const ['또렷하게 말하기', '천천히 말하기', '크게 말하기', '숨 조절하기'],
+              values: const ['또렷하게 말하기', '천천히 말하기', '편안하게 소리 내기', '숨 조절하기'],
               selected: _primaryGoal,
               onSelected: (value) => setState(() => _primaryGoal = value),
             ),

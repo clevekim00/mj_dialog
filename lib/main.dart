@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/accessibility_settings_service.dart';
 import 'dart:math';
 import 'dart:async';
 
@@ -28,7 +29,6 @@ import 'package:speech_rehab/features/settings/view/resource_center_screen.dart'
 import 'package:speech_rehab/features/voice_analysis/view/voice_analysis_screens.dart';
 import 'package:speech_rehab/l10n/app_localizations.dart';
 import 'package:speech_rehab/services/app_language_service.dart';
-import 'package:speech_rehab/services/permission_service.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 import 'package:speech_rehab/services/resources/resource_catalog_repository.dart';
 import 'package:speech_rehab/services/resources/resource_pack_manager.dart';
@@ -94,8 +94,17 @@ class _AppView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final language = ref.watch(appLanguageProvider);
+    final textSize = ref.watch(textSizeProvider);
     return MaterialApp(
       title: 'Speech Rehab',
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(
+            MediaQuery.textScalerOf(context).scale(1) * textSize,
+          ),
+        ),
+        child: child ?? const SizedBox.shrink(),
+      ),
       locale: language.resolvedLocale,
       supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
       localizationsDelegates: const [
@@ -235,11 +244,8 @@ class _StartupResolverState extends State<StartupResolver> {
   }
 
   Future<_StartupDestination> _resolveDestination() async {
-    final hasPermissions = await PermissionService.hasAllPermissions();
-    if (!hasPermissions) {
-      return _StartupDestination.permission;
-    }
-
+    // Browsing, listening, and records do not require microphone permission.
+    // Recording features request access when the user starts recording.
     final completedOnboarding =
         await RehabProfileService.hasCompletedOnboarding();
     if (!completedOnboarding) {

@@ -3,81 +3,42 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
-
-class _VoiceToolsStub extends StatelessWidget {
-  const _VoiceToolsStub();
-
-  @override
-  Widget build(BuildContext context) => const Scaffold(body: Text('음성도구 화면'));
-}
+import 'package:speech_rehab/features/rehab/services/rehab_session_repository.dart';
 
 void main() {
-  testWidgets('shows all structured practice mode choices', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: PracticeModeSelectionScreen()),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text('오늘의 연습'), findsOneWidget);
-    expect(find.text('오늘 추천 연습'), findsOneWidget);
-    expect(find.text('자음 골라 연습하기'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('구강·호흡 준비운동'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('구강·호흡 준비운동'), findsOneWidget);
-    expect(find.text('오늘의 통합 루틴'), findsOneWidget);
-
-    await tester.scrollUntilVisible(
-      find.text('다른 연습 선택'),
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('다른 연습 선택'), findsOneWidget);
-
-    await tester.scrollUntilVisible(
-      find.text('단어 게임'),
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(find.text('단어 게임'), findsOneWidget);
-    expect(find.text('짧은 문장 읽기'), findsOneWidget);
-    expect(find.text('긴 문장 읽기'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('자유 대화'),
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('자유 대화'), findsOneWidget);
-  });
-
-  testWidgets('opens voice tools from the top menu', (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    tester.view.physicalSize = const Size(1280, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: const PracticeModeSelectionScreen(),
-          routes: {'/voice_analysis_menu': (_) => const _VoiceToolsStub()},
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+  testWidgets(
+    'home offers one saved plan, with no score driven recommendation',
+    (tester) async {
+      await RehabSessionRepository().savePlan('hospital', 2);
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(home: PracticeModeSelectionScreen()),
         ),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text('음성도구'), findsOneWidget);
-    await tester.tap(find.text('음성도구'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('음성도구 화면'), findsOneWidget);
-  });
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('오늘 연습 시작'), findsOneWidget);
+      expect(find.text('병원에서 부탁하기'), findsOneWidget);
+      expect(find.text('3개 과제 · 과제마다 2번 녹음'), findsOneWidget);
+      expect(find.text('단어 게임'), findsNothing);
+      expect(find.text('자유 대화'), findsNothing);
+      await tester.tap(find.text('오늘 연습 시작'));
+      await tester.pumpAndSettle();
+      final button = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, '연습 시작'),
+      );
+      expect(button.onPressed, isNull);
+      await tester.ensureVisible(find.text('2 / 5'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('2 / 5'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, '연습 시작'))
+            .onPressed,
+        isNotNull,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

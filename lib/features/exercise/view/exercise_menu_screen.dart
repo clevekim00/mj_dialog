@@ -1,142 +1,223 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
+import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
+import 'package:speech_rehab/features/chat/view/chat_screen.dart';
+import 'package:speech_rehab/features/practice/model/practice_mode.dart';
+import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
+import 'package:speech_rehab/features/rehab/model/training_launch_spec.dart';
+import 'package:speech_rehab/features/rehab/model/rehab_session.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_setup_screen.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_ui.dart';
 
 class ExerciseMenuScreen extends StatelessWidget {
   const ExerciseMenuScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final l = rehabL10n(context);
+    void open(String section) => Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => _TrainingChoices(section: section),
+      ),
+    );
+    return RehabPage(
+      title: l.training,
+      children: [
+        Text(l.rehabTraining, style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(height: 20),
+        RehabCard(
+          title: l.rehabArticulation,
+          subtitle: l.rehabArticulationHint,
+          icon: Icons.record_voice_over,
+          onTap: () => open('articulation'),
+        ),
+        RehabCard(
+          title: l.rehabSentences,
+          subtitle: l.rehabSentencesHint,
+          icon: Icons.short_text,
+          onTap: () => open('sentences'),
+        ),
+        RehabCard(
+          title: l.rehabEveryday,
+          subtitle: l.rehabEverydayHint,
+          icon: Icons.forum_outlined,
+          onTap: () => open('everyday'),
+        ),
+        RehabCard(
+          title: l.rehabVoice,
+          subtitle: l.rehabVoiceHint,
+          icon: Icons.graphic_eq,
+          onTap: () => open('voice'),
+        ),
+        RehabCard(
+          title: l.rehabPacing,
+          subtitle: l.rehabPacingHint,
+          icon: Icons.pause_circle_outline,
+          onTap: () => open('pacing'),
+        ),
+        const SizedBox(height: 20),
+        RehabCard(
+          title: l.rehabWarmup,
+          subtitle: l.rehabWarmupHint,
+          icon: Icons.self_improvement,
+          onTap: () => Navigator.pushNamed(context, '/guided_training'),
+        ),
+        const SizedBox(height: 16),
+        Text(l.rehabSafety),
+      ],
+    );
+  }
+}
+
+class _TrainingChoices extends ConsumerStatefulWidget {
+  const _TrainingChoices({required this.section});
+  final String section;
+  @override
+  ConsumerState<_TrainingChoices> createState() => _ChoicesState();
+}
+
+class _ChoicesState extends ConsumerState<_TrainingChoices> {
+  bool _opening = false;
+  Future<void> _practice(TrainingLaunchSpec spec) async {
+    if (_opening) return;
+    setState(() => _opening = true);
+    try {
+      final notifier = ref.read(practiceProvider.notifier);
+      await notifier.prepareLaunch(spec);
+      if (!mounted) return;
+      await Navigator.pushNamed(
+        context,
+        spec.mode == PracticeMode.wordGame ? '/word_game' : '/practice',
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(rehabL10n(context).rehabLoadingError)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _opening = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF101010),
-      appBar: AppBar(
-        title: const Text('운동'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 18),
-          _buildExerciseCard(
-            context,
-            title: '구강·호흡 훈련',
-            subtitle: '혀 14개 · 입술 12개 · 교호 10개 · 호흡 10개',
-            icon: Icons.self_improvement,
-            color: Colors.tealAccent,
-            routeName: '/guided_training',
-          ),
-          const SizedBox(height: 14),
-          _buildExerciseCard(
-            context,
-            title: '발성 훈련 · 음성 도구',
-            subtitle: '목소리 높이, 크기, 목표음, 음파와 10초 녹음 분석',
-            icon: Icons.multiline_chart,
-            color: Colors.blueAccent,
-            routeName: '/voice_analysis_menu',
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            'This is a general exercise guide, not medical advice.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '말하기를 위한 통합 훈련',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            '2D 시범 영상과 자막을 보며 구강 움직임·교호 발음·호흡을 반복합니다.',
-            style: TextStyle(color: Colors.white60, height: 1.4),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExerciseCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required String routeName,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => Navigator.pushNamed(context, routeName),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.22)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 21,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
+    final l = rehabL10n(context), en = rehabEnglish(context);
+    final section = widget.section;
+    final title = switch (section) {
+      'articulation' => l.rehabArticulation,
+      'sentences' => l.rehabSentences,
+      'voice' => l.rehabVoice,
+      'pacing' => l.rehabPacing,
+      _ => l.rehabEveryday,
+    };
+    return RehabPage(
+      title: title,
+      children: [
+        if (_opening) const LinearProgressIndicator(),
+        if (section == 'articulation') ...[
+          RehabCard(
+            title: l.rehabConsonants,
+            subtitle: l.rehabArticulationHint,
+            icon: Icons.record_voice_over,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    const ConsonantTrainingHubScreen(autoResume: true),
               ),
             ),
-            const SizedBox(width: 10),
-            const Icon(Icons.chevron_right, color: Colors.white38),
-          ],
-        ),
-      ),
+          ),
+          RehabCard(
+            title: l.rehabWords,
+            subtitle: en
+                ? 'One word at a time, without a time limit.'
+                : '시간 제한 없이 한 단어씩 반복해요.',
+            icon: Icons.text_fields,
+            onTap: () => _practice(
+              const TrainingLaunchSpec(mode: PracticeMode.wordGame),
+            ),
+          ),
+        ],
+        if (section == 'sentences') ...[
+          RehabCard(
+            title: l.rehabShort,
+            subtitle: l.rehabSentencesHint,
+            icon: Icons.short_text,
+            onTap: () => _practice(
+              const TrainingLaunchSpec(mode: PracticeMode.shortSentence),
+            ),
+          ),
+          RehabCard(
+            title: l.rehabLong,
+            subtitle: l.rehabSentencesHint,
+            icon: Icons.notes,
+            onTap: () => _practice(
+              const TrainingLaunchSpec(mode: PracticeMode.longSentence),
+            ),
+          ),
+        ],
+        if (section == 'everyday' || section == 'pacing') ...[
+          for (final scenario in rehabScenarios)
+            RehabCard(
+              title: scenario.title(en),
+              subtitle: section == 'pacing'
+                  ? l.rehabPacingHint
+                  : (en ? scenario.enSentence : scenario.koSentence),
+              icon: Icons.forum_outlined,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => RehabSetupScreen(
+                    scenarioId: scenario.id,
+                    pacing: section == 'pacing',
+                  ),
+                ),
+              ),
+            ),
+          if (section == 'everyday')
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: OutlinedButton(
+                onPressed: () {
+                  ref.read(chatControllerProvider.notifier).createNewSession();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(builder: (_) => const ChatScreen()),
+                  );
+                },
+                child: Text(l.rehabFree),
+              ),
+            ),
+        ],
+        if (section == 'voice') ...[
+          RehabCard(
+            title: en ? 'Comfortable vowel' : '편안한 모음 소리',
+            subtitle: l.rehabVoiceHint,
+            icon: Icons.graphic_eq,
+            onTap: () => Navigator.pushNamed(context, '/voice_pitch'),
+          ),
+          RehabCard(
+            title: en ? 'Speak through a sentence' : '문장 끝까지 말하기',
+            subtitle: l.rehabVoiceHint,
+            icon: Icons.record_voice_over,
+            onTap: () => Navigator.pushNamed(context, '/voice_volume'),
+          ),
+          const SizedBox(height: 20),
+          ExpansionTile(
+            title: Text(l.rehabTools),
+            children: [
+              ListTile(
+                title: Text(l.rehabTools),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/voice_analysis_menu'),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

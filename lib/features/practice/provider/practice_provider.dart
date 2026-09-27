@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/model/training_launch_spec.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -286,6 +287,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       ref.watch(mouthVideoRecorderServiceProvider);
   CameraController? get mouthVideoController => mouthVideoRecorder.controller;
 
+  Future<void>? _initialization;
   List<PracticeContentItem> _currentItems = [];
   Timer? _wordGameTimer;
   int _wordGameTick = 0;
@@ -299,7 +301,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       _wordGameTimer?.cancel();
       unawaited(videoRecorder.dispose());
     });
-    _init();
+    _initialization = _init();
     return PracticeProgress(
       state: PracticeState.idle,
       targetText: '물을 마시고 싶어요.',
@@ -447,6 +449,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   }
 
   Future<void> setMode(PracticeMode mode) async {
+    await _initialization;
     if (_recordingBusy) return;
     _wordGameTimer?.cancel();
     final isFreeSpeech = mode == PracticeMode.freeSpeech;
@@ -483,6 +486,20 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
       wordGameHits: 0,
       wordGameMisses: 0,
     );
+  }
+
+  Future<void> prepareLaunch(TrainingLaunchSpec spec) async {
+    await setMode(spec.mode);
+    if (_recordingBusy) throw StateError('Recording is still active');
+    if (spec.text != null) {
+      setTargetText(spec.text!);
+      state = state.copyWith(
+        mode: spec.mode,
+        isFreeMode: spec.mode == PracticeMode.freeSpeech,
+      );
+    }
+    if (spec.goal != null) setSessionGoal(spec.goal!);
+    if (spec.mode == PracticeMode.wordGame) setWordGameTimed(false);
   }
 
   void setWordGameDifficulty(int value) {
@@ -1152,7 +1169,8 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
   Future<void> stopRecording() async {
     final pending = _recordingStopFuture;
     if (pending != null) return pending;
-    if (state.state != PracticeState.recording && _recordingStartFuture == null) {
+    if (state.state != PracticeState.recording &&
+        _recordingStartFuture == null) {
       return;
     }
     state = state.copyWith(state: PracticeState.analyzing);

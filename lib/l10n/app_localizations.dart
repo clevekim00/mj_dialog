@@ -229,6 +229,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Large controls, clear text guidance, and consistent training buttons are provided.'**
   String get accessibilityPrinciplesDescription;
+
+  /// No description provided for @rehabToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s practice'**
+  String get rehabToday;
+
+  /// No description provided for @rehabIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice the words you need, at your own pace.'**
+  String get rehabIdentity;
+
+  /// No description provided for @rehabStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start today’s practice'**
+  String get rehabStart;
+
+  /// No description provided for @rehabResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue practice'**
+  String get rehabResume;
+
+  /// No description provided for @rehabChangePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Change plan'**
+  String get rehabChangePlan;
+
+  /// No description provided for @rehabPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice plan'**
+  String get rehabPlan;
+
+  /// No description provided for @rehabSequence.
+  ///
+  /// In en, this message translates to:
+  /// **'Word → Sentence → Everyday situation'**
+  String get rehabSequence;
+
+  /// No description provided for @rehabPrepare.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you start'**
+  String get rehabPrepare;
+
+  /// No description provided for @rehabFatigue.
+  ///
+  /// In en, this message translates to:
+  /// **'How tired do you feel?'**
+  String get rehabFatigue;
+
+  /// No description provided for @rehabFatigueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Comfortable · 5 Very tired'**
+  String get rehabFatigueHint;
+
+  /// No description provided for @rehabRestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It is fine to shorten practice or rest. You can reduce repetitions.'**
+  String get rehabRestHint;
+
+  /// No description provided for @rehabSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop if you feel discomfort or pain. Discuss suitable practice and duration with your clinician.'**
+  String get rehabSafety;
+
+  /// No description provided for @rehabBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin practice'**
+  String get rehabBegin;
+
+  /// No description provided for @rehabRepetitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Repetitions per task'**
+  String get rehabRepetitions;
+
+  /// No description provided for @rehabListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to example (TTS)'**
+  String get rehabListen;
+
+  /// No description provided for @rehabRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording'**
+  String get rehabRecord;
+
+  /// No description provided for @rehabStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish recording'**
+  String get rehabStopRecording;
+
+  /// No description provided for @rehabListenMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to my recording'**
+  String get rehabListenMine;
+
+  /// No description provided for @rehabStopAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop audio'**
+  String get rehabStopAudio;
+
+  /// No description provided for @rehabPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a break'**
+  String get rehabPause;
+
+  /// No description provided for @rehabPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice is paused'**
+  String get rehabPaused;
+
+  /// No description provided for @rehabNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next task'**
+  String get rehabNext;
+
+  /// No description provided for @rehabFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get rehabFinish;
+
+  /// No description provided for @rehabSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Next without recording'**
+  String get rehabSkip;
+
+  /// No description provided for @rehabNoMic.
+  ///
+  /// In en, this message translates to:
+  /// **'You can listen, follow along, or prepare a sentence. Tasks without recordings are not counted as recorded attempts.'**
+  String get rehabNoMic;
+
+  /// No description provided for @rehabSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice saved'**
+  String get rehabSaved;
+
+  /// No description provided for @rehabSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Please try saving again.'**
+  String get rehabSaveError;
+
+  /// No description provided for @rehabRetrySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry saving'**
+  String get rehabRetrySave;
+
+  /// No description provided for @rehabRecordError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start or save recording. Check your microphone or continue without recording.'**
+  String get rehabRecordError;
+
+  /// No description provided for @rehabAudioError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play audio. Check device volume and the file.'**
+  String get rehabAudioError;
+
+  /// No description provided for @rehabOptionalFatigue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiredness after practice (optional)'**
+  String get rehabOptionalFatigue;
+
+  /// No description provided for @rehabDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to today'**
+  String get rehabDone;
+
+  /// No description provided for @rehabRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent practice'**
+  String get rehabRecent;
+
+  /// No description provided for @rehabEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No practice yet. Start with a short session.'**
+  String get rehabEmpty;
+
+  /// No description provided for @rehabRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice records'**
+  String get rehabRecords;
+
+  /// No description provided for @rehabAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get rehabAll;
+
+  /// No description provided for @rehabCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose date'**
+  String get rehabCalendar;
+
+  /// No description provided for @rehabClearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'All dates'**
+  String get rehabClearDate;
+
+  /// No description provided for @rehabRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'My recordings'**
+  String get rehabRecordings;
+
+  /// No description provided for @rehabCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare the same words'**
+  String get rehabCompare;
+
+  /// No description provided for @rehabRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice these words again'**
+  String get rehabRepeat;
+
+  /// No description provided for @rehabReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference information'**
+  String get rehabReference;
+
+  /// No description provided for @rehabUnscored.
+  ///
+  /// In en, this message translates to:
+  /// **'These are recordings and activity records, not assessments of pronunciation accuracy or treatment outcomes.'**
+  String get rehabUnscored;
+
+  /// No description provided for @rehabDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice details'**
+  String get rehabDetails;
+
+  /// No description provided for @rehabTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to practice?'**
+  String get rehabTraining;
+
+  /// No description provided for @rehabArticulation.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear speech practice'**
+  String get rehabArticulation;
+
+  /// No description provided for @rehabArticulationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose consonants, syllables, or words to repeat.'**
+  String get rehabArticulationHint;
+
+  /// No description provided for @rehabSentences.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking in sentences'**
+  String get rehabSentences;
+
+  /// No description provided for @rehabSentencesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice short, long, or personal sentences.'**
+  String get rehabSentencesHint;
+
+  /// No description provided for @rehabEveryday.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyday speaking'**
+  String get rehabEveryday;
+
+  /// No description provided for @rehabEverydayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice requests, explanations, and phone calls.'**
+  String get rehabEverydayHint;
+
+  /// No description provided for @rehabVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable voice practice'**
+  String get rehabVoice;
+
+  /// No description provided for @rehabVoiceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a comfortable voice and speak through the end of a sentence.'**
+  String get rehabVoiceHint;
+
+  /// No description provided for @rehabPacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacing and pauses'**
+  String get rehabPacing;
+
+  /// No description provided for @rehabPacingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Break sentences into short phrases with comfortable pauses.'**
+  String get rehabPacingHint;
+
+  /// No description provided for @rehabWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional preparation'**
+  String get rehabWarmup;
+
+  /// No description provided for @rehabWarmupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore lip, tongue, and breathing guidance when needed.'**
+  String get rehabWarmupHint;
+
+  /// No description provided for @rehabConsonants.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a consonant'**
+  String get rehabConsonants;
+
+  /// No description provided for @rehabWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Speaking words'**
+  String get rehabWords;
+
+  /// No description provided for @rehabShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Short sentences'**
+  String get rehabShort;
+
+  /// No description provided for @rehabLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Long and personal sentences'**
+  String get rehabLong;
+
+  /// No description provided for @rehabFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free conversation (optional)'**
+  String get rehabFree;
+
+  /// No description provided for @rehabTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional voice tools'**
+  String get rehabTools;
+
+  /// No description provided for @rehabOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline content'**
+  String get rehabOffline;
+
+  /// No description provided for @rehabAccessibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get rehabAccessibility;
+
+  /// No description provided for @rehabManageRecordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage earlier recordings'**
+  String get rehabManageRecordings;
+
+  /// No description provided for @rehabManageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete and share earlier sentence recordings'**
+  String get rehabManageHint;
+
+  /// No description provided for @rehabLoadingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load records. Please try again.'**
+  String get rehabLoadingError;
+
+  /// No description provided for @rehabRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get rehabRetry;
+
+  /// No description provided for @rehabDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this session'**
+  String get rehabDelete;
+
+  /// No description provided for @rehabDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this session and its app-owned recordings?'**
+  String get rehabDeleteConfirm;
+
+  /// No description provided for @rehabCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get rehabCancel;
+
+  /// No description provided for @rehabPracticeAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice again'**
+  String get rehabPracticeAgain;
+
+  /// No description provided for @rehabRecordingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your voice without waiting for recognition or scores.'**
+  String get rehabRecordingOnly;
+
+  /// No description provided for @rehabPlanSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan will be used next time too.'**
+  String get rehabPlanSaved;
 }
 
 class _AppLocalizationsDelegate

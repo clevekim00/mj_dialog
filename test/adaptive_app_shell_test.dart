@@ -9,6 +9,41 @@ import 'package:speech_rehab/l10n/app_localizations.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  for (final language in ['ko', 'en']) {
+    testWidgets('360px navigation with 200% text in $language', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: Locale(language),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: const AdaptiveAppShell(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      await tester.tap(find.byType(NavigationDestination).at(3));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+        3,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('uses bottom navigation on compact windows', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -20,7 +55,11 @@ void main() {
 
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
-    expect(find.text('더보기'), findsOneWidget);
+    expect(find.byType(NavigationDestination), findsNWidgets(4));
+    await tester.tap(find.text('설정'));
+    await tester.pumpAndSettle();
+    expect(find.text('글자 크기'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('uses navigation rail and opens records on wide windows', (
@@ -40,8 +79,20 @@ void main() {
     await tester.tap(find.text('기록').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('훈련 달력 · 이력'), findsOneWidget);
-    expect(find.text('음성 분석 기록'), findsOneWidget);
+    expect(find.text('연습 기록'), findsOneWidget);
+    await tester.tap(find.text('자음'));
+    await tester.pumpAndSettle();
+    tester.view.physicalSize = const Size(390, 844);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+    expect(
+      tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '자음')).selected,
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
   });
 }
 
