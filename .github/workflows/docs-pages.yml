@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '**/*.md'
+      - 'assets/branding/app-icon.png'
       - 'tools/docs/**'
       - 'docs/user-materials/**'
       - 'docs/user-guide*.html'
@@ -24,6 +25,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+      - name: Verify generated README tab pages
+        run: |
+          python3 -m pip install markdown-it-py==4.2.0
+          python3 tools/docs/build_readme_page.py --check
       - name: Check bilingual document coverage and links
         run: python3 tools/docs/check_bilingual_docs.py
       - uses: actions/configure-pages@v5

@@ -4,8 +4,9 @@
   <img src="assets/branding/app-icon.png" width="128" height="128" alt="말이음 앱 아이콘">
 </p>
 
-| **[한국어](README.md) ✓** | [English](README.en.md) |
-| :---: | :---: |
+[📖 한국어 / English 탭으로 읽기](https://clevekim00.github.io/mj_dialog/readme.html)
+
+[한국어](README.md) · [English](README.en.md)
 
 [전체 문서](docs/README.md)
 

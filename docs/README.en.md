@@ -10,6 +10,7 @@ Dated reviews and early plans preserve the facts and proposals at the time; they
 
 | Document | 한국어 (default) | English |
 |---|---|---|
+| Project overview with language tabs | [한국어](https://clevekim00.github.io/mj_dialog/readme.html) | [English](https://clevekim00.github.io/mj_dialog/readme.en.html) |
 | About the app | [한국어](https://clevekim00.github.io/mj_dialog/promotion.html) | [English](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | User guide | [한국어](https://clevekim00.github.io/mj_dialog/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 | Earlier illustrated guide (2026-09-17) | [한국어](https://clevekim00.github.io/mj_dialog/archive/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/archive/user-guide.en.html) |

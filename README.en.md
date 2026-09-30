@@ -4,8 +4,9 @@
   <img src="assets/branding/app-icon.png" width="128" height="128" alt="SpeechBridge app icon">
 </p>
 
-| [한국어](README.md) | **[English](README.en.md) ✓** |
-| :---: | :---: |
+[📖 Read with Korean / English tabs](https://clevekim00.github.io/mj_dialog/readme.en.html)
+
+[한국어](README.md) · [English](README.en.md)
 
 [All documents](docs/README.en.md)
 

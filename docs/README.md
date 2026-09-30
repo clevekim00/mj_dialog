@@ -10,6 +10,7 @@
 
 | 문서 | 한국어 (기본) | English |
 |---|---|---|
+| 언어 탭으로 보는 프로젝트 소개 | [한국어](https://clevekim00.github.io/mj_dialog/readme.html) | [English](https://clevekim00.github.io/mj_dialog/readme.en.html) |
 | 홍보 문서 | [한국어](https://clevekim00.github.io/mj_dialog/promotion.html) | [English](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | 사용자 가이드 | [한국어](https://clevekim00.github.io/mj_dialog/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 | 이전 그림 가이드 (2026-09-17) | [한국어](https://clevekim00.github.io/mj_dialog/archive/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/archive/user-guide.en.html) |
