@@ -1,5 +1,7 @@
 # SpeechRehab 화면 구성 및 UI 개선 검토 자료
 
+[한국어](ui-screen-inventory.md) | [English](ui-screen-inventory.en.md) | [전체 문서](README.md)
+
 작성일: 2026-06-03
 
 ## 화면 수 요약

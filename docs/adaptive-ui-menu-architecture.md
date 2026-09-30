@@ -1,5 +1,7 @@
 # Speech Rehab 적응형 UI 및 메뉴 구조 설계서
 
+[한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) | [전체 문서](README.md)
+
 개정: 2026-09-25. 성인 후천성 마비말장애·자가훈련 중심으로 정체성을 확정했다. 1~6절은 **목표 설계**이며 현재 구현 완료를 뜻하지 않는다. 기능별 유지·축소 판단, 기록 모델, 단계별 인수 기준은 [통합 설계서 5절](../blueprint-acquired-dysarthria-daily-rehab.md#5-제품-정체성기능메뉴-재설계--2026-09-25)을 따른다. 7~10절은 기존 구강·호흡 하위 기능의 구현 기록이다.
 
 ## 1. 목적
@@ -241,31 +243,31 @@ AdaptiveAppShell
 
 #### 1. 오늘
 
-![현행 오늘 화면](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-25/01-home.png)
+![현행 오늘 화면](review-2026-09-25/01-home.png)
 
 위험: 좁은 사이드바에 텍스트 라벨이 보이지 않아 아이콘을 외워야 한다. 상단 세 아이콘은 이 실행의 AX 트리에 이름 없는 버튼으로 나타났다. 실제 VoiceOver 읽기는 후속 검증이 필요하다. 주요 버튼의 크기는 장점이며 화면 전체 색상 교체보다 정보 우선순위 수정이 먼저다.
 
 #### 2. 훈련
 
-![현행 훈련 화면](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-25/02-training.png)
+![현행 훈련 화면](review-2026-09-25/02-training.png)
 
 위험: 한국어 UI 안에 영어 안전 안내가 있고 회색 글씨가 작고 약하게 보인다. 언어와 대비를 개선하되 화면만으로 대비비·접근성 준수 여부를 확정하지 않는다. `혀 14개·입술 12개…`보다 어떤 말하기 목표에 도움이 되는 과제인지 설명한다.
 
 #### 3. 기록
 
-![현행 기록 화면](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-25/03-records.png)
+![현행 기록 화면](review-2026-09-25/03-records.png)
 
 위험: `평균 점수`가 무엇의 점수인지 메뉴에서 설명되지 않는다. 달력 표시는 소스상 실제 목록 화면과 다르다. `지난 연습`, `같은 말 다시 듣기`를 앞에 둔다. 구강 기록 카드는 첫 화면 아래로 이어지므로 전체 모양은 이 캡처의 검증 범위 밖이다.
 
 #### 4. 소통
 
-![현행 소통 화면](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-25/04-communication.png)
+![현행 소통 화면](review-2026-09-25/04-communication.png)
 
 위험: 사용자가 ‘생활 문장’과 ‘짧은 문장’의 차이를 추측해야 한다. 하나의 문장 콘텐츠를 준비→반복→상황 연습으로 연결한다. AI 대화는 발음 평가자가 아니라 연습 상대다.
 
 #### 5. 설정
 
-![현행 설정 화면](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-25/05-settings.png)
+![현행 설정 화면](review-2026-09-25/05-settings.png)
 
 위험: 목표 설명은 하루 ‘횟수’를 말하지만 연결되는 온보딩 소스는 하루 ‘분’을 선택한다. 실제 조정 가능한 값으로 설명을 맞춘다. AX와 소스에 있는 `접근성 원칙` 안내는 글자 확대 등 실제 설정 기능이 구현되어 있다는 증거가 아니다.
 

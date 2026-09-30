@@ -1,5 +1,7 @@
 # Speech Rehab UI 디자인 검토 및 개선 제안
 
+[한국어](ui-improvement-review-2026-06-04.md) | [English](ui-improvement-review-2026-06-04.en.md) | [전체 문서](README.md)
+
 작성일: 2026-06-04  
 대상: 모바일 390x844 기준 주요 화면 캡처와 Flutter UI 코드
 

@@ -1,5 +1,7 @@
 # 혀운동 메뉴 배치 검토
 
+[한국어](tongue-exercise-menu-review-2026-06-05.md) | [English](tongue-exercise-menu-review-2026-06-05.en.md) | [전체 문서](README.md)
+
 작성일: 2026-06-05  
 대상: Speech Rehab `오늘의 연습` 홈, 연습 화면, 대시보드, 히스토리
 

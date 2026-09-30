@@ -1,5 +1,7 @@
 # Voice Tools 기능 분석 및 Speech Rehab 통합 계획
 
+[한국어](voice-tools-feature-analysis-and-integration-plan.md) | [English](voice-tools-feature-analysis-and-integration-plan.en.md) | [전체 문서](README.md)
+
 작성일: 2026-08-24  
 분석 대상: [Voice Tools — App Store](https://apps.apple.com/us/app/voice-tools/id1447495900)  
 개발사: DevExtras Ltd

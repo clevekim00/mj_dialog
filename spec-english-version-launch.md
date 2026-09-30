@@ -1,12 +1,14 @@
-# Spec: 영어 버전 출시
+# 영어 버전 출시 명세
 
-## Overview
+[한국어](spec-english-version-launch.md) | [English](spec-english-version-launch.en.md) | [전체 문서](docs/README.md)
+
+## 개요
 
 Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확장한다. 앱은 첫 설치 시 OS 언어를 따르고, 사용자가 설정에서 `시스템 설정`, `한국어`, `English (US)` 중 하나를 선택해 덮어쓸 수 있다. 선택한 언어는 화면 번역뿐 아니라 STT, TTS, 훈련 콘텐츠, AI 프롬프트, 발음 분석 모델에 동일하게 적용한다.
 
 1차 영어판의 대상은 미국 영어를 사용하는 성인 후천성 마비말장애 환자와 보호자다. 앱은 치료나 진단을 대체하지 않는 반복 훈련 보조 도구로 유지한다.
 
-## Goals
+## 목표
 
 - 하나의 iOS·Android·macOS 앱과 사용자 기록 체계를 유지한다.
 - OS 언어를 자동 적용하되 사용자가 앱 안에서 언제든 변경할 수 있게 한다.
@@ -15,9 +17,9 @@ Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확�
 - 언어별 모델과 콘텐츠 버전을 기록해 서로 다른 언어의 점수와 기준선을 섞지 않는다.
 - 영어권 스토어 심사, 개인정보 고지, 접근성 및 임상 문구를 출시 수준으로 준비한다.
 
-## Scope
+## 범위
 
-### In
+### 포함 범위
 
 - `ko-KR`, `en-US` 앱 현지화
 - OS 언어 자동 감지와 앱 내 언어 선택
@@ -29,7 +31,7 @@ Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확�
 - 언어별 기록, 기준선, 모델 버전 관리
 - 미국 앱스토어·플레이스토어 출시 준비
 
-### Out
+### 제외 범위
 
 - 1차 출시에서 영국·호주·인도 영어의 별도 채점 기준 제공
 - 임상 진단, 장애 등급 판정 또는 치료 효과 보장
@@ -37,7 +39,7 @@ Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확�
 - MFA 정렬 결과만으로 발음 정확도 점수를 생성하는 기능
 - 아동 조음장애 전용 콘텐츠와 평가 기준
 
-## Product Decisions
+## 제품 결정
 
 | 항목 | 확정 방향 |
 | --- | --- |
@@ -54,7 +56,7 @@ Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확�
 | 훈련 리소스 | 필수 core pack과 선택 media pack을 분리하고 설치 완료된 버전만 원자적으로 활성화 |
 | 원격 언어 추가 | catalog가 앱 바이너리의 locale·폰트·TTS·STT·분석 capability와 호환될 때만 노출 |
 
-## Language Resolution
+## 언어 결정 규칙
 
 언어 결정 우선순위는 다음과 같다.
 
@@ -85,7 +87,7 @@ lib/l10n/l10n.yaml
 
 화면 코드에 직접 들어간 한국어 문자열은 안정적인 메시지 키로 옮긴다. 운동명, 콘텐츠 제목, 오류 문구, 안전 고지, 접근성 레이블, 알림 문구도 번역 대상에 포함한다. Flutter의 생성형 ARB는 bootstrap locale과 framework fallback을 담당하고, 제품 화면의 변경 가능한 문구는 runtime string repository가 제공한다. 원격 catalog는 바이너리가 선언한 `clientSupportedLocales` 범위 안에서 언어를 활성화하므로 native 권한 문구, font shaping, Flutter framework locale처럼 앱 재빌드가 필요한 항목을 우회하지 않는다.
 
-## Settings UX
+## 설정 사용 흐름
 
 설정에 `Language / 언어`와 `다운로드 리소스` 메뉴를 둔다. 목록은 하드코딩하지 않고 bootstrap 또는 원격 catalog에서 읽는다.
 
@@ -106,7 +108,7 @@ Language / 언어
 - 각 언어는 `사용 가능`, `다운로드 필요`, `다운로드 중`, `설치됨`, `업데이트 가능`, `현재 앱과 호환되지 않음`, `일시 중단` 상태를 가진다.
 - 리소스 화면에서 자동 업데이트, Wi-Fi에서만 다운로드, 일시정지·재개·재시도, 언어별 사용 용량, 선택 팩 삭제를 제공한다.
 
-## Shared Language Context
+## 공통 언어 설정
 
 앱에는 단일 `AppLanguageController`를 둔다. 각 기능이 OS locale을 직접 읽거나 `ko-KR`을 하드코딩하지 않게 한다.
 
@@ -137,7 +139,7 @@ AppLanguageController
 
 플랫폼에서 선택한 STT 또는 TTS locale을 지원하지 않으면 해당 기능만 `unavailable`로 표시하고 다른 시각 훈련과 녹음 기능은 계속 제공한다. 자동으로 다른 언어 음성을 사용하는 fallback은 허용하지 않는다.
 
-## Analysis API Contract
+## 분석 API 계약
 
 기존 `POST /v1/analysis/jobs` multipart form에 필수 `language`를 추가한다.
 
@@ -178,7 +180,7 @@ baseline_score      number, optional
 - 작업 생성 시 해석한 `language`, model revision, dictionary revision을 job에 고정해 처리 중 설정 변경의 영향을 받지 않게 한다.
 - 에러 코드는 언어 독립적인 식별자로 반환하고, 앱에서 현지화된 문구로 변환한다.
 
-## Server Architecture
+## 서버 구조
 
 단일 전역 MFA 백엔드 대신 언어별 registry를 둔다.
 
@@ -215,11 +217,11 @@ MFA_EN_US_ACOUSTIC_MODEL=english_mfa
 
 한 언어 모델만 실패하면 서버 전체를 내리지 않고 해당 언어 분석만 unavailable 처리한다. 각 요청은 별도 MFA temporary directory를 유지한다.
 
-## English Phoneme and Content Design
+## 영어 음소와 콘텐츠 설계
 
 영어 콘텐츠는 한국어 콘텐츠를 번역하지 않고 새로 제작한다.
 
-### Target inventory
+### 목표 음소 목록
 
 - 파열음: /p, b, t, d, k, g/
 - 마찰음: /f, v, θ, ð, s, z, ʃ, ʒ, h/
@@ -230,7 +232,7 @@ MFA_EN_US_ACOUSTIC_MODEL=english_mfa
 
 각 목표는 철자와 음소를 분리한다. 예를 들어 `th`는 /θ/와 /ð/를 별도 목표로 관리하고, 같은 철자라도 문맥에 따라 phone이 달라질 수 있음을 콘텐츠 데이터에 명시한다.
 
-### Content pack
+### 콘텐츠 팩
 
 ```text
 assets/pronunciation/content/en_us_consonant_core.json
@@ -255,7 +257,7 @@ clinicalReview
 
 문장은 성인에게 자연스럽고 유아용으로 보이지 않게 작성한다. 미국 영어 원어민 언어치료사(SLP)가 음소 위치, 어휘 난이도, 기능성, 문화적 적합성을 검수한다.
 
-## Audio, STT and TTS
+## 오디오·STT·TTS
 
 - STT는 선택된 `resolvedLanguage`로 인스턴스를 생성한다.
 - iOS의 현재 `SFSpeechRecognizer(locale: ko_KR)` 고정값과 native TTS의 `ko-KR` 고정값을 제거한다.
@@ -266,7 +268,7 @@ clinicalReview
 
 Apple Speech는 recognizer 생성 시 locale을 지정하고 지원 locale 여부와 일시적인 서비스 가용성을 따로 확인해야 하므로, 설정 목록과 실제 기기 기능 점검을 구분한다.
 
-## Clinical and Scoring Policy
+## 임상 및 점수 정책
 
 영어 MFA는 transcript와 음성의 단어·음소 시간 정렬에 사용한다. MFA 결과 자체에는 발음 정확도 점수가 없으므로 `practiceScore`와 `gop`는 영어에서도 nullable을 유지한다.
 
@@ -281,7 +283,7 @@ Apple Speech는 recognizer 생성 시 locale을 지정하고 지원 locale 여�
 
 비원어민 영어와 지역 억양을 오류로 단정하지 않는다. 초기 제품 문구에는 “accent 평가가 아닌 목표 발화 반복 훈련”임을 명시한다.
 
-## Data and History Migration
+## 데이터 및 기록 이전
 
 기록 모델에 다음 필드를 추가한다.
 
@@ -300,7 +302,7 @@ ttsVoiceId (optional)
 - 통합 기록 화면에서 언어 필터를 제공한다.
 - 한국어와 영어의 target id가 충돌하지 않도록 `ko-KR:onset:k`, `en-US:initial:θ`와 같은 namespace를 사용한다.
 
-## Store and Compliance Preparation
+## 스토어 및 정책 준비
 
 - 앱 이름, 부제, 설명, 키워드, 스크린샷, 미리보기 영상, 개인정보 처리방침을 영어로 준비한다.
 - 마이크, 음성 인식, 카메라 권한 설명을 영어로 현지화한다.
@@ -311,7 +313,7 @@ ttsVoiceId (optional)
 - 미국 영어 VoiceOver/TalkBack, 동적 글자 크기, 색 대비, 큰 터치 영역을 검증한다.
 - 영어 지원 이메일, FAQ, 분석 실패 및 데이터 삭제 절차를 준비한다.
 
-## Failure Modes
+## 실패 상황과 처리
 
 | 상황 | 처리 |
 | --- | --- |
@@ -326,7 +328,7 @@ ttsVoiceId (optional)
 | 억양·장애로 정렬 신뢰도 낮음 | 점수 비노출, 다시 녹음 및 전문가 상담 안내 |
 | CDN 실패 | 해당 언어의 내장 core pack 사용 |
 
-## Test Strategy
+## 테스트 전략
 
 ### Flutter
 
@@ -339,7 +341,7 @@ ttsVoiceId (optional)
 - 기록과 기준선이 언어별로 분리되는 테스트
 - 주요 화면의 영어 overflow, 큰 글자, 접근성 semantics 골든 테스트
 
-### Server
+### 서버
 
 - `language` 누락·미지원 값 422 테스트
 - `ko-KR`, `en-US` backend routing 테스트
@@ -350,7 +352,7 @@ ttsVoiceId (optional)
 - 응답의 language·modelVersion·disclaimer 계약 테스트
 - OOV, timeout, 모델 미설치, 낮은 신호 품질 테스트
 
-### Release QA
+### 출시 품질 검증
 
 - iOS·Android 실제 기기에서 `ko-KR`, `en-US` STT/TTS 확인
 - 앱 실행 중 OS 언어 변경과 설정 덮어쓰기 확인
@@ -358,7 +360,7 @@ ttsVoiceId (optional)
 - SLP가 영어 콘텐츠와 안전 문구를 승인하는 release gate
 - 영어 모델 실음성 alignment 샘플의 수동 TextGrid 대조
 
-## Delivery Plan
+## 단계별 일정
 
 ### Phase 0 — 계약 고정, 1주
 
@@ -407,7 +409,7 @@ ttsVoiceId (optional)
 
 예상 MVP 기간은 병렬 작업 기준 9~12주다. 영어 임상 점수 모델 개발과 검증은 별도 후속 트랙으로 분리한다.
 
-## Implementation Status
+## 구현 상태
 
 2026-08-26 기준으로 다국어 실행 기반을 구현했다.
 
@@ -427,7 +429,7 @@ ttsVoiceId (optional)
 
 현재 `ConsonantContentRepository`는 언어별 JSON manifest 다운로드, SHA-256 검증, 임시 파일에서 `current.json`으로의 원자적 교체를 지원한다. 그러나 자음 콘텐츠 한 종류에 한정되어 있고 catalog 서명, pack dependency, 이전 버전 rollback, 저장 공간 정책, UI string pack, 대형 미디어의 background resume를 제공하지 않는다. 아래 리소스 팩 플랫폼은 이 구현을 일반화하는 후속 설계다.
 
-## Remote Resource Pack Platform
+## 원격 리소스 팩 플랫폼
 
 ### 목표와 적용 경계
 
@@ -679,7 +681,7 @@ Application Support/resource_packs/
 
 첫 구현에서는 `ko-KR`, `en-US`만 catalog에 넣어 원격 활성화·순서·문구·팩 갱신을 검증한다. 제3언어는 runtime UI 번역만 준비됐다는 이유로 출시하지 않고 TTS, STT, 분석, 임상 콘텐츠 capability를 각각 명시적으로 승인한다.
 
-## Launch Metrics
+## 출시 관찰 지표
 
 - 언어 해석·전환 오류율
 - 영어 콘텐츠 팩 다운로드 및 fallback 성공률
@@ -691,14 +693,14 @@ Application Support/resource_packs/
 
 정확도 점수를 제공하기 전에는 alignment 성공률을 발음 개선 지표로 사용하지 않는다.
 
-## Tradeoffs
+## 설계상 장단점
 
 - 단일 앱은 코드와 기록을 공유할 수 있지만 locale 경계가 불명확하면 언어가 섞인다. 따라서 모든 콘텐츠와 분석 기록에 locale을 필수 메타데이터로 둔다.
 - OS 자동 선택은 진입이 쉽지만 기존 사용자의 언어가 바뀔 수 있다. 신규 설치와 기존 설치의 초기 정책을 분리한다.
 - 영어 MFA를 빠르게 적용할 수 있지만 임상 점수로 사용할 수 없다. 1차 출시는 정렬·구간 피드백에 한정한다.
 - 영어 전체 변종을 한 번에 지원하면 콘텐츠와 검증 범위가 커진다. `en-US`를 먼저 검증하고 다른 변종은 별도 locale과 모델 계약으로 추가한다.
 
-## Future Extensions
+## 향후 확장
 
 - `en-GB`, `en-AU` 콘텐츠와 dictionary 추가
 - 비원어민 영어 훈련 모드
@@ -707,14 +709,14 @@ Application Support/resource_packs/
 - 사용자 선호 TTS voice와 속도 프로필
 - 다국어 CDN manifest와 점진적 콘텐츠 배포
 
-## Open Questions
+## 남은 결정
 
 - 영어판 제품명과 스토어 브랜드를 `Speech Rehab`으로 유지할지
 - 녹음 원본과 TextGrid를 서버에 보관할지, 분석 직후 삭제할지
 - 미국 내 베타 테스트를 함께할 SLP와 대상 사용자 모집 경로
 - 영어 임상 점수 모델을 자체 개발할지 외부 검증 모델과 연동할지
 
-## References
+## 참고 자료
 
 - Flutter internationalization: https://docs.flutter.dev/ui/internationalization
 - Apple Speech locale: https://developer.apple.com/documentation/speech/sfspeechrecognizer

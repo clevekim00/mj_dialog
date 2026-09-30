@@ -1,5 +1,7 @@
 # 구강·교호·호흡 훈련 영상 제작 및 Higgsfield 프롬프트 명세
 
+[한국어](training-video-production-plan.md) | [English](training-video-production-plan.en.md) | [전체 문서](../README.md)
+
 > 2026-09-30 보완: 현재 구현과 영상 검수 조건·파형·발성 놀이/MPT 구분은 [추가 설계 및 구현서](../implementation-2026-09-30/README.md)를 우선 참고한다. 아래 내용은 당시 계획을 보존한 것이다.
 
 작성일: 2026-08-25

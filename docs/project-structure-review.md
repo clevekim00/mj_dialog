@@ -1,5 +1,7 @@
 # Speech Rehab 프로젝트 구조 분석 및 개선 검토
 
+[한국어](project-structure-review.md) | [English](project-structure-review.en.md) | [전체 문서](README.md)
+
 작성일: 2026-04-29
 
 ## 1. 프로젝트 요약

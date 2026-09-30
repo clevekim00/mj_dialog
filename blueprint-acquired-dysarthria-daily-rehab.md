@@ -1,15 +1,17 @@
-# Acquired Dysarthria Daily Rehabilitation Codex Automation Blueprint
-> Created: 2026-08-24
-> Purpose: Codex implementation blueprint
-> Product identity review: 2026-09-25 · 성인 후천성 마비말장애·자가훈련 범위 사용자 확인
+# 후천성 마비말장애 일상 재활 Codex 자동화 설계서
+
+[한국어](blueprint-acquired-dysarthria-daily-rehab.md) | [English](blueprint-acquired-dysarthria-daily-rehab.en.md) | [전체 문서](docs/README.md)
+> 작성일: 2026-08-24
+> 목적: Codex 구현 설계서
+> 제품 정체성 검토: 2026-09-25 · 성인 후천성 마비말장애·자가훈련 범위 사용자 확인
 > 구현 상태와 개선 설계는 5절을 참고한다. 아래 15분/8분·하루 2회는 기존 제품 설계 예시이며 모든 환자에게 적용하는 임상 권장량이 아니다. 최초 사용에는 짧은 계획을 제안하고 실제 시간·횟수는 사용자가 조정한다.
 
-## 0. Goals and Deliverables
+## 0. 목표와 산출물
 
-### Primary Goal
+### 주요 목표
 현재 Speech Rehab 앱을 성인 후천성 마비말장애 사용자가 집에서 자신에게 맞는 시간과 횟수로 반복할 수 있는 자가훈련 서비스로 재편한다. 앱은 사용자가 오늘 할 훈련을 즉시 시작하고, 입술·혀 운동을 실제 발음으로 연결하며, 호흡·발성·조음·운율·기능적 말하기 중 필요한 과제를 연결해 연습하고, 달력에서 누적 훈련 내역을 확인하도록 지원한다.
 
-### Success Definition
+### 성공 기준
 - 사용자는 홈에서 2번 이내의 조작으로 선택한 루틴을 시작할 수 있다.
 - 하루 완료 횟수 `N`은 사용자가 원할 때 1~4회 범위에서 설정한다. 횟수 목표를 강제하거나 보편적 권장량으로 표시하지 않는다.
 - 같은 날 여러 세션이 각각 저장되고 달력의 일별 횟수, 총 시간, 완료 영역, 피로도 변화로 집계된다.
@@ -18,7 +20,7 @@
 - 음성 점수는 진단값이나 치료 효과를 단정하는 수치가 아니라 동일 사용자 안에서의 연습 참고값으로 표시된다.
 - 기존 혀운동, 얼굴운동, 호흡훈련, 발음 연습, 녹음, 피로도 및 이력 기능을 재사용한다.
 
-### Out of Scope
+### 제외 범위
 - 마비말장애의 진단, 유형 분류 또는 중증도 판정
 - 언어재활사 처방을 대체하는 개인별 의료 치료 계획
 - 삼킴 재활, 음식 섭취 훈련, 흡인 위험 평가
@@ -27,9 +29,9 @@
 - 급성 신경학적 변화나 호흡 응급상황의 원격 판정
 - 보호자·치료사용 포털과 원격 처방 기능의 MVP 포함
 
-## 1. Working Context
+## 1. 작업 맥락
 
-### Background
+### 배경
 현재 앱은 Flutter와 Riverpod을 기반으로 하며 혀운동 루틴, 얼굴운동, 호흡훈련, 단어·문장·자유 발화, STT/TTS, 녹음 재생, 입모양 영상, 피로도, 연습 이력과 대시보드를 이미 제공한다. 그러나 운동별 화면과 이력 저장 방식이 분리되어 있고, 사용자가 매일 수행할 하나의 처방형 루틴과 월간 달력 집계가 없다. 호흡훈련 화면에는 입·입술·혀·볼 동작이 혼합되어 있어 명칭과 실제 콘텐츠의 정합성도 개선해야 한다.
 
 임상 설계 근거는 다음과 같다.
@@ -42,15 +44,15 @@
 - 비진행성 후천성 마비말장애 치료 문헌은 개선 가능성을 보여주지만 연구 이질성과 근거 제한이 있으므로 특정 운동의 보편적 효과를 단정하지 않는다. [Systematic review: non-progressive dysarthria](https://pubmed.ncbi.nlm.nih.gov/30286661/)
 - 비말하기 구강운동이 말하기 결과를 개선한다는 근거는 제한적이므로 입술·혀 동작은 준비운동으로 짧게 사용하고 즉시 음절·단어·문장 발화로 전이한다. [ASHA evidence review on nonspeech oral motor exercises](https://pubs.asha.org/doi/10.1044/1058-0360%282009/09-0006%29)
 
-### Objective
+### 목적
 Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획` 중심 정보구조로 통합하고, 사용자의 원인 질환과 어려운 말하기 영역을 진단하지 않는 범위에서 선택받아 적절한 훈련 비중을 구성하며, 통합 세션 기록과 달력 통계를 생성하는 구조를 설계·검증해야 한다.
 
-### Scope
-- Included: 성인 후천성 마비말장애, 자가훈련, 시간 조절 루틴, 선택적 일일 목표 1~4회, 반복 세션, 입술·혀 준비운동, 호흡-발성, 발음·조음, 운율·기능적 문장, 피로도, 중단 사유, 달력 및 일별 상세, 로컬 우선 저장, 접근성, 안전 고지
-- Excluded: 진단·처방·삼킴치료·기기 기반 호흡근 강화·치료사 포털·원격 모니터링·임상 프로그램 복제
+### 범위
+- 포함: 성인 후천성 마비말장애, 자가훈련, 시간 조절 루틴, 선택적 일일 목표 1~4회, 반복 세션, 입술·혀 준비운동, 호흡-발성, 발음·조음, 운율·기능적 문장, 피로도, 중단 사유, 달력 및 일별 상세, 로컬 우선 저장, 접근성, 안전 고지
+- 제외: 진단·처방·삼킴치료·기기 기반 호흡근 강화·치료사 포털·원격 모니터링·임상 프로그램 복제
 
-### Inputs
-| Item | Format | Source | Notes |
+### 입력
+| 항목 | 형식 | 출처 | 참고 |
 |---|---|---|---|
 | 재활 프로필 | local JSON | 사용자 온보딩 | 원인 질환은 선택 사항, 진단값으로 사용하지 않음 |
 | 일일 목표 횟수 | integer 1~4 | 사용자 설정 | 선택 사항, 개인별 조정 |
@@ -60,8 +62,8 @@ Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획
 | 세션 이벤트 | structured JSON | 훈련 플레이어 | 시작, 일시정지, 건너뜀, 중단, 완료 |
 | 기존 이력 | SharedPreferences JSON | 앱 서비스 | 마이그레이션 후 통합 조회 |
 
-### Outputs
-| Item | Format | Destination | Notes |
+### 출력
+| 항목 | 형식 | 대상 | 참고 |
 |---|---|---|---|
 | 오늘의 루틴 | runtime model | 홈/루틴 플레이어 | 선택한 시간 목표, 피로도에 따라 축소 가능 |
 | 통합 훈련 세션 | JSON | 로컬 저장소 | 한 날짜에 여러 레코드 허용 |
@@ -70,7 +72,7 @@ Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획
 | 주간 요약 | derived JSON/UI | 홈·대시보드 | 목표 달성일, 총 세션, 총 시간, 연속일 |
 | 안전 이벤트 | local log | 세션 이력 | 개인 건강정보 최소화, 외부 전송 없음 |
 
-### Constraints
+### 제약 조건
 - 의료 안전: 앱은 보조 도구이며 진단·치료 대체 표현을 금지한다.
 - 개인화: 원인 질환만으로 루틴을 자동 처방하지 않고 사용자가 선택한 어려움과 피로도를 활용한다.
 - 발성 안전: 통증, 쉰목소리 악화, 목 조임이 있으면 고강도 발성이나 큰 소리를 유도하지 않는다.
@@ -81,8 +83,8 @@ Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획
 - 성능: 오프라인에서도 루틴, 타이머, 기록, 달력 열람이 가능해야 한다.
 - 근거 관리: 콘텐츠마다 `clinicalReviewVersion`, `reviewedAt`, `sourceRefs`, `contraindications`를 둔다.
 
-### Terms
-| Term | Definition |
+### 용어
+| 용어 | 정의 |
 |---|---|
 | 후천성 마비말장애 | 뇌졸중, 외상성 뇌손상, 파킨슨병 등 후천적 신경학적 원인으로 말운동 실행이 어려워진 상태 |
 | 세션 | 사용자가 시작한 한 번의 훈련 기록. 완료·부분완료·중단을 모두 포함 |
@@ -92,9 +94,9 @@ Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획
 | 명료 발화 | 평소보다 조음 위치를 분명히 하고 편안한 속도로 말하는 전략 |
 | 통합 세션 이력 | 운동 종류에 관계없이 동일 스키마로 저장되는 사용자 훈련 기록 |
 
-## 2. Workflow Definition
+## 2. 작업 흐름 정의
 
-### End-to-End Flow
+### 전체 흐름
 `[프로필/안전 확인] -> [오늘 루틴 구성] -> [선택한 계획 실행] -> [세션 후 상태 확인] -> [통합 기록 저장] -> [달력/주간 요약]`
 
 15분을 선택한 경우의 구성 예시 — 모든 영역을 매 세션 강제하지 않는다:
@@ -110,196 +112,196 @@ Codex 구현 워크플로는 현재 기능을 `오늘의 선택된 연습 계획
 
 피로도가 높거나 당일 추가 세션이면 더 짧은 계획 또는 휴식을 제안하되 강제하지 않는다. 8분 경량안 역시 선택 가능한 예시다. 사용자는 하루 N회 목표를 넘겨 추가 세션을 시작할 수 있지만, 연속 세션 사이 휴식을 안내한다.
 
-### LLM vs Code Boundary
-| LLM handles | Code handles |
+### LLM과 코드의 책임 구분
+| LLM의 책임 | 코드의 책임 |
 |---|---|
 | 사용자가 선택한 어려움에 맞는 쉬운 표현의 피드백 생성 | 타이머, 루틴 시간 합산, 상태 전이, 저장, 달력 집계 |
 | STT 결과에서 발화 누락·속도·쉼에 대한 비진단적 설명 | 음량·발화시간 등 객관값 계산과 임계값 검증 |
 | 콘텐츠 누락·표현 위험성의 임상 검토 보조 | 승인된 콘텐츠만 배포하고 버전·출처 고정 |
 | 생활 문장 난이도와 변형 제안 | 개인정보 삭제, 마이그레이션, 중복 방지, 테스트 |
 
-#### Step 01: Profile and Safety Gate
-1) Step Goal:
+#### 1단계: 프로필 및 안전 확인
+1) 단계 목표:
 성인 후천성 마비말장애 자가훈련에 필요한 최소 프로필과 안전 상태를 확인한다.
 
-2) Input / Output:
-- Input: 기존 `RehabProfile`, 일일 목표 N, 시작 전 피로도, 위험 증상 응답
-- Output: 안전 통과 여부와 `RehabTrainingProfile`
+2) 입력 / 출력:
+- 입력: 기존 `RehabProfile`, 일일 목표 N, 시작 전 피로도, 위험 증상 응답
+- 출력: 안전 통과 여부와 `RehabTrainingProfile`
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 사용자가 자유문으로 적은 목표를 호흡·발성·조음·속도·기능적 말하기 범주로 제안하되 진단하지 않는다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 필수 동의, 성인 여부, N 범위, 위험 증상, 프로필 스키마를 검증한다.
 
-5) Success Criteria:
+5) 성공 기준:
 안전 고지가 수락되고 위험 증상이 없으며 프로필이 유효하다.
 
-6) Validation Method:
+6) 검증 방법:
 JSON schema, 경계값 테스트, 위험 증상별 UI 차단 테스트, 사용자 확인.
 
-7) Failure Handling:
+7) 실패 처리:
 위험 증상은 세션 시작을 차단하고 전문가·응급 안내를 표시한다. 형식 오류는 1회 자동 복구 후 `NEEDS_USER_INPUT`으로 이동한다.
 
-8) Skills / Scripts:
-- Skill: `dysarthria-content-safety` (구현 시 생성)
-- Script: `scripts/validate_rehab_profile.dart`
+8) 스킬 / 스크립트:
+- 스킬: `dysarthria-content-safety` (구현 시 생성)
+- 스크립트: `scripts/validate_rehab_profile.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step01_rehab_profile.json`
 
-#### Step 02: Daily Routine Composition
-1) Step Goal:
+#### 2단계: 오늘 루틴 구성
+1) 단계 목표:
 사용자 목표, 최근 어려움, 피로도와 당일 세션 수를 반영해 선택한 시간과 과제에 맞는 루틴을 구성한다.
 
-2) Input / Output:
-- Input: 프로필, 승인된 운동 라이브러리, 최근 7일 이력
-- Output: 순서와 시간이 고정된 `DailyRoutinePlan`
+2) 입력 / 출력:
+- 입력: 프로필, 승인된 운동 라이브러리, 최근 7일 이력
+- 출력: 순서와 시간이 고정된 `DailyRoutinePlan`
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 생활 문장 후보와 쉬운 설명을 제안하고 반복 피로를 줄이기 위한 콘텐츠 변형을 추천한다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 총 시간, 단계별 최대 시간, 선택된 목표 영역 포함, 금기 태그, 콘텐츠 버전을 결정적으로 검증한다.
 
-5) Success Criteria:
+5) 성공 기준:
 계획의 예상 시간은 과제별 실제 시간 합계와 일치하며, 선택 목표에 필요한 말하기 과제와 마무리를 포함한다. 15분 예시를 선택한 경우 14~16분을 계획 검증 범위로 사용한다.
 
-6) Validation Method:
+6) 검증 방법:
 규칙 기반 루틴 validator와 golden fixture 테스트를 실행한다.
 
-7) Failure Handling:
+7) 실패 처리:
 개인화 콘텐츠가 부족하면 임상 승인 기본 루틴으로 대체한다. 승인 콘텐츠 자체가 없으면 실행을 중단한다.
 
-8) Skills / Scripts:
-- Skill: `dysarthria-routine-planner` (구현 시 생성)
-- Script: `scripts/validate_daily_routine.dart`
+8) 스킬 / 스크립트:
+- 스킬: `dysarthria-routine-planner` (구현 시 생성)
+- 스크립트: `scripts/validate_daily_routine.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step02_daily_routine.json`
 
-#### Step 03: Guided Training Session
-1) Step Goal:
+#### 3단계: 안내형 훈련 세션
+1) 단계 목표:
 큰 화면, 음성·시각 단서와 단계형 타이머로 루틴을 안전하게 실행한다.
 
-2) Input / Output:
-- Input: `DailyRoutinePlan`, 마이크 권한, 사용자 제어 이벤트
-- Output: 단계별 수행 이벤트와 부분 결과
+2) 입력 / 출력:
+- 입력: `DailyRoutinePlan`, 마이크 권한, 사용자 제어 이벤트
+- 출력: 단계별 수행 이벤트와 부분 결과
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 승인된 범위 안에서 짧고 비판적이지 않은 수행 피드백을 생성한다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 타이머, 일시정지, 재개, 건너뜀, 중단, TTS, 녹음, STT, 시각 애니메이션을 처리한다.
 
-5) Success Criteria:
+5) 성공 기준:
 사용자가 언제든 멈출 수 있고, 앱 백그라운드 전환 후 시간과 상태가 일관되며, 모든 이벤트가 기록된다.
 
-6) Validation Method:
+6) 검증 방법:
 Riverpod 상태 전이 테스트, 타이머 fake-clock 테스트, 권한 거부 및 앱 재개 테스트, 접근성 점검.
 
-7) Failure Handling:
+7) 실패 처리:
 STT나 AI 실패 시 타이머와 훈련은 계속하며 자가평가로 대체한다. 녹음 실패는 무음 모드로 계속한다. 안전 중단은 즉시 세션을 종료한다.
 
-8) Skills / Scripts:
-- Skill: `dysarthria-session-coach` (구현 시 생성)
-- Script: `scripts/check_session_state_machine.dart`
+8) 스킬 / 스크립트:
+- 스킬: `dysarthria-session-coach` (구현 시 생성)
+- 스크립트: `scripts/check_session_state_machine.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step03_session_events.json`
 
-#### Step 04: Session Completion and Storage
-1) Step Goal:
+#### 4단계: 세션 완료와 저장
+1) 단계 목표:
 완료·부분완료·중단을 모두 손실 없이 통합 세션 이력으로 저장한다.
 
-2) Input / Output:
-- Input: 세션 이벤트, 전후 피로도, 자가평가, 선택적 음성 지표
-- Output: `RehabSession` 레코드
+2) 입력 / 출력:
+- 입력: 세션 이벤트, 전후 피로도, 자가평가, 선택적 음성 지표
+- 출력: `RehabSession` 레코드
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 결과를 치료 효과로 단정하지 않는 1~2문장 요약을 생성한다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 세션 ID, 날짜, 지속시간, 단계 완료율, 점수 범위, 녹음 경로, 콘텐츠 버전과 중단 사유를 저장한다.
 
-5) Success Criteria:
+5) 성공 기준:
 동일 날짜의 여러 세션이 덮어써지지 않고 앱 재실행 후 동일하게 복원된다.
 
-6) Validation Method:
+6) 검증 방법:
 직렬화 round-trip, 중복 ID, 시간대, 자정 경계, 기존 이력 마이그레이션 테스트.
 
-7) Failure Handling:
+7) 실패 처리:
 저장 실패 시 메모리 큐에 1회 유지하고 재시도한다. 지속 실패 시 사용자에게 알리고 녹음 삭제 여부를 선택하게 한다.
 
-8) Skills / Scripts:
-- Skill: none
-- Script: `scripts/migrate_rehab_history.dart`
+8) 스킬 / 스크립트:
+- 스킬: none
+- 스크립트: `scripts/migrate_rehab_history.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step04_rehab_session.json`
 
-#### Step 05: Calendar and Daily Detail
-1) Step Goal:
+#### 5단계: 달력과 날짜별 상세
+1) 단계 목표:
 월간 달력에서 훈련 여부와 횟수를 확인하고 날짜별 세션 상세로 이동하게 한다.
 
-2) Input / Output:
-- Input: 통합 세션 목록, 일일 목표 N, 선택 월/날짜
-- Output: `CalendarDaySummary`와 날짜별 세션 목록
+2) 입력 / 출력:
+- 입력: 통합 세션 목록, 일일 목표 N, 선택 월/날짜
+- 출력: `CalendarDaySummary`와 날짜별 세션 목록
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 주간 경향을 쉬운 말로 요약하되 인과나 임상적 개선을 주장하지 않는다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 로컬 날짜 기준 횟수·분·영역·완료율을 집계하고 달성 상태를 계산한다.
 
-5) Success Criteria:
+5) 성공 기준:
 달력 한 칸에 0회, 진행 중, 목표 달성, 목표 초과가 구분되고 날짜 선택 시 모든 세션이 표시된다.
 
-6) Validation Method:
+6) 검증 방법:
 월 경계, 윤년, 시간대 변경, 하루 다중 세션, 삭제 반영 widget/unit 테스트.
 
-7) Failure Handling:
+7) 실패 처리:
 손상 레코드는 달력 합산에서 제외하고 복구 로그에 남긴다. 전체 로드 실패 시 재시도와 데이터 내보내기를 제공한다.
 
-8) Skills / Scripts:
-- Skill: none
-- Script: `scripts/verify_calendar_aggregation.dart`
+8) 스킬 / 스크립트:
+- 스킬: none
+- 스크립트: `scripts/verify_calendar_aggregation.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step05_calendar_summary.json`
 
-#### Step 06: Content Governance and Release Validation
-1) Step Goal:
+#### 6단계: 콘텐츠 관리와 출시 검증
+1) 단계 목표:
 재활 콘텐츠, 안전 문구, 데이터 모델과 핵심 사용자 흐름을 출시 전에 검증한다.
 
-2) Input / Output:
-- Input: 콘텐츠 라이브러리, 출처, 금기, 앱 테스트 결과
-- Output: 출시 승인 체크리스트와 검증 보고서
+2) 입력 / 출력:
+- 입력: 콘텐츠 라이브러리, 출처, 금기, 앱 테스트 결과
+- 출력: 출시 승인 체크리스트와 검증 보고서
 
-3) LLM Decision Area:
+3) LLM 판단 영역:
 과장된 의료 표현, 모호한 운동 지시, 자가훈련 범위를 넘는 콘텐츠를 탐지한다.
 
-4) Code Processing Area:
+4) 코드 처리 영역:
 필수 메타데이터, 총 시간, 링크, 테스트 결과, 개인정보 필드를 검사한다.
 
-5) Success Criteria:
+5) 성공 기준:
 모든 운동이 임상 검토 상태이고 자동 테스트가 통과하며 안전 차단 시나리오가 확인된다.
 
-6) Validation Method:
+6) 검증 방법:
 언어재활사 human review, schema validation, `flutter analyze`, `flutter test`, 접근성 수동 QA.
 
-7) Failure Handling:
+7) 실패 처리:
 임상 검토되지 않은 콘텐츠는 비활성화한다. 안전·저장·달력 핵심 테스트 실패 시 출시를 중단한다.
 
-8) Skills / Scripts:
-- Skill: `dysarthria-content-safety` (구현 시 생성)
-- Script: `scripts/validate_clinical_content.dart`
+8) 스킬 / 스크립트:
+- 스킬: `dysarthria-content-safety` (구현 시 생성)
+- 스크립트: `scripts/validate_clinical_content.dart`
 
-9) Intermediate Artifact Rule:
+9) 중간 산출물 규칙:
 `output/step06_release_validation.md`
 
-### State Model
-| State | Entry Condition | Exit Condition | Next State |
+### 상태 모델
+| 상태 | 진입 조건 | 종료 조건 | 다음 상태 |
 |---|---|---|---|
 | `COLLECTING_REQUIREMENTS` | 대상, 사용 방식, 시간, 이력 요구가 불완전함 | 성인 후천성·자가훈련·선택 시간·기록 요구가 확정됨 | `PLANNING` |
 | `PLANNING` | 근거와 현재 앱 구조를 반영해 루틴·모델을 구성함 | 계획 및 승인 콘텐츠가 유효함 | `RUNNING_SCRIPT` or `VALIDATING` |
@@ -309,9 +311,9 @@ STT나 AI 실패 시 타이머와 훈련은 계속하며 자가평가로 대체�
 | `DONE` | 기획·구현·검증 산출물이 승인됨 | Terminal | none |
 | `FAILED` | 안전 검토 실패, 복구 불가 저장 오류 등 | Terminal | none |
 
-## 3. Implementation Spec
+## 3. 구현 명세
 
-### Recommended Folder Structure
+### 권장 폴더 구조
 ```text
 /project-root
   AGENTS.md
@@ -356,20 +358,20 @@ STT나 AI 실패 시 타이머와 훈련은 계속하며 자가평가로 대체�
   /docs
 ```
 
-### AGENTS.md Responsibilities
+### AGENTS.md의 책임
 - 마비말장애 관련 구현 요청은 본 설계서와 임상 승인 콘텐츠를 우선 참조한다.
 - 의료 진단·치료 효과·회복 보장 표현을 금지하고 안전 차단 규칙을 변경하지 않는다.
 - 훈련 콘텐츠 변경은 출처, 임상 검토 버전, 금기와 테스트를 함께 갱신한다.
 - 로컬 데이터 마이그레이션은 기존 `PracticeSession`과 `TongueExerciseSession`을 보존한다.
 - 새 스킬은 반드시 `skill-creator`를 통해 만들고 검증한다.
 
-### Custom Agent Definitions
-| Name | Path | Role | Required Fields |
+### 사용자 정의 에이전트
+| 이름 | 경로 | 역할 | 필수 필드 |
 |---|---|---|---|
 | none | none | MVP는 단일 Codex agent와 skills/scripts로 충분하며 의료 콘텐츠 판단을 별도 자율 에이전트에 위임하지 않음 | none |
 
-### Skill and Script Inventory
-| Name | Type | Role | Trigger Condition |
+### 스킬과 스크립트 목록
+| 이름 | 유형 | 역할 | 실행 조건 |
 |---|---|---|---|
 | `dysarthria-content-safety` | skill | 의료 표현, 금기, 중단 기준과 자가훈련 범위 검토 | 운동 콘텐츠 또는 안전 문구 추가·변경 |
 | `dysarthria-routine-planner` | skill | 승인 콘텐츠로 시간 조절 루틴 설계 | 루틴 규칙 또는 개인화 로직 변경 |
@@ -378,7 +380,7 @@ STT나 AI 실패 시 타이머와 훈련은 계속하며 자가평가로 대체�
 | `migrate_rehab_history.dart` | script | 분산된 기존 이력을 통합 모델로 변환 | 첫 앱 업데이트 및 테스트 |
 | `verify_calendar_aggregation.dart` | script | 날짜·시간대·다중 세션 집계 검증 | 달력 로직 변경 및 CI |
 
-### Skill Creation Rules
+### 스킬 생성 규칙
 
 > 이 설계서에 정의된 모든 스킬은 구현 시 반드시 `skill-creator` 스킬(`/skill-creator`)을 사용하여 생성할 것.
 > 직접 SKILL.md를 수동 작성하지 말 것 — 규격 불일치 및 트리거 실패의 원인이 됨.
@@ -391,8 +393,8 @@ skill-creator가 보장하는 규격:
 5. Progressive disclosure: SKILL.md 본문 500줄 이내, 대용량 참조는 `references/`로 분리
 6. 테스트 프롬프트 실행 및 품질 검증 완료
 
-### Core Artifacts
-| Path | Format | Producer | Purpose |
+### 핵심 산출물
+| 경로 | 형식 | 생성 단계 | 용도 |
 |---|---|---|---|
 | `output/step01_rehab_profile.json` | JSON | Step 01 | 안전 통과 프로필 |
 | `output/step02_daily_routine.json` | JSON | Step 02 | 실행 가능한 사용자 선택 루틴 |
@@ -456,15 +458,15 @@ CalendarDaySummary
 6. P1: 알림과 목표 달성 리마인더
 7. P2: 선택적 백업·내보내기 및 전문가 공유용 PDF/CSV
 
-## 4. Validation Checklist
+## 4. 검증 체크리스트
 
-- [x] Every workflow step has all 9 required fields
-- [x] Intermediate artifacts use the `output/stepNN_<name>.<ext>` rule
-- [x] LLM vs code responsibilities are separated clearly
-- [x] Human review points are explicit where needed
-- [x] Codex skill paths use `.agents/skills/...`
-- [x] Codex custom subagents use `.codex/agents/*.toml`
-- [x] Skill additions or updates mention `skill-creator`
+- [x] 모든 단계에 필수 9개 항목이 있음
+- [x] 중간 산출물이 `output/stepNN_<name>.<ext>` 규칙을 따름
+- [x] LLM과 코드의 책임이 명확히 구분됨
+- [x] 필요한 사람 검토 시점이 명시됨
+- [x] Codex 스킬 경로가 `.agents/skills/...`를 사용함
+- [x] Codex 사용자 정의 하위 에이전트가 `.codex/agents/*.toml`을 사용함
+- [x] 스킬 추가·수정에 `skill-creator` 사용을 명시함
 - [ ] 언어재활사가 모든 운동 지시, 금기, 중단 기준을 출시 전에 검토함
 - [ ] 일일 목표 N=1,2,3,4 및 목표 초과 세션을 달력에서 검증함
 - [ ] 자정, 시간대 변경, 윤년, 앱 강제 종료 후 세션 복구를 검증함

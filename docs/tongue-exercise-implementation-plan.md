@@ -1,5 +1,7 @@
 # 구강·교호·호흡 통합 훈련 구현 기획서
 
+[한국어](tongue-exercise-implementation-plan.md) | [English](tongue-exercise-implementation-plan.en.md) | [전체 문서](README.md)
+
 작성일: 2026-06-01
 
 통합 개정일: 2026-08-25

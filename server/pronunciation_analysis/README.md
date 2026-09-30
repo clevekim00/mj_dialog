@@ -1,4 +1,6 @@
-# Pronunciation analysis server
+# 발음 분석 서버
+
+[한국어](README.md) | [English](README.en.md) | [전체 문서](../../docs/README.md)
 
 성인 후천성 마비말장애 자음 훈련을 위한 별도 FastAPI 서버입니다. 앱의 녹음은 서버에서 16 kHz mono WAV로 정규화되고, 신호 품질 검사를 통과한 경우 요청의 `language`에 맞는 Montreal Forced Aligner(MFA) 모델로 목표 문장과 음소 구간을 정렬합니다.
 

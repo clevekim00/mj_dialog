@@ -1,4 +1,6 @@
-# MJ Dialog Improvement Plan
+# MJ Dialog 개선 계획
+
+[한국어](improvement-plan.md) | [English](improvement-plan.en.md) | [전체 문서](README.md)
 
 ## 목표
 

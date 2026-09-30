@@ -1,23 +1,25 @@
-# Android Play Store Release
+# Android Play Store 출시
 
-## Prepared Assets
+[한국어](android-playstore-release.md) | [English](android-playstore-release.en.md) | [전체 문서](README.md)
 
-- Launcher icons are updated under `android/app/src/main/res/mipmap-*`.
-- Play Store icon is available at `store_assets/icons/playstore_icon_512.png`.
-- Package name: `com.clevekim00.speechrehab`.
-- App label in Android manifest: `Speech Rehab`.
+## 준비된 자료
 
-## One-Time Signing Setup
+- 런처 아이콘은 `android/app/src/main/res/mipmap-*`에 반영되어 있습니다.
+- Play Store 아이콘은 `store_assets/icons/playstore_icon_512.png`에 있습니다.
+- 패키지명: `com.clevekim00.speechrehab`.
+- Android 매니페스트의 앱 표시명: `Speech Rehab`.
 
-This workspace already has local signing files prepared:
+## 최초 서명 설정
+
+이 작업공간에는 로컬 서명 파일이 준비되어 있습니다.
 
 - `android/upload-keystore.jks`
 - `android/key.properties`
 - `android/release-signing-passwords.env`
 
-These files are ignored by git and should not be committed.
+이 파일은 Git에서 제외되며 커밋하면 안 됩니다.
 
-To recreate the signing files on another machine, create an upload keystore locally:
+다른 컴퓨터에서 다시 준비하려면 로컬에서 업로드 키 저장소를 만듭니다.
 
 ```bash
 keytool -genkey -v \
@@ -28,13 +30,13 @@ keytool -genkey -v \
   -alias upload
 ```
 
-Then create `android/key.properties` from the example:
+예제 파일로 `android/key.properties`를 만듭니다.
 
 ```bash
 cp android/key.properties.example android/key.properties
 ```
 
-Fill in:
+다음을 입력합니다.
 
 ```properties
 storePassword=<your keystore password>
@@ -43,42 +45,42 @@ keyAlias=upload
 storeFile=../upload-keystore.jks
 ```
 
-Do not commit `android/key.properties` or `android/upload-keystore.jks`.
-They are ignored by `android/.gitignore`.
+`android/key.properties`와 `android/upload-keystore.jks`를 커밋하지 마세요.
+`android/.gitignore`에 제외 규칙이 있습니다.
 
-## Build Play Store Bundle
+## Play Store 번들 빌드
 
-Android SDK must be installed before building.
+빌드 전에 Android SDK를 설치해야 합니다.
 
-Current expected setup:
+환경 확인:
 
 ```bash
 flutter doctor -v
 ```
 
-If Flutter reports `Unable to locate Android SDK`, install Android Studio and Android SDK, or point Flutter to an existing SDK:
+`Unable to locate Android SDK`가 나오면 Android Studio와 Android SDK를 설치하거나 기존 SDK 경로를 지정합니다.
 
 ```bash
 flutter config --android-sdk /path/to/Android/sdk
 ```
 
-Then build:
+빌드:
 
 ```bash
 scripts/build_android_release.sh
 ```
 
-Output:
+출력:
 
 ```text
 build/app/outputs/bundle/release/app-release.aab
 ```
 
-Upload this `.aab` to Play Console.
+이 `.aab` 파일을 Play Console에 업로드합니다.
 
-## Before Submission
+## 제출 전 확인
 
-- Confirm the Play Console app name, short description, full description, screenshots, privacy policy URL, and data safety form.
-- Confirm microphone permission disclosure because the app records pronunciation practice audio.
-- Increment `version` in `pubspec.yaml` for every production upload.
-- Run `flutter build appbundle --release` through `scripts/build_android_release.sh`, not through a debug-signed fallback.
+- Play Console의 앱 이름, 간단한 설명, 자세한 설명, 스크린샷, 개인정보처리방침 URL과 데이터 보안 양식을 확인합니다.
+- 발음 연습 음성을 녹음하므로 마이크 권한 설명을 확인합니다.
+- 프로덕션 업로드마다 `pubspec.yaml`의 `version`을 올립니다.
+- 디버그 서명을 대신 사용하지 말고 `scripts/build_android_release.sh`를 통해 `flutter build appbundle --release`를 실행합니다.

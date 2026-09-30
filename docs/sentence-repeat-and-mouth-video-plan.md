@@ -1,5 +1,7 @@
 # 문장 반복, 재녹음, 입모양 영상 기능 계획
 
+[한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) | [전체 문서](README.md)
+
 > 2026-09-30 보완: 현재 구현과 영상 검수 조건·파형·발성 놀이/MPT 구분은 [추가 설계 및 구현서](implementation-2026-09-30/README.md)를 우선 참고한다. 아래 내용은 당시 계획을 보존한 것이다.
 
 작성일: 2026-06-19

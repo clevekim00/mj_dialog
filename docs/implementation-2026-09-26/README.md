@@ -1,5 +1,7 @@
 # 성인 후천성 마비말장애 자가훈련 중심 개편
 
+[한국어](README.md) | [English](README.en.md) | [전체 문서](../README.md)
+
 2026-09-26 구현. 기준: `blueprint-acquired-dysarthria-daily-rehab.md` 5절.
 
 ## 적용한 흐름

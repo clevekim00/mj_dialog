@@ -1,5 +1,7 @@
 # 구조화된 발음 연습 모드 구현 계획
 
+[한국어](structured-practice-modes-implementation-plan.md) | [English](structured-practice-modes-implementation-plan.en.md) | [전체 문서](README.md)
+
 작성일: 2026-06-01
 
 구현 상태: 2026-06-02 기준 MVP 반영 완료 및 UX 개선 반영

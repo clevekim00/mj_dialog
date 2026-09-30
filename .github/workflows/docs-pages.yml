@@ -3,7 +3,10 @@ on:
   push:
     branches: [main]
     paths:
+      - '**/*.md'
+      - 'tools/docs/**'
       - 'docs/user-materials/**'
+      - 'docs/user-guide*.html'
       - '.github/workflows/docs-pages.yml'
   workflow_dispatch:
 permissions:
@@ -21,11 +24,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
+      - name: Check bilingual document coverage and links
+        run: python3 tools/docs/check_bilingual_docs.py
       - uses: actions/configure-pages@v5
       - name: Prepare public documents only
         run: |
-          mkdir -p _site
+          mkdir -p _site/archive
           cp docs/user-materials/*.html _site/
+          cp docs/user-guide*.html _site/archive/
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:

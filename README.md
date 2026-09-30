@@ -1,5 +1,7 @@
 # 말이음 · SpeechBridge
 
+[한국어](README.md) | [English](README.en.md) | [전체 문서](docs/README.md)
+
 **마비말장애 말하기 연습 · Speech Practice for Adults with Dysarthria**
 
 생활에 필요한 말, 내 속도로 연습해요.

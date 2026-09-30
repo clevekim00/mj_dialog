@@ -1,5 +1,7 @@
 # 호흡 훈련과 구강 운동
 
+[한국어](breathing-and-oral-exercises.md) | [English](breathing-and-oral-exercises.en.md) | [전체 문서](README.md)
+
 > 첨부 이미지의 표 내용을 Markdown 형식으로 옮겨 정리한 문서입니다.
 
 ## 혀 운동

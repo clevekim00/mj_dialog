@@ -1,9 +1,8 @@
-# Pronunciation content builder
+# 발음 콘텐츠 생성 도구
 
-`generate_core_pack.py` builds the bundled Korean consonant practice pack. The
-word and sentence candidates are AI-assisted content that passes structural
-validation, but it must not be represented as clinician-approved until a
-speech-language pathologist completes the review.
+[한국어](README.md) | [English](README.en.md) | [전체 문서](../../docs/README.md)
+
+`generate_core_pack.py`는 앱에 포함되는 한국어 자음 연습 팩을 생성합니다. 단어와 문장 후보는 AI의 도움으로 만들고 구조 검증을 통과한 콘텐츠입니다. 언어재활사의 검수가 끝나기 전에는 임상 검수를 받은 콘텐츠로 표시하면 안 됩니다.
 
 ```bash
 python3 tools/pronunciation_content/generate_core_pack.py
@@ -11,9 +10,7 @@ python3 tools/pronunciation_content/generate_core_pack.py
 
 배포할 CDN 주소는 `--download-url`로 지정합니다. 스크립트는 앱 내장 JSON과 SHA-256 검증용 `manifest.json`을 함께 만듭니다. 앱은 `--dart-define=PRONUNCIATION_CONTENT_MANIFEST_URL=https://.../manifest.json` 설정 시 자음 훈련 화면 진입과 수동 새로고침에서 업데이트를 확인합니다.
 
-The app consumes the generated JSON from
-`assets/pronunciation/content/ko_consonant_core.json`. CDN releases use the
-same schema and a higher semantic version.
+앱은 `assets/pronunciation/content/ko_consonant_core.json`의 생성된 JSON을 읽습니다. CDN 배포는 같은 스키마와 더 높은 시맨틱 버전을 사용합니다.
 
 버전 `2026.09.2`는 자음별 생활문장 원문을
 `korean_daily_sentences.json`에서 읽습니다. 원문 125개를 네 가지 시간 문맥으로

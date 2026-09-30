@@ -1,75 +1,77 @@
-# AI Speech Therapy Platform: 2D Animation Edition
+# AI 언어 재활 플랫폼: 2D 애니메이션 버전
 
-## Purpose
+[한국어](ai-speech-therapy-avatar-platform.md) | [English](ai-speech-therapy-avatar-platform.en.md) | [전체 문서](README.md)
 
-This project is a professional speech therapy and oral motor rehabilitation platform, not a game. It supports pronunciation training, oral motor exercise, dysarthria support, aphasia rehabilitation support, Korean language learning, and facial muscle exercise.
+## 목적
 
-## Current Implementation Policy
+이 프로젝트는 게임이 아니라 전문 언어 재활·구강 운동 재활 플랫폼이다. 발음 훈련, 구강 운동, 마비말장애 지원, 실어증 재활 지원, 한국어 학습, 얼굴 근육 운동을 지원한다.
 
-- The app uses 2D tutor animation for exercise screens.
-- Three.js, GLB, VRM, and `model_viewer_plus` are not part of the Flutter runtime path.
-- The former 3D tongue preview was replaced with a 2D tutor guide.
-- macOS audio channel fixes remain in place.
-- Future high-quality character assets should be delivered as layered 2D images, Rive, Lottie, or Live2D-compatible assets.
+## 현재 구현 방침
 
-## Production 2D Tutor Target
+- 운동 화면에 2D 튜터 애니메이션을 사용한다.
+- Three.js, GLB, VRM, `model_viewer_plus`는 Flutter 런타임에 포함하지 않는다.
+- 이전 3D 혀 미리보기를 2D 튜터 안내로 교체했다.
+- macOS 오디오 채널 수정은 유지한다.
+- 향후 고품질 캐릭터는 레이어형 2D 이미지, Rive, Lottie 또는 Live2D 호환 자산으로 제작한다.
 
-The production tutor should be an original young adult virtual speech therapist:
+## 정식 2D 튜터 목표
 
-- warm, calm, trustworthy, and professional
-- medically appropriate, with no fantasy styling or fan-service
-- modern Japanese-inspired 2D animation style
-- clean line art, painterly soft shading, subtle gradients, and warm lighting
-- dark-brown layered hair with subtle secondary motion
-- large expressive eyes with eyelids, eyelashes, highlights, blinking, and micro-saccades
-- clear mouth, lip, tongue, cheek, eyebrow, and head movement
+정식 튜터는 독창적인 젊은 성인 가상 언어재활사로 만든다.
 
-The character must not copy a specific artist, studio, film, franchise, character, or real person's likeness.
+- 따뜻하고 차분하며 신뢰할 수 있는 전문적인 인상
+- 판타지나 과도한 성적 표현 없이 의학적 용도에 적합한 모습
+- 현대 일본풍 2D 애니메이션 스타일
+- 깔끔한 선, 부드러운 회화적 명암, 미묘한 그라데이션과 따뜻한 조명
+- 자연스러운 보조 움직임이 있는 짙은 갈색 레이어 머리
+- 눈꺼풀·속눈썹·하이라이트·깜박임·미세 안구 움직임이 있는 표정 풍부한 큰 눈
+- 명확한 입·입술·혀·볼·눈썹·머리 움직임
 
-## 2D Layer Contract
+특정 작가, 스튜디오, 영화, 프랜차이즈, 캐릭터나 실제 인물의 외모를 복제하지 않는다.
 
-Production assets should be split into independently animatable layers:
+## 2D 레이어 규약
 
-- back hair
-- side hair
-- bangs
-- face
-- neck
-- shoulders/body
-- eyebrows
-- upper eyelids
-- lower eyelids
-- eyes/iris/highlights
-- cheeks/blush
-- nose
-- upper lip
-- lower lip
-- mouth cavity
-- teeth
-- tongue
-- foreground hair strands
+정식 자산은 개별 애니메이션이 가능한 레이어로 나눈다.
 
-Flutter currently uses a Canvas-based fallback in:
+- 뒷머리
+- 옆머리
+- 앞머리
+- 얼굴
+- 목
+- 어깨/몸
+- 눈썹
+- 위 눈꺼풀
+- 아래 눈꺼풀
+- 눈/홍채/하이라이트
+- 볼/홍조
+- 코
+- 윗입술
+- 아랫입술
+- 입안
+- 치아
+- 혀
+- 앞쪽 머리카락 가닥
+
+현재 Flutter의 Canvas 대체 구현:
 
 ```text
 lib/features/exercise/widgets/animated_exercise_avatar.dart
 ```
 
-Future production assets can replace this with Rive, Lottie, sprite layers, or Live2D while keeping the same exercise state inputs.
+향후 운동 상태 입력은 유지하면서 Rive, Lottie, 스프라이트 레이어 또는 Live2D로 교체할 수 있다.
 
-## Korean Mouth Shape Contract
+## 한국어 입모양 규약
 
-Each pronunciation should map to a 2D mouth drawing or layer state.
+각 발음을 2D 입 그림 또는 레이어 상태에 연결한다.
 
-Supported vowels:
+지원 모음:
 
 - `아`, `야`, `어`, `여`, `오`, `요`, `우`, `유`, `으`, `이`
 
-Supported consonants:
+지원 자음:
 
 - `ㅁ`, `ㅂ`, `ㅍ`, `ㄷ`, `ㅌ`, `ㄴ`, `ㄹ`, `ㄱ`, `ㅋ`, `ㅇ`, `ㅅ`, `ㅈ`, `ㅊ`, `ㅎ`
 
-Recommended 2D mouth states:
+권장 2D 입 상태:
 
 - `neutral`
 - `openA`
@@ -86,81 +88,81 @@ Recommended 2D mouth states:
 - `smile`
 - `blink`
 
-Smooth interpolation should happen by crossfading layers, shape keys in Rive/Live2D, or sprite sequence blending.
+레이어 교차 페이드, Rive/Live2D의 형태 키, 스프라이트 시퀀스 혼합으로 부드럽게 전환한다.
 
-## Professional Exercise Library
+## 전문 운동 라이브러리
 
-Each exercise module should include:
+각 운동 모듈에는 다음을 포함한다.
 
-- title
-- description
-- difficulty
-- duration
-- recommended repetitions
-- rest interval
-- target muscle
-- audio cue
-- subtitle
-- visual cue
+- 제목
+- 설명
+- 난이도
+- 시간
+- 권장 반복 수
+- 휴식 간격
+- 대상 근육
+- 음성 단서
+- 자막
+- 시각 단서
 
-The exercise set should cover:
+운동 범위:
 
-- open mouth
-- close mouth
-- lip protrusion
-- lip spreading
-- cheek puff
-- tongue out
-- tongue left/right/up/down
-- tongue circles
-- jaw opening
-- jaw left-right
-- alternating syllables
-- breathing exercises
-- mirror training
+- 입 벌리기
+- 입 다물기
+- 입술 내밀기
+- 입술 벌리기
+- 볼 부풀리기
+- 혀 내밀기
+- 혀 좌우상하 움직이기
+- 혀 돌리기
+- 턱 벌리기
+- 턱 좌우 움직이기
+- 교호 음절
+- 호흡 운동
+- 거울 훈련
 
-## Screen Layout Direction
+## 화면 구성 방향
 
-The core exercise screen should follow the provided 2D reference direction:
+핵심 운동 화면은 제공된 2D 참고 방향을 따른다.
 
-- dark premium medical UI
-- large main character area
-- current exercise card
-- remaining time indicator
-- mouth shape guide
-- expression preview
-- oral exercise preview
-- subtitle area
-- exercise timeline
-- playback controls
-- speed and repeat controls
-- accessibility/settings entry points
+- 어두운 고급 의료 UI
+- 큰 주 캐릭터 영역
+- 현재 운동 카드
+- 남은 시간
+- 입모양 안내
+- 표정 미리보기
+- 구강 운동 미리보기
+- 자막 영역
+- 운동 타임라인
+- 재생 조작
+- 속도·반복 조작
+- 접근성·설정 진입점
 
-## Audio And Lip Sync
+## 음성과 입모양 동기화
 
-- Never use audio extracted from reference videos.
-- Support original recorded audio.
-- Use SpeechSynthesis only as a prototype fallback.
-- Synchronize audio, subtitle, mouth shape, cheek/tongue movement, and exercise timeline.
-- Future alignment sources can include Whisper, OpenAI Realtime API, Azure Speech, Google Speech, or Apple Speech.
+- 참고 영상에서 추출한 음성을 사용하지 않는다.
+- 직접 제작한 녹음 음성을 지원한다.
+- SpeechSynthesis는 시제품의 대체 수단으로만 사용한다.
+- 음성·자막·입모양·볼/혀 움직임·운동 타임라인을 동기화한다.
+- 향후 정렬에는 Whisper, OpenAI Realtime API, Azure Speech, Google Speech 또는 Apple Speech를 사용할 수 있다.
 
-## Accessibility And UI Targets
+## 접근성과 UI 목표
 
-- Korean-first interface
-- large playback controls
-- captions and pronunciation subtitle
-- playback speed control
-- mirror mode
-- left-handed mode
-- high contrast mode
-- color-blind safe visual cues
-- tablet and hospital kiosk support
+- 한국어 우선 화면
+- 큰 재생 조작 버튼
+- 자막과 발음 자막
+- 재생 속도 조절
+- 거울 모드
+- 왼손 모드
+- 고대비 모드
+- 색각 차이를 고려한 시각 단서
+- 태블릿·병원 키오스크 지원
 
-## Performance Targets
+## 성능 목표
 
-- 60 FPS target on desktop
-- 30-60 FPS target on mobile/tablet
-- cache layered raster assets
-- prefer Rive/Lottie for complex production animation
-- avoid heavy 3D/WebView runtimes for exercise animation
-- pause animation when offscreen
+- 데스크톱 60 FPS 목표
+- 모바일/태블릿 30~60 FPS 목표
+- 레이어형 래스터 자산 캐시
+- 복잡한 정식 애니메이션에는 Rive/Lottie 우선
+- 운동 애니메이션에서 무거운 3D/WebView 런타임 제외
+- 화면 밖 애니메이션 일시정지

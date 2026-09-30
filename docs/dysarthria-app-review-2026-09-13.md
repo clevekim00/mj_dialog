@@ -1,5 +1,7 @@
 # 마비말장애 훈련 앱 검토 및 개선안
 
+[한국어](dysarthria-app-review-2026-09-13.md) | [English](dysarthria-app-review-2026-09-13.en.md) | [전체 문서](README.md)
+
 검토일: 2026-09-13 · 소스 기준: `1bc2f6b` · 대상: Speech Rehab
 
 후속 구현은 [2026-09-15 구현 기록](dysarthria-implementation-2026-09-15.md)에 정리했다. 아래 관찰과 줄 번호는 구현 전 검토 시점의 기록이다.
@@ -52,7 +54,7 @@
 
 **확인한 사실:** 자유 말하기에서 인식 텍스트가 비면 `오늘 있었던 일을 편하게 말했습니다.`를 넣는다. 이후 대체 평가 로직은 비어 있지 않은 자유 발화에 85점과 “전체적으로 명확하게 들립니다”를 반환한다. iOS에서는 Gemma가 비활성화되어 이 대체 로직을 사용한다. 녹음 파일이 존재하는 경우 이 결과가 기록과 연속 성공 횟수에 반영될 수 있다.
 
-근거: [임의 발화 대입](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:1214), [iOS 모델 비활성화](/Users/youngwhankim/Project/mj_dialog/lib/services/api/ai_service.dart:160), [85점 반환](/Users/youngwhankim/Project/mj_dialog/lib/services/api/ai_service.dart:319), [기록 저장](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:1281).
+근거: [임의 발화 대입](../lib/features/practice/provider/practice_provider.dart#L1214), [iOS 모델 비활성화](../lib/services/api/ai_service.dart#L160), [85점 반환](../lib/services/api/ai_service.dart#L319), [기록 저장](../lib/features/practice/provider/practice_provider.dart#L1281).
 
 **개선:** `녹음 완료`, `인식 확인 필요`, `분석 가능`, `분석 불가`를 구분한다. 원문이 없으면 만들어 넣지 않는다. 점수는 nullable로 하고 분석 불가 기록을 평균·연속 성공·취약 발음 판정에서 제외한다. 화면은 “녹음은 저장됐어요. 이번에는 말을 확인하지 못했어요”와 `들어보기 / 다시 시도 / 마치기`를 제공한다.
 
@@ -62,11 +64,11 @@
 
 **확인한 사실:** 일반 연습은 원음을 평가 서비스에 전달하지 않고 인식 텍스트를 전달한다. 대체 로직은 텍스트 길이·완전 일치로 점수를 만들고, 단어 게임은 완전 일치 100점/불일치 40점을 사용한다. 자유대화의 대체 피드백은 특정 단어가 포함됐다는 이유로 혀 위치 조언을 만들기도 한다.
 
-근거: [일반 평가 호출](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:1242), [대화 대체 평가](/Users/youngwhankim/Project/mj_dialog/lib/services/api/ai_service.dart:298), [텍스트 채점](/Users/youngwhankim/Project/mj_dialog/lib/services/api/ai_service.dart:329), [단어 채점](/Users/youngwhankim/Project/mj_dialog/lib/services/api/ai_service.dart:377).
+근거: [일반 평가 호출](../lib/features/practice/provider/practice_provider.dart#L1242), [대화 대체 평가](../lib/services/api/ai_service.dart#L298), [텍스트 채점](../lib/services/api/ai_service.dart#L329), [단어 채점](../lib/services/api/ai_service.dart#L377).
 
 **개선:** 현 지표는 의미를 제한해 `목표 문장 인식 일치도`로 표시한다. 텍스트만 보고 조음·혀 위치·음량·명료도를 평가하는 피드백을 제거한다. 실제 말 명료도는 청자가 이해하는 정도를 포함하므로, ASR 문자열 일치와 같은 지표로 볼 수 없다. [ASHA의 평가 관점](https://www.asha.org/practice-portal/clinical-topics/dysarthria-in-adults/)에 비추어 사람 평가와의 일치 정도를 별도로 검증해야 한다.
 
-**자음 분석의 별도 문제:** 선택형 CTC 백엔드는 전체 녹음에서 목표 토큰 확률이 가장 높은 프레임을 골라 점수로 만든다. 목표 위치와 실제 음소 구간을 평가하는 방식으로 교체하기 전에는 정확도 지표로 공개하지 않는 편이 좋다. 이는 점수를 비워 두는 기본 MFA 경로와 다른 문제다. [CTC 계산](/Users/youngwhankim/Project/mj_dialog/server/pronunciation_analysis/app/acoustic.py:50), [결과 표시](/Users/youngwhankim/Project/mj_dialog/lib/features/consonant_training/view/consonant_training_screens.dart:587).
+**자음 분석의 별도 문제:** 선택형 CTC 백엔드는 전체 녹음에서 목표 토큰 확률이 가장 높은 프레임을 골라 점수로 만든다. 목표 위치와 실제 음소 구간을 평가하는 방식으로 교체하기 전에는 정확도 지표로 공개하지 않는 편이 좋다. 이는 점수를 비워 두는 기본 MFA 경로와 다른 문제다. [CTC 계산](../server/pronunciation_analysis/app/acoustic.py#L50), [결과 표시](../lib/features/consonant_training/view/consonant_training_screens.dart#L587).
 
 **완료 기준:** 결과에 평가 방법·모델/콘텐츠 버전·분석 가능 여부를 저장한다. 한국어 마비말장애 음성에서 중증도·기기·환경별 오류와 사람 평가의 차이를 확인하기 전에는 치료 효과를 점수로 단정하지 않는다.
 
@@ -74,7 +76,7 @@
 
 **확인한 사실:** 온보딩은 목표·기간·일일 연습시간·보호자 여부를 저장하지만 `loadProfile()`을 사용하는 곳이 `lib`에 없다. 홈 목표는 5분으로 고정돼 있고 추천 모드는 최근 점수와 마지막 모드로 정해진다. 종료 후 피로도 설정 함수도 호출되지 않으며, 미입력 시 시작 전 값을 종료 후 값으로 저장한다.
 
-근거: [프로필 읽기](/Users/youngwhankim/Project/mj_dialog/lib/services/rehab_profile_service.dart:49), [홈 목표](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/view/practice_mode_selection_screen.dart:169), [추천 규칙](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/view/practice_mode_selection_screen.dart:929), [종료 피로도 대입](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:1305).
+근거: [프로필 읽기](../lib/services/rehab_profile_service.dart#L49), [홈 목표](../lib/features/practice/view/practice_mode_selection_screen.dart#L169), [추천 규칙](../lib/features/practice/view/practice_mode_selection_screen.dart#L929), [종료 피로도 대입](../lib/features/practice/provider/practice_provider.dart#L1305).
 
 **개선:** 공통 프로필을 읽어 목표·문장·분량에 반영한다. 시작 전에는 오늘 상태를 확인하고, 종료 때 실제 피로도와 “말하기가 편했는지”를 짧게 묻는다. 미응답은 미기록으로 유지한다. 피로가 높으면 짧은 과제·휴식 선택을 먼저 제안하고 자동 증량은 피한다. 질환명만으로 운동을 자동 처방하지 않는다. 개인의 어려움과 생활 의사소통 목표에 맞춘 조절은 [ASHA의 개별화 원칙](https://www.asha.org/practice-portal/clinical-topics/dysarthria-in-adults/)에 근거한 설계 제안이다.
 
@@ -84,7 +86,7 @@
 
 **확인한 사실:** 준비 화면의 5회 선택은 현재 상태만 바꾼다. 다음 운동으로 넘어가면 운동별 저장 설정을 다시 읽어 덮어쓰며, 별도 설정이 없으면 기본값은 20회다. 예상 소요시간은 재생속도를 반영하지 않는다.
 
-근거: [준비의 반복 선택](/Users/youngwhankim/Project/mj_dialog/lib/features/guided_training/view/guided_training_player_screen.dart:378), [운동 전환 시 덮어쓰기](/Users/youngwhankim/Project/mj_dialog/lib/features/guided_training/view/guided_training_player_screen.dart:276), [기본 반복 수](/Users/youngwhankim/Project/mj_dialog/lib/services/training/training_settings_service.dart:14), [시간 추정](/Users/youngwhankim/Project/mj_dialog/lib/features/guided_training/view/guided_training_player_screen.dart:342).
+근거: [준비의 반복 선택](../lib/features/guided_training/view/guided_training_player_screen.dart#L378), [운동 전환 시 덮어쓰기](../lib/features/guided_training/view/guided_training_player_screen.dart#L276), [기본 반복 수](../lib/services/training/training_settings_service.dart#L14), [시간 추정](../lib/features/guided_training/view/guided_training_player_screen.dart#L342).
 
 **개선:** 시작 전에 운동별 반복 횟수·속도를 포함하는 세션 계획을 확정한다. 예상시간과 플레이어가 같은 계획을 사용하게 한다. `모든 운동 5회씩`과 `운동별 설정 사용`의 의미도 명시한다.
 
@@ -94,7 +96,7 @@
 
 **확인한 사실:** 구강훈련 중도 종료는 진행 내용을 저장하지 않는다. 완료 화면에서도 저장 버튼을 누르기 전에 닫으면 확인 없이 나간다.
 
-근거: [종료 처리](/Users/youngwhankim/Project/mj_dialog/lib/features/guided_training/view/guided_training_player_screen.dart:715), [명시적 저장 버튼](/Users/youngwhankim/Project/mj_dialog/lib/features/guided_training/view/guided_training_player_screen.dart:645).
+근거: [종료 처리](../lib/features/guided_training/view/guided_training_player_screen.dart#L715), [명시적 저장 버튼](../lib/features/guided_training/view/guided_training_player_screen.dart#L645).
 
 **개선:** 시작·단계 전환·중단 때 자동 저장하고 `완료 / 부분완료 / 쉬는 중 / 중단`을 구분한다. 중단 사유는 선택 사항으로 남기고 재진입하면 이어하기를 제공한다. 쉬었다는 이유로 실패나 기록 소실을 경험하지 않게 한다.
 
@@ -106,7 +108,7 @@
 
 **확인한 사실:** 낙하 단어가 바닥에 닿으면 게임이 끝나며, 발화하지 않은 항목도 0점·0초 세션으로 저장된다. 대시보드는 모든 세션 점수를 평균내므로 게임 반응 지연이 발음 저하처럼 반영될 수 있다. 녹음·분석 중에는 낙하가 멈추지만 준비하고 생각하는 시간에는 움직인다.
 
-근거: [무발화 0점 기록](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:945), [전체 평균](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/view/dashboard_screen.dart:20), [게임 종료](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/provider/practice_provider.dart:737).
+근거: [무발화 0점 기록](../lib/features/practice/provider/practice_provider.dart#L945), [전체 평균](../lib/features/practice/view/dashboard_screen.dart#L20), [게임 종료](../lib/features/practice/provider/practice_provider.dart#L737).
 
 **개선:** 기본 단어 연습은 한 단어를 고정해서 보여주고 준비 후 말하게 한다. 낙하 게임은 선택형으로 두고 시간제한 없음·일시정지·이동 정지를 제공한다. `실패 녹음`, `틀린 단어`는 `다시 들어볼 녹음`, `다시 연습할 단어`로 바꾼다. 충분한 시간과 시간 제한 조절은 [W3C 시간 제한 지침](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable.html)을 참고할 수 있다.
 
@@ -122,7 +124,7 @@
 
 핵심 조작에 큰 고정 버튼과 명시적 접근성 이름을 사용한다. 음성 입력이 실패해도 준비된 답 선택·텍스트 수정·건너뛰기가 가능하게 한다. [W3C의 말장애 접근성 설명](https://www.w3.org/WAI/people-use-web/abilities-barriers/speech/)은 음성인식에만 의존하는 서비스의 장벽을 지적한다.
 
-추가로 최초 온보딩 완료는 연습 선택 화면으로 직접 이동하지만 재실행은 공통 탐색 셸을 사용한다. 최종 진입점을 `/app`으로 통일한다. [온보딩 완료](/Users/youngwhankim/Project/mj_dialog/lib/features/onboarding/view/rehab_onboarding_screen.dart:34), [공통 시작 화면](/Users/youngwhankim/Project/mj_dialog/lib/main.dart:234).
+추가로 최초 온보딩 완료는 연습 선택 화면으로 직접 이동하지만 재실행은 공통 탐색 셸을 사용한다. 최종 진입점을 `/app`으로 통일한다. [온보딩 완료](../lib/features/onboarding/view/rehab_onboarding_screen.dart#L34), [공통 시작 화면](../lib/main.dart#L234).
 
 **완료 기준:** 작은 화면·글자 200%에서도 현재 문구와 핵심 조작을 찾을 수 있다. VoiceOver/TalkBack·키보드·필요한 대체 입력으로 시작·정지·재시도·마치기가 가능하다. 화면 캡처만으로 접근성 준수를 판정하지 않는다.
 
@@ -130,15 +132,15 @@
 
 | 항목 | 확인한 사실 | 개선 및 검증 |
 |---|---|---|
-| iOS 최종 인식 | 네이티브 종료 직후 Dart 이벤트 구독을 취소한다. 뒤늦은 최종 결과를 놓칠 수 있다. | 최종 결과/완료 이벤트 또는 제한시간을 기다린 뒤 구독 종료. 긴 쉼·느린 발화·종료 직전 음절로 실기기 검증. [STT 종료](/Users/youngwhankim/Project/mj_dialog/lib/services/audio/stt_service.dart:188) |
-| 분석 요청 | 30초 제한은 POST 완료 후 폴링 루프에만 적용된다. 요청 하나가 멈추면 전체 시간이 제한되지 않는다. | 연결·전송·수신과 전체 작업에 타임아웃 적용, 사용자 취소·재시도·녹음 보존. [클라이언트](/Users/youngwhankim/Project/mj_dialog/lib/features/consonant_training/services/pronunciation_analysis_client.dart:34) |
-| 원음 전송 | 자음 분석은 녹음 후 업로드하며 앱 기본 URL은 로컬 HTTP다. 코드상 서버 인증·작업 소유권 검사가 없다. | 외부 서버 운영 전 전송 대상·항목·보관 조건 안내 및 선택, HTTPS·인증·소유권 검사·요청 제한. 실제 공개 배포 여부는 확인하지 않았다. [업로드](/Users/youngwhankim/Project/mj_dialog/lib/features/consonant_training/view/consonant_training_screens.dart:447), [서버](/Users/youngwhankim/Project/mj_dialog/server/pronunciation_analysis/app/main.py:47) |
-| 파일 수명 | 음성 분석 WAV는 임시 디렉터리에 저장된다. 해당 기록 삭제는 메타데이터만 제거한다. 자음 기록 수 제한으로 탈락한 원음 정리도 필요하다. | 보관할 녹음은 지속 저장소에 두고, 관련 파일과 메타데이터 삭제를 일관되게 처리. [WAV 저장](/Users/youngwhankim/Project/mj_dialog/lib/services/audio_analysis/wav_file_service.dart:16), [삭제](/Users/youngwhankim/Project/mj_dialog/lib/services/audio_analysis/voice_analysis_repository.dart:38) |
-| 로컬 개인정보 | 일부 발화·피로도·점수는 SharedPreferences JSON, 원음은 Documents 파일로 저장한다. 이 경로의 별도 앱 수준 암호화는 확인되지 않는다. | OS 저장 보호·백업 범위·보관 기간·전체 삭제 정책과 발화 디버그 로그를 검토한다. OS 보호가 전혀 없다는 뜻은 아니다. [저장](/Users/youngwhankim/Project/mj_dialog/lib/services/practice_history_service.dart:117) |
+| iOS 최종 인식 | 네이티브 종료 직후 Dart 이벤트 구독을 취소한다. 뒤늦은 최종 결과를 놓칠 수 있다. | 최종 결과/완료 이벤트 또는 제한시간을 기다린 뒤 구독 종료. 긴 쉼·느린 발화·종료 직전 음절로 실기기 검증. [STT 종료](../lib/services/audio/stt_service.dart#L188) |
+| 분석 요청 | 30초 제한은 POST 완료 후 폴링 루프에만 적용된다. 요청 하나가 멈추면 전체 시간이 제한되지 않는다. | 연결·전송·수신과 전체 작업에 타임아웃 적용, 사용자 취소·재시도·녹음 보존. [클라이언트](../lib/features/consonant_training/services/pronunciation_analysis_client.dart#L34) |
+| 원음 전송 | 자음 분석은 녹음 후 업로드하며 앱 기본 URL은 로컬 HTTP다. 코드상 서버 인증·작업 소유권 검사가 없다. | 외부 서버 운영 전 전송 대상·항목·보관 조건 안내 및 선택, HTTPS·인증·소유권 검사·요청 제한. 실제 공개 배포 여부는 확인하지 않았다. [업로드](../lib/features/consonant_training/view/consonant_training_screens.dart#L447), [서버](../server/pronunciation_analysis/app/main.py#L47) |
+| 파일 수명 | 음성 분석 WAV는 임시 디렉터리에 저장된다. 해당 기록 삭제는 메타데이터만 제거한다. 자음 기록 수 제한으로 탈락한 원음 정리도 필요하다. | 보관할 녹음은 지속 저장소에 두고, 관련 파일과 메타데이터 삭제를 일관되게 처리. [WAV 저장](../lib/services/audio_analysis/wav_file_service.dart#L16), [삭제](../lib/services/audio_analysis/voice_analysis_repository.dart#L38) |
+| 로컬 개인정보 | 일부 발화·피로도·점수는 SharedPreferences JSON, 원음은 Documents 파일로 저장한다. 이 경로의 별도 앱 수준 암호화는 확인되지 않는다. | OS 저장 보호·백업 범위·보관 기간·전체 삭제 정책과 발화 디버그 로그를 검토한다. OS 보호가 전혀 없다는 뜻은 아니다. [저장](../lib/services/practice_history_service.dart#L117) |
 
 서버 원음은 임시 디렉터리에서 처리 후 제거된다. 원음을 서버에 영구 저장한다고 단정하면 안 된다. 메모리의 분석 작업 결과에는 자동 만료 정책을 추가할 필요가 있다.
 
-발성 분석에서는 전체 녹음 경과 시간을 발성시간으로 표시하는 점, 피치 미검출을 그래프의 60Hz로 그리는 점도 수정 대상이다. 녹음 시간·유성 발성 시간·피치 추정 품질을 구분하고 미검출은 선을 끊어서 보여준다. [지표](/Users/youngwhankim/Project/mj_dialog/lib/features/voice_analysis/model/voice_analysis_models.dart:127), [그래프](/Users/youngwhankim/Project/mj_dialog/lib/features/voice_analysis/view/voice_analysis_screens.dart:734).
+발성 분석에서는 전체 녹음 경과 시간을 발성시간으로 표시하는 점, 피치 미검출을 그래프의 60Hz로 그리는 점도 수정 대상이다. 녹음 시간·유성 발성 시간·피치 추정 품질을 구분하고 미검출은 선을 끊어서 보여준다. [지표](../lib/features/voice_analysis/model/voice_analysis_models.dart#L127), [그래프](../lib/features/voice_analysis/view/voice_analysis_screens.dart#L734).
 
 ## 4. 이번 실행의 화면 검토
 
@@ -146,19 +148,19 @@
 
 큰 추천 시작 버튼은 잘 보인다. 그러나 같은 화면에서 목표 5분과 추천 10분이 충돌하며, 현재 상태를 새로 확인하지 않은 상태에서 피로도 1/5·상태 양호가 표시된다. 추천이 어떤 근거로 정해졌는지 설명하고, 미입력 상태와 실제 응답을 구분하는 편이 좋다. 보조 설명의 작은 회색 글자는 가독성을 추가 확인할 대상이다.
 
-![1단계 오늘의 연습](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-13/01-home.png)
+![1단계 오늘의 연습](review-2026-09-13/01-home.png)
 
 ### 2단계 — 긴 문장 준비: 설정은 있으나 시작 부담이 큼
 
 목표·피로도 입력은 좋은 기반이다. 다만 이 창 크기에서는 연습할 문장과 녹음 버튼이 첫 화면에 나타나지 않는다. 목표 선택·모드 변경·내 문장 관리는 보조 기능으로 접고 현재 수행할 문장부터 보여주는 구성이 적합하다. 슬라이더 외에 큰 선택 버튼을 제공하는 방안도 검토한다.
 
-![2단계 긴 문장 준비](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-13/02-reading-setup.png)
+![2단계 긴 문장 준비](review-2026-09-13/02-reading-setup.png)
 
 ### 3단계 — 녹음 준비: 버튼은 명확하지만 읽을 내용과 떨어져 있음
 
 녹음 시작 버튼은 크고 라벨이 있다. 그러나 버튼까지 스크롤하면 긴 문장 앞부분은 보이지 않는다. 중앙의 장식 영역을 줄이고, 현재 읽을 의미 단위와 녹음·정지·휴식 버튼을 함께 보여주면 화면을 오가는 부담을 줄일 수 있다. 실제 녹음·분석·완료까지의 동작은 이번 화면 검토에서 수행하지 않았다.
 
-![3단계 녹음 준비](/Users/youngwhankim/Project/mj_dialog/docs/review-2026-09-13/03-reading-controls.png)
+![3단계 녹음 준비](review-2026-09-13/03-reading-controls.png)
 
 ## 5. 권장하는 연습 흐름
 
@@ -205,7 +207,7 @@
 
 **현재 이미 있는 기능:** 홈의 `자음 집중 훈련`에서 초성/받침을 선택하고 자음 카드를 누르면 해당 자음의 음절·단어·짧은 문장을 연습할 수 있다. 기준 발음 듣기(TTS), 녹음, 내 발음 재생, 다시 연습, 다음, 이력 저장도 있다. 한국어 내장 콘텐츠 `2026.08.1`은 초성 목표 18개·받침 목표 7개, 총 800항목이며 이는 콘텐츠 개수이지 임상 검수 완료를 의미하지 않는다.
 
-근거: [홈 진입](/Users/youngwhankim/Project/mj_dialog/lib/features/practice/view/practice_mode_selection_screen.dart:99), [자음 선택과 훈련 화면](/Users/youngwhankim/Project/mj_dialog/lib/features/consonant_training/view/consonant_training_screens.dart:12), [한국어 내장 콘텐츠](/Users/youngwhankim/Project/mj_dialog/assets/pronunciation/content/ko_consonant_core.json).
+근거: [홈 진입](../lib/features/practice/view/practice_mode_selection_screen.dart#L99), [자음 선택과 훈련 화면](../lib/features/consonant_training/view/consonant_training_screens.dart#L12), [한국어 내장 콘텐츠](../assets/pronunciation/content/ko_consonant_core.json).
 
 **개선 목표:** 기존 기능을 `자음 골라 연습하기`라는 쉽게 이해되는 이름과 눈에 띄는 홈 진입점으로 제공하고, 선택한 자음의 짧은 반복 세션을 완성한다. 별도 자음 메뉴를 중복해서 만들 필요는 없다.
 
@@ -222,6 +224,6 @@
 | 기준 음성 | 현재 듣기는 TTS 기반임을 구분. 검수된 예시 음성을 연결하는 방안을 후속 검토 |
 | 녹음 상태 보호 | 녹음·분석 중 단계와 항목 이동을 막거나 명시적으로 취소. 시작 시 목표 항목을 고정해 결과가 다른 문장 기록으로 저장되지 않게 함 |
 
-현재 `다음`은 마지막 항목에서 처음으로 순환하므로 명시적인 세션 완료 화면을 추가할 필요가 있다. 또한 단어 게임의 자음 필터는 초성·받침을 함께 검색하고 조건에 맞는 항목이 없으면 다른 단어로 대체할 수 있어, 정확한 위치를 지정하는 자음 집중 훈련과 기능을 구분해야 한다. [항목 순환](/Users/youngwhankim/Project/mj_dialog/lib/features/consonant_training/view/consonant_training_screens.dart:479), [게임 필터](/Users/youngwhankim/Project/mj_dialog/lib/services/practice_content_service.dart:424).
+현재 `다음`은 마지막 항목에서 처음으로 순환하므로 명시적인 세션 완료 화면을 추가할 필요가 있다. 또한 단어 게임의 자음 필터는 초성·받침을 함께 검색하고 조건에 맞는 항목이 없으면 다른 단어로 대체할 수 있어, 정확한 위치를 지정하는 자음 집중 훈련과 기능을 구분해야 한다. [항목 순환](../lib/features/consonant_training/view/consonant_training_screens.dart#L479), [게임 필터](../lib/services/practice_content_service.dart#L424).
 
 자음별 자동 점수 고도화보다 먼저 **선택 → 듣기 → 녹음 → 자기 비교 → 반복 → 저장**이 안정적으로 이어지는지 확인한다. 이번 후속 검토에서는 기능 코드를 변경하지 않았다.

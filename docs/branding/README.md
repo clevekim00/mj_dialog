@@ -1,5 +1,7 @@
 # 말이음 · SpeechBridge 브랜드 적용
 
+[한국어](README.md) | [English](README.en.md) | [전체 문서](../README.md)
+
 - 한국어 이름: **말이음**
 - 영어 이름: **SpeechBridge**
 - 한국어 설명: **마비말장애 말하기 연습**

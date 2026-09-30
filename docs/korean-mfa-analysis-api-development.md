@@ -1,5 +1,7 @@
 # 한국어 MFA 발음 분석 API 개발 내역
 
+[한국어](korean-mfa-analysis-api-development.md) | [English](korean-mfa-analysis-api-development.en.md) | [전체 문서](README.md)
+
 작성일: 2026-08-26  
 대상: 성인 후천성 마비말장애 자음 반복 훈련
 

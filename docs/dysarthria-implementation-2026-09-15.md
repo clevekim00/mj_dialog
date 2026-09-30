@@ -1,5 +1,7 @@
 # 마비말장애 연습 앱 개선 구현
 
+[한국어](dysarthria-implementation-2026-09-15.md) | [English](dysarthria-implementation-2026-09-15.en.md) | [전체 문서](README.md)
+
 2026-09-15 · [기존 검토서](dysarthria-app-review-2026-09-13.md)를 바탕으로 한 구현 결과.
 
 ## 사용 흐름

@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="An easy illustrated introduction to SpeechBridge: choosing consonants, recording, listening again, and resting.">
+  <title>SpeechBridge · Easy illustrated guide</title>
+  <style>
+    :root { --paper:#fffdf7; --ink:#203a35; --muted:#52665f; --green:#17664e; --mint:#e2f0e7; --line:#d9e2d8; --yellow:#f7e8ad; --rust:#a53d32; --blue:#e5edf7; font-size:20px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:100px; }
+    body { margin:0; background:#f0f1e9; color:var(--ink); font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif; line-height:1.65; word-break:keep-all; overflow-wrap:anywhere; }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    a { color:var(--green); text-underline-offset:5px; }
+    button { font:inherit; }
+    a:focus-visible,button:focus-visible,summary:focus-visible { outline:4px solid #ad5b00; outline-offset:5px; }
+    .skip { position:fixed; left:1rem; top:-8rem; padding:.7rem 1rem; z-index:5; background:white; }
+    .skip:focus { top:1rem; }
+    .toolbar { position:sticky; top:0; z-index:3; background:rgba(255,253,247,.98); border-bottom:1px solid var(--line); }
+    .toolbar-inner { max-width:1160px; margin:auto; padding:12px 24px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+    .brand { font-size:.85rem; font-weight:850; text-decoration:none; color:var(--ink); }
+    .tools { display:flex; gap:8px; flex-wrap:wrap; }
+    .tool { min-height:48px; padding:8px 16px; border:1px solid #9bada2; border-radius:12px; color:var(--ink); background:transparent; font-size:.8rem; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+    .tool[aria-pressed="true"] { background:var(--green); color:white; border-color:var(--green); }
+    main { max-width:1120px; margin:32px auto 0; padding:0 24px; }
+    .sheet { background:var(--paper); border:1px solid var(--line); border-radius:26px; margin:0 0 26px; padding:44px 48px; position:relative; scroll-margin-top:18px; }
+    .eyebrow { display:flex; align-items:center; gap:10px; margin:0 0 20px; color:var(--green); font-weight:800; font-size:.75rem; letter-spacing:.1em; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:clamp(2.3rem,5.6vw,3.9rem); letter-spacing:-.035em; line-height:1.17; margin-bottom:22px; }
+    h2 { font-size:clamp(1.65rem,3.5vw,2.35rem); line-height:1.3; letter-spacing:-.025em; margin-bottom:14px; }
+    h3 { font-size:1.16rem; line-height:1.4; letter-spacing:-.02em; margin-bottom:12px; }
+    .lead { font-size:1.12rem; color:var(--muted); line-height:1.65; }
+    .note { color:var(--muted); font-size:.84rem; line-height:1.65; }
+    .tag { display:inline-block; padding:6px 13px; border-radius:8px; background:var(--mint); color:var(--green); font-size:.8rem; font-weight:800; }
+    .num { width:40px; height:40px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:var(--green); color:white; font-size:.86rem; letter-spacing:0; flex:none; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:center; margin-top:26px; }
+    .split.wide { grid-template-columns:1.15fr 1fr; }
+    .row { display:flex; align-items:center; gap:16px; }
+    .stack { display:grid; gap:14px; }
+    .steps { margin:0; padding:0; list-style:none; counter-reset:step; display:grid; gap:24px; }
+    .steps>li { position:relative; padding-left:48px; counter-increment:step; }
+    .steps>li::before { content:counter(step); position:absolute; left:0; top:0; background:var(--mint); color:var(--green); width:34px; height:34px; border-radius:50%; text-align:center; font-weight:800; line-height:34px; }
+    .steps strong { display:block; margin-bottom:3px; }
+    .steps p { margin-bottom:0; font-size:.93rem; }
+    .callout { background:var(--mint); padding:18px 22px; border-radius:16px; margin-top:24px; }
+    .callout p { margin:0; }
+    .callout.warm { background:#fbefd7; }
+    .callout strong { color:var(--green); }
+    .ui { display:inline; font-weight:800; border-radius:5px; padding:0 4px; background:#e8ece5; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+    .route { font-size:.84rem; color:var(--muted); margin:0 0 24px; }
+    .route b { color:var(--ink); }
+    .route span { padding:0 6px; }
+    .icon { width:34px; height:34px; display:block; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+    .big-icon { width:112px; height:112px; padding:18px; margin:0 auto 14px; color:var(--green); }
+    .three { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .flow { margin:34px 0 28px; }
+    .flow-card { border-radius:22px; padding:26px 16px; text-align:center; background:var(--mint); position:relative; }
+    .flow-card:nth-child(2) { background:var(--yellow); }
+    .flow-card:nth-child(3) { background:var(--blue); }
+    .flow-card h3 { margin:0; font-size:1.35rem; }
+    .flow-card p { margin:8px 0 0; font-size:.86rem; }
+    .primary-link { background:var(--green); color:white; border-radius:14px; padding:14px 24px; font-size:.95rem; font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:12px; min-height:56px; }
+    .toc { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-top:28px; }
+    .toc a { padding:12px 10px; min-height:50px; background:#f0f2eb; border-radius:10px; font-size:.78rem; text-decoration:none; font-weight:700; }
+    .toc a span { display:block; color:var(--muted); font-size:.68rem; margin-bottom:3px; }
+    figure { margin:0; min-width:0; }
+    figcaption { margin-top:10px; font-size:.72rem; color:var(--muted); text-align:center; }
+    .picture { background:#eff2e9; border-radius:22px; padding:28px 24px; }
+    .phone { border:8px solid #243d37; border-radius:32px; padding:22px 18px 18px; background:#131c22; color:#f6f8f7; max-width:332px; width:100%; margin:auto; box-shadow:8px 9px 0 #c7d6cb; line-height:1.45; }
+    .phone::before { content:""; display:block; height:5px; width:58px; border-radius:9px; background:#61746d; margin:0 auto 16px; }
+    .phone-title { font-weight:800; font-size:.85rem; margin:0 0 15px; }
+    .phone-label { color:#ccd7d2; font-size:.65rem; margin:12px 0 7px; }
+    .screen-chips { display:flex; flex-wrap:wrap; gap:7px; }
+    .screen-chip { padding:6px 10px; border-radius:9px; border:1px solid #687b75; font-size:.63rem; font-weight:700; }
+    .screen-chip.active { background:#bdecd7; border-color:#bdecd7; color:#183d31; }
+    .mock-button { display:flex; align-items:center; justify-content:center; gap:7px; border-radius:12px; padding:13px 10px; min-height:50px; font-size:.7rem; font-weight:800; text-align:center; background:#c1eedb; color:#133d2e; margin-top:10px; }
+    .mock-button .icon { width:22px; height:22px; }
+    .mock-button.outline { color:#e3eae6; border:1px solid #9aada4; background:transparent; }
+    .mock-button.stop { background:#f3c7bc; color:#682a1e; }
+    .target { font-size:5.4rem; line-height:1.1; text-align:center; padding:24px 0; font-weight:750; }
+    .target u { text-decoration-color:#bdecd7; text-underline-offset:12px; text-decoration-thickness:5px; }
+    .target.sentence { font-size:1.4rem; line-height:1.65; text-align:left; padding:24px 6px; }
+    .target-small { text-align:center; font-size:.68rem; color:#ccd7d2; }
+    .letter-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0; }
+    .letter { font-size:1.7rem; text-align:center; padding:10px 0; border:1px solid #70867c; border-radius:12px; }
+    .letter.active { background:#bdecd7; color:#133d2e; border-color:#bdecd7; }
+    .word-lesson { border:1px solid var(--line); border-radius:16px; padding:18px; text-align:center; }
+    .word-lesson svg { display:block; width:100%; height:142px; }
+    .word-lesson p { margin:5px 0 0; font-size:.83rem; }
+    .choice-explain { margin-top:24px; }
+    .count { display:flex; align-items:center; justify-content:center; gap:10px; margin:18px 0; }
+    .count span { height:58px; width:58px; border:2px solid var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green); background:#bdecd7; font-weight:800; }
+    .audio-card { padding:20px; background:white; border:1px solid var(--line); border-radius:18px; }
+    .audio-card p { margin:0; }
+    .wave { height:50px; display:flex; align-items:center; justify-content:center; gap:7px; margin:10px 0; color:var(--green); }
+    .wave i { display:block; width:8px; height:var(--h,20px); border-radius:6px; background:currentColor; }
+    .big-word { font-weight:850; font-size:1.4rem; }
+    .mini-card { padding:24px; border:1px solid var(--line); border-radius:18px; }
+    .mini-card .icon { color:var(--green); margin-bottom:12px; width:48px; height:48px; }
+    .mini-card p:last-child { margin-bottom:0; }
+    .fatigue { display:flex; justify-content:space-between; gap:8px; margin:20px 0 10px; }
+    .fatigue span { display:grid; place-items:center; height:46px; min-width:32px; flex:1; border:1px solid var(--line); background:white; border-radius:9px; font-weight:800; }
+    .fatigue .selected { border:2px solid var(--green); color:var(--green); background:var(--mint); }
+    .fatigue-labels { display:flex; justify-content:space-between; color:var(--muted); font-size:.78rem; }
+    .branch { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+    .branch>div { padding:16px; background:var(--mint); border-radius:16px; }
+    .branch p { font-size:.84rem; margin:7px 0 0; }
+    .practice-cycle { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px; }
+    .practice-cycle figure { border:1px solid var(--line); border-radius:18px; padding:20px 16px; text-align:center; background:#f4f6ef; }
+    .practice-cycle .large-sound { height:105px; display:grid; place-items:center; font-size:3.5rem; font-weight:800; color:var(--green); }
+    .practice-cycle .big-icon { width:105px; height:105px; margin:0 auto; }
+    .action-label { display:flex; align-items:center; justify-content:center; border-radius:10px; min-height:66px; background:var(--green); color:white; font-size:.83rem; font-weight:800; padding:10px; margin:12px 0; }
+    .practice-cycle figure:last-child .action-label { background:var(--rust); }
+    .practice-cycle figcaption { color:var(--ink); font-size:.9rem; }
+    .help-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:24px 0; }
+    .help-item { padding:20px; background:#f0f2eb; border-radius:16px; }
+    .help-item h3 { font-size:1rem; }
+    .help-item p { font-size:.87rem; margin:0; }
+    details { border-top:1px solid var(--line); padding:16px 0; }
+    summary { cursor:pointer; font-weight:800; padding:8px 0; min-height:48px; }
+    details p { margin:10px 0 0; }
+    .privacy-picture { width:100%; height:auto; display:block; }
+    .page-end { margin-top:30px; padding-top:14px; border-top:1px solid var(--line); display:flex; gap:16px; justify-content:space-between; font-size:.78rem; color:var(--muted); }
+    .page-end a { text-decoration:none; font-weight:800; padding:5px 0; }
+    footer { max-width:1120px; margin:0 auto 40px; padding:0 36px; font-size:.74rem; color:var(--muted); }
+    footer p { margin-bottom:10px; }
+    .large-type { font-size:24px; }
+    .large-type .three,.large-type .practice-cycle { grid-template-columns:1fr; }
+    .large-type .flow-card { display:grid; grid-template-columns:120px 1fr; align-items:center; text-align:left; }
+    .large-type .flow-card .big-icon { grid-row:span 2; margin:0; }
+    .large-type .split { grid-template-columns:1fr; }
+    .large-type .phone { max-width:390px; }
+    .large-type .toc { grid-template-columns:repeat(3,1fr); }
+    .large-type .practice-cycle figure { display:grid; grid-template-columns:110px 1fr; gap:10px; align-items:center; }
+    .large-type .practice-cycle figcaption { grid-column:1/-1; }
+    @media(max-width:760px) {
+      html { scroll-padding-top:170px; }
+      main { padding:0 12px; margin-top:16px; }
+      .toolbar-inner { padding:10px 14px; }
+      .brand { font-size:.78rem; }
+      .tool { padding:8px 10px; font-size:.73rem; }
+      .sheet { padding:30px 24px; border-radius:19px; }
+      .split,.split.wide { grid-template-columns:1fr; gap:26px; }
+      .three { grid-template-columns:1fr; gap:12px; }
+      .flow-card { display:grid; grid-template-columns:96px 1fr; align-items:center; text-align:left; padding:18px; }
+      .flow-card .big-icon { width:86px; height:86px; margin:0; grid-row:span 2; padding:10px; }
+      .flow-card h3 { font-size:1.18rem; }
+      .flow-card p { margin:2px 0 0; }
+      .toc,.large-type .toc { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .practice-cycle { grid-template-columns:1fr; }
+      .practice-cycle figure { display:grid; grid-template-columns:84px 1fr; gap:10px; align-items:center; padding:20px 16px; }
+      .practice-cycle .big-icon { width:84px; height:84px; padding:9px; }
+      .practice-cycle .large-sound { height:84px; font-size:3rem; }
+      .practice-cycle figcaption { grid-column:1/-1; }
+      .action-label { margin:0; }
+      .help-grid { grid-template-columns:1fr; }
+      .picture { padding:22px 12px; }
+      .two,.branch { grid-template-columns:1fr; }
+      .choice-explain.two { grid-template-columns:1fr 1fr; gap:10px; }
+      .word-lesson { padding:12px 8px; }
+      .word-lesson h3 { font-size:1rem; }
+      .large-type .choice-explain.two { grid-template-columns:1fr; }
+      .page-end { align-items:flex-start; }
+    }
+    @media(max-width:380px) {
+      .flow-card,.large-type .flow-card { grid-template-columns:72px minmax(0,1fr); padding:14px; }
+      .flow-card .big-icon { width:64px; height:64px; }
+      .practice-cycle figure,.large-type .practice-cycle figure { grid-template-columns:1fr; }
+      .practice-cycle .large-sound,.practice-cycle .big-icon { margin:auto; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @page { size:A4; margin:15mm; }
+    @media print {
+      :root,.large-type { font-size:13pt; }
+      html { scroll-padding-top:0; }
+      body { background:white; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .toolbar,.skip,.no-print,.toc,.page-end a { display:none!important; }
+      main { max-width:none; margin:0; padding:0; }
+      .sheet { border:0; border-radius:0; margin:0; padding:4mm 0 0; break-after:page; break-inside:avoid; }
+      .sheet:last-child { break-after:auto; }
+      h1 { font-size:38pt; }
+      h2 { font-size:26pt; }
+      h3 { font-size:16pt; }
+      .split,.split.wide,.large-type .split { grid-template-columns:1fr 1fr; gap:8mm; }
+      .three,.large-type .three { grid-template-columns:repeat(3,1fr); gap:4mm; }
+      .flow-card,.large-type .flow-card { display:block; text-align:center; padding:6mm 3mm; }
+      .flow-card .big-icon,.large-type .flow-card .big-icon { margin:0 auto 4mm; }
+      .phone,.large-type .phone { max-width:72mm; box-shadow:2mm 2mm 0 #c7d6cb; padding:5mm 4mm; border-width:2mm; }
+      .phone-title { font-size:11pt; }
+      .phone-label,.screen-chip { font-size:9pt; }
+      .mock-button { font-size:10pt; min-height:13mm; }
+      .target { font-size:62pt; }
+      .picture { padding:6mm; }
+      .two,.branch,.large-type .two { grid-template-columns:1fr 1fr; }
+      .practice-cycle,.large-type .practice-cycle { grid-template-columns:1fr; }
+      .practice-cycle figure,.large-type .practice-cycle figure { display:grid; grid-template-columns:24mm 1fr; gap:4mm; padding:4mm; }
+      .practice-cycle .large-sound,.practice-cycle .big-icon { height:21mm; width:21mm; }
+      .practice-cycle figcaption { grid-column:1/-1; margin-top:0; }
+      .action-label { margin:0; min-height:18mm; }
+      .help-grid { grid-template-columns:1fr 1fr; }
+      .steps { gap:5mm; }
+      .callout { padding:5mm; margin-top:6mm; }
+      .page-end { margin-top:7mm; }
+      .big-icon { width:25mm; height:25mm; }
+      .mini-card { padding:5mm; }
+      #other .mini-card .row { margin-bottom:3mm; }
+      #other .mini-card .icon { width:9mm; height:9mm; margin:0; }
+      #other .mini-card h3 { margin:0; }
+      #other .mini-card p { margin:0 0 2mm; }
+      .sheet,figure,.callout,.mini-card,.help-item,.steps>li { break-inside:avoid; }
+      footer { max-width:none; margin:8mm 0 0; padding:0; }
+      details { padding:3mm 0; }
+      details>*:not(summary) { display:block!important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#first">Skip to the guide</a>
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden"><defs>
+    <symbol id="i-ear" viewBox="0 0 48 48"><path d="M15 26c-4-3-6-7-6-11C9 7 15 3 22 3s14 5 14 13c0 7-5 10-8 14-3 4-2 9-8 11-5 2-10-2-10-6"/><path d="M16 17c-2-5 2-8 6-8 5 0 8 4 7 8-1 5-8 4-9 9"/><path d="M41 12c3 5 3 10 0 15"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 48 48"><rect x="17" y="4" width="14" height="26" rx="7"/><path d="M10 23v2a14 14 0 0 0 28 0v-2M24 39v6M16 45h16"/></symbol>
+    <symbol id="i-listen" viewBox="0 0 48 48"><path d="M7 29v-7a17 17 0 0 1 34 0v7"/><rect x="4" y="24" width="9" height="17" rx="4"/><rect x="35" y="24" width="9" height="17" rx="4"/><path d="M22 19l10 7-10 7z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 48 48"><path d="M17 8l25 16-25 16z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 48 48"><rect x="10" y="10" width="28" height="28" rx="4"/></symbol>
+    <symbol id="i-speak" viewBox="0 0 48 48"><path d="M5 19h9l12-10v30L14 29H5zM33 16c5 4 5 12 0 16M39 10c9 8 9 20 0 28"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 48 48"><path d="M10 36C-1 13 24 9 39 5c1 22-4 41-24 33M10 44L29 20"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 48 48"><path d="M40 33H20L9 42v-9H7a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4h33a4 4 0 0 1 4 4v19a4 4 0 0 1-4 4zM12 16h24M12 23h16"/></symbol>
+    <symbol id="i-book" viewBox="0 0 48 48"><path d="M24 10c-5-5-14-5-21-2v30c7-3 16-3 21 2 5-5 14-5 21-2V8c-7-3-16-3-21 2v30M10 16h7M10 23h7M31 16h7M31 23h7"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 48 48"><path d="M4 12h15l5 6h20v23H4zM4 12V7h14l5 5h19v6"/><path d="M20 24l10 6-10 6z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/><path d="M13 24l8 8 15-17"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 48 48"><path d="M13 22V11a3 3 0 0 1 6 0v12-17a3 3 0 0 1 6 0v17-15a3 3 0 0 1 6 0v16-10a3 3 0 0 1 6 0v17c0 8-5 13-13 13-6 0-10-3-13-8L5 25c-2-4 3-7 6-3l5 6"/></symbol>
+  </defs></svg>
+  <header class="toolbar">
+    <div class="toolbar-inner">
+      <a class="brand" href="#top">SpeechBridge · Easy guide</a>
+      <nav class="tools" aria-label="Document language"><a class="tool" href="user-guide.html" lang="ko">한국어</a><a class="tool" href="user-guide.en.html" lang="en" aria-current="page">English</a></nav>
+      <div class="tools" aria-label="Guide display settings">
+        <a class="tool" href="#contents">Contents</a>
+        <button class="tool" id="font-toggle" type="button" aria-pressed="false">Larger text</button>
+        <button class="tool" id="print-guide" type="button">Print / Save PDF</button>
+      </div>
+    </div>
+  </header>
+  <main id="top">
+    <p class="callout">Archived guide · September 17, 2026. Screen and button names reflect that version. <a href="https://clevekim00.github.io/mj_dialog/user-guide.en.html">Read the current guide</a></p>
+    <section class="sheet" aria-labelledby="guide-title">
+      <p class="eyebrow">SPEECH REHAB / ILLUSTRATED GUIDE</p>
+      <h1 id="guide-title">Speaking practice,<br>one step at a time.</h1>
+      <p class="lead">It is okay to be new.<br>Follow the big pictures at your own pace.</p>
+      <div class="three flow" aria-label="Listen to an example, speak, and replay your voice">
+        <div class="flow-card"><svg class="icon big-icon" aria-hidden="true"><use href="#i-ear"/></svg><h3>Listen</h3><p>Hear an example.</p></div>
+        <div class="flow-card"><svg class="icon big-icon" aria-hidden="true"><use href="#i-mic"/></svg><h3>Speak</h3><p>Record your voice.</p></div>
+        <div class="flow-card"><svg class="icon big-icon" aria-hidden="true"><use href="#i-listen"/></svg><h3>Listen again</h3><p>Play your saved voice.</p></div>
+      </div>
+      <a class="primary-link no-print" href="#first">Start from the beginning <span aria-hidden="true">↓</span></a>
+      <nav class="toc" id="contents" aria-label="Guide contents">
+        <a href="#first"><span>01</span>First time here</a><a href="#choose"><span>02</span>Choose a consonant</a><a href="#record"><span>03</span>Listen and record</a><a href="#listen"><span>04</span>Hear your voice</a><a href="#rest"><span>05</span>Rest and resume</a>
+        <a href="#reading"><span>06</span>Read a sentence</a><a href="#other"><span>07</span>Try other practice</a><a href="#library"><span>08</span>Find past recordings</a><a href="#help"><span>09</span>When things go wrong</a><a href="#privacy"><span>10</span>About your recordings</a>
+      </nav>
+      <p class="note" style="margin:24px 0 0">These are simplified illustrations. Actual layouts vary by device.<br>Look for the app button names shown in the boxes.</p>
+    </section>
+
+    <section class="sheet" id="first" aria-labelledby="first-title">
+      <p class="eyebrow"><span class="num">01</span> FIRST TIME ONLY</p>
+      <h2 id="first-title">Set up your practice.</h2>
+      <p class="lead">Choose your goal and time.</p>
+      <div class="split">
+        <ol class="steps">
+          <li><strong>Choose a goal and time.</strong><p>Tap <span class="ui">Today's main goal</span> and <span class="ui">Daily practice time</span>.</p></li>
+          <li><strong>Read the safety guidance.</strong><p>Check <span class="ui">I have read the safety guidance.</span></p></li>
+          <li><strong>Press the start button.</strong><p><span class="ui">Start speaking practice</span></p></li>
+        </ol>
+        <figure class="picture">
+          <div class="phone" role="img" aria-label="Setup example: Speak slowly, 5 minutes daily, safety acknowledgment, and Start speaking practice.">
+            <p class="phone-title">Start speaking practice<br>safely</p>
+            <p class="phone-label">Today's main goal</p><div class="screen-chips"><span class="screen-chip">Speak clearly</span><span class="screen-chip active">Speak slowly</span></div>
+            <p class="phone-label">Daily practice time</p><div class="screen-chips"><span class="screen-chip active">5 min</span><span class="screen-chip">10 min</span><span class="screen-chip">15 min</span></div>
+            <p class="phone-label" style="margin-top:22px">☑ I have read the safety guidance.</p><div class="mock-button">Start speaking practice</div>
+          </div><figcaption>The selected values are examples.</figcaption>
+        </figure>
+      </div>
+      <div class="callout"><p><strong>Recording needs microphone access.</strong><br>Read the permission message and make your choice.</p></div>
+      <div class="page-end"><span>Finished setup? Continue to the next step.</span><a href="#choose">Choose a consonant →</a></div>
+    </section>
+
+    <section class="sheet" id="choose" aria-labelledby="choose-title">
+      <p class="eyebrow"><span class="num">02</span> CONSONANT PRACTICE / CHOOSE</p>
+      <h2 id="choose-title">Choose one consonant to practice.</h2>
+      <p class="route">Home <span aria-hidden="true">›</span> <b>Choose a consonant to practice</b> <span aria-hidden="true">›</span> <b>Choose a consonant</b></p>
+      <div class="split">
+        <div>
+          <ol class="steps">
+            <li><strong><span class="ui">Initial</span> or <span class="ui">Final</span></strong><p>Choose the sound position.</p></li>
+            <li><strong>Tap the consonant you want.</strong><p>We will use <span class="ui">ㄱ</span> for this example.</p></li>
+            <li><strong>Choose a stage and repeat goal.</strong><p><span class="ui">Syllable</span> · <span class="ui">Word</span> · <span class="ui">Short sentence</span><br>Choose a goal of 3, 5, or 10 saved recordings.</p></li>
+          </ol>
+        </div>
+        <figure class="picture">
+          <div class="phone" role="img" aria-label="Illustration of selecting Initial and then ㄱ.">
+            <p class="phone-title">Choose a consonant to practice</p>
+            <div class="screen-chips"><span class="screen-chip active">Initial</span><span class="screen-chip">Final</span></div>
+            <div class="letter-grid" aria-hidden="true"><span class="letter active">ㄱ</span><span class="letter">ㄲ</span><span class="letter">ㄴ</span><span class="letter">ㄷ</span><span class="letter">ㄸ</span><span class="letter">ㄹ</span></div>
+            <p class="target-small">Tap the consonant you want.</p>
+          </div><figcaption>Example: choosing ㄱ</figcaption>
+        </figure>
+      </div>
+      <div class="two choice-explain">
+        <figure class="word-lesson"><h3>What is an initial?</h3><svg viewBox="0 0 220 140" role="img" aria-label="In 가, made from ㄱ and ㅏ, ㄱ is the initial consonant."><text x="14" y="70" font-size="65" fill="#17664e" font-weight="800">ㄱ</text><text x="92" y="64" font-size="28" fill="#52665f">+</text><text x="132" y="70" font-size="65" fill="#52665f">ㅏ</text><path d="M25 90h55" stroke="#17664e" stroke-width="6" stroke-linecap="round"/><text x="110" y="131" text-anchor="middle" font-size="22" fill="#203a35">가</text></svg><p>In ‘가’, the starting sound is <b>ㄱ</b></p></figure>
+        <figure class="word-lesson"><h3>What is a final?</h3><svg viewBox="0 0 220 140" role="img" aria-label="In 산, ㄴ at the bottom is the final consonant."><text x="110" y="58" text-anchor="middle" font-size="64" fill="#52665f">사</text><text x="110" y="108" text-anchor="middle" font-size="64" fill="#17664e" font-weight="800">ㄴ</text><path d="M75 120h70" stroke="#17664e" stroke-width="6" stroke-linecap="round"/></svg><p>In ‘산’, the bottom consonant is <b>ㄴ</b></p></figure>
+      </div>
+      <div class="page-end"><span>A Korean syllable is a block such as ‘가’.</span><a href="#record">Try recording →</a></div>
+    </section>
+
+    <section class="sheet" id="record" aria-labelledby="record-title">
+      <p class="eyebrow"><span class="num">03</span> CONSONANT PRACTICE / RECORD</p>
+      <h2 id="record-title">Press the button, then speak.</h2>
+      <p class="lead">Practice the text on the screen.</p>
+      <div class="practice-cycle">
+        <figure><svg class="icon big-icon" aria-hidden="true"><use href="#i-speak"/></svg><div class="action-label">Listen to example · Synthetic TTS voice</div><figcaption><b>① Listen first.</b><br>The example is read by a computer voice.</figcaption></figure>
+        <figure><div class="large-sound" aria-hidden="true">가</div><div class="action-label">Read along and record</div><figcaption><b>② Press this button, then speak.</b><br>If you see ‘가’, say “가”.</figcaption></figure>
+        <figure><svg class="icon big-icon" style="color:var(--rust)" aria-hidden="true"><use href="#i-stop"/></svg><div class="action-label">Stop recording and save</div><figcaption><b>③ Press this when you finish speaking.</b><br>Your voice is saved on your device.</figcaption></figure>
+      </div>
+      <div class="callout"><p><strong>The recording button is at the bottom.</strong><br>While recording, it changes to ‘Stop recording and save’.</p></div>
+      <div class="page-end"><span>The underlined syllable marks your chosen consonant's position.</span><a href="#listen">Hear your recording →</a></div>
+    </section>
+
+    <section class="sheet" id="listen" aria-labelledby="listen-title">
+      <p class="eyebrow"><span class="num">04</span> CONSONANT PRACTICE / LISTEN AGAIN</p>
+      <h2 id="listen-title">Listen to your own voice.</h2>
+      <div class="split">
+        <div>
+          <ol class="steps">
+            <li><strong><span class="ui">Listen to this recording</span></strong><p>Hear what you just said.</p></li>
+            <li><strong>Choose whether to try again.</strong><p>Choose <span class="ui">Practice the same item again</span> or <span class="ui">Next item</span>.</p></li>
+            <li><strong>Finish when you reach your goal.</strong><p>Tap <span class="ui">Finish and return</span>.</p></li>
+          </ol>
+          <p class="note" style="margin-top:20px">If you recorded the same item and consonant before,<br><span class="ui">Listen to previous recording of this item</span> is also available.<br>The practice language must also match.</p>
+        </div>
+        <figure class="picture">
+          <div class="audio-card"><div class="row"><svg class="icon" aria-hidden="true"><use href="#i-listen"/></svg><b>My “가” recording</b></div><div class="wave" aria-hidden="true"><i style="--h:14px"></i><i style="--h:25px"></i><i style="--h:40px"></i><i style="--h:30px"></i><i style="--h:48px"></i><i style="--h:20px"></i><i style="--h:34px"></i><i style="--h:16px"></i></div></div>
+          <div class="count" aria-label="One, two, three saved recordings"><span>1</span><span>2</span><span>3</span></div>
+          <p style="text-align:center;margin:0"><b>For a goal of 3,</b><br>save three recordings to finish!</p>
+          <figcaption>You do not need three correct answers.</figcaption>
+        </figure>
+      </div>
+      <div class="callout warm"><p><b>Changing stages starts a new count.</b><br>Switching from Syllable to Word resets the count to 0.</p></div>
+      <div class="page-end"><span>3, 5, and 10 refer to saved recordings.</span><a href="#rest">How to rest →</a></div>
+    </section>
+
+    <section class="sheet" id="rest" aria-labelledby="rest-title">
+      <p class="eyebrow"><span class="num">05</span> REST AND RESUME</p>
+      <h2 id="rest-title">You can rest before you finish.</h2>
+      <p class="lead">You do not have to reach the whole goal.</p>
+      <div class="split">
+        <ol class="steps">
+          <li><strong>If recording, finish it first.</strong><p>Tap <span class="ui">Stop recording and save</span>.</p></li>
+          <li><strong>Go back after saving.</strong><p>Tap the back arrow at the top.</p></li>
+          <li><strong>Continue next time.</strong><p>On Home, look for <span class="ui">Resume</span>.</p></li>
+        </ol>
+        <figure class="picture">
+          <svg class="icon big-icon" aria-hidden="true" style="width:132px;height:132px"><use href="#i-leaf"/></svg>
+          <div class="audio-card"><p class="note">When you come back</p><p class="big-word">ㄱ initial · Syllable<br>Resume</p></div>
+          <figcaption>Continue your chosen consonant and practice.</figcaption>
+        </figure>
+      </div>
+      <div class="callout warm"><p><strong>Stop if you feel uncomfortable.</strong><br>Follow the plan agreed with your professional, if you have one.</p></div>
+      <div class="page-end"><span>You now know how consonant practice works.</span><a href="#reading">Try a sentence →</a></div>
+    </section>
+
+    <section class="sheet" id="reading" aria-labelledby="reading-title">
+      <p class="eyebrow"><span class="num">06</span> READ SENTENCES</p>
+      <h2 id="reading-title">Now try reading a sentence.</h2>
+      <p class="route"><b>Today</b> <span aria-hidden="true">›</span> <b>Choose another practice</b> <span aria-hidden="true">›</span> <b>Read short sentences</b></p>
+      <div class="split">
+        <div>
+          <ol class="steps">
+            <li><strong>Tap <span class="ui">Start recording</span>.</strong><p>If asked about fatigue before practice, choose how you feel now.</p></li>
+            <li><strong>Read the sentence you see.</strong><p>When you finish, choose <span class="ui">Stop recording</span>.</p></li>
+            <li><strong><span class="ui">Listen to my voice</span></strong><p>After listening, choose <span class="ui">Repeat this sentence</span> or <span class="ui">Next short sentence</span>.</p></li>
+          </ol>
+        </div>
+        <figure class="picture">
+          <div class="phone" role="img" aria-label="Sentence example with text, Start recording, Rest / Finish, and Listen to example."><p class="phone-title">Read short sentences</p><p class="target sentence">Read the sentence<br>on the screen.</p><div class="mock-button"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg>Start recording</div><div class="mock-button outline">Rest / Finish</div><p class="target-small" style="margin:14px 0 0">Listen to example (synthetic voice)</p></div>
+          <figcaption>After another recording, the label is ‘Listen to latest recording’.</figcaption>
+        </figure>
+      </div>
+      <div class="two" style="margin-top:24px">
+        <div class="mini-card"><h3>Fatigue means how you feel now.</h3><div class="fatigue" aria-label="Fatigue 1 to 5: 1 is comfortable; 5 is very tired."><span class="selected">1</span><span>2</span><span>3</span><span>4</span><span>5</span></div><div class="fatigue-labels"><span>Comfortable</span><span>Very tired</span></div></div>
+        <div class="mini-card"><h3>When you finish</h3><p>Tap <span class="ui">Rest / Finish</span>.</p><p class="note">You may record your final fatigue, or choose<br><span class="ui">Finish without recording fatigue</span>.</p></div>
+      </div>
+      <div class="page-end"><span>The sentence recording button is also at the bottom.</span><a href="#other">See other practice →</a></div>
+    </section>
+
+    <section class="sheet" id="other" aria-labelledby="other-title">
+      <p class="eyebrow"><span class="num">07</span> TRY WHEN YOU FEEL READY</p>
+      <h2 id="other-title">There are other ways to practice.</h2>
+      <p class="lead">Choosing just one for today is enough.</p>
+      <div class="stack" style="margin-top:26px">
+        <div class="mini-card"><div class="row"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg><h3>Have a conversation</h3></div><p class="route"><b>Today → Free conversation</b></p><p>Tap <span class="ui">Talk by voice</span>, or choose <br><span class="ui">Talk by text</span> and type your message.</p><p class="note">You can also tap the prepared sentence ‘I would like a short rest.’<br>To finish, choose <span class="ui">End conversation</span>.</p></div>
+        <div class="mini-card"><div class="row"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><h3>Say one word at a time</h3></div><p class="route"><b>Today → Word game</b></p><p><span class="ui">Start practice</span> → <span class="ui">Start speaking</span><br>After speaking, choose <span class="ui">Check result</span>.</p><p class="note">The time limit is off at first.<br>Tap <span class="ui">Take a break</span>, then choose <span class="ui">Resume practice</span> to return.</p></div>
+        <div class="mini-card"><div class="row"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg><h3>Follow mouth and breathing movements</h3></div><p class="route"><b>Training → Oral and breathing training</b></p><p><span class="ui">Start recommended routine</span> → choose fatigue and repetitions<br>→ <span class="ui">Start training</span></p><p class="note">Tap <span class="ui">Pause</span> to rest. When leaving, choose <span class="ui">Save and finish</span>.<br>‘Demonstration loops’ counts how often the guide repeats.</p></div>
+      </div>
+      <div class="page-end"><span>Read the guidance first for exercises requiring professional review.</span><a href="#library">Find past recordings →</a></div>
+    </section>
+
+    <section class="sheet" id="library" aria-labelledby="library-title">
+      <p class="eyebrow"><span class="num">08</span> FIND PAST RECORDINGS</p>
+      <h2 id="library-title">You can hear earlier recordings too.</h2>
+      <p class="lead">Find sentence and word audio in the library.</p>
+      <div class="split">
+        <ol class="steps"><li><strong>Open <span class="ui">History</span>.</strong><p>It is in the bottom or side menu.</p></li><li><strong><span class="ui">Recording library</span></strong><p>Find a recording to hear again.</p></li><li><strong>Tap <span class="ui">Listen</span>.</strong><p>Hear your voice from that time.</p></li></ol>
+        <figure class="picture"><svg class="icon big-icon" aria-hidden="true" style="width:146px;height:146px"><use href="#i-folder"/></svg><div class="audio-card"><div class="row"><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><p><b>My saved recording</b><br><span class="note">Check the date and practice text.</span></p></div></div><figcaption>You can replay recordings whose files are still available.</figcaption></figure>
+      </div>
+      <div class="callout"><p><strong>For consonant audio, open the same practice item.</strong><br>Tap <span class="ui">Listen to previous recording of this item</span>.</p><p class="note" style="margin-top:12px"><span class="ui">Choose a consonant to practice</span> has a History button that shows the practice list.</p></div>
+      <div class="page-end"><span>You can listen to recordings and compare them.</span><a href="#help">When things go wrong →</a></div>
+    </section>
+
+    <section class="sheet" id="help" aria-labelledby="help-title">
+      <p class="eyebrow"><span class="num">09</span> WHEN THINGS GO WRONG</p>
+      <h2 id="help-title">The app may misunderstand you.</h2>
+      <p class="lead">‘Analysis unavailable’ does not mean your pronunciation is wrong.</p>
+      <div class="help-grid">
+        <div class="help-item"><h3>The microphone will not turn on.</h3><p>Check this app's microphone permission in device settings. Ask someone helping you if needed.</p></div>
+        <div class="help-item"><h3>The app shows different words.</h3><p>Listen to your recording first. Retry when comfortable, or rest.</p></div>
+        <div class="help-item"><h3>I cannot hear the example.</h3><p>Check volume and headphones. You can also practice from the text.</p></div>
+        <div class="help-item"><h3>There is no score.</h3><p>Free conversation has no pronunciation score. Other practice also leaves scores empty when comparison information is unavailable.</p></div>
+      </div>
+      <div class="callout">
+        <div class="row"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><h3 style="margin:0">‘Text match’ compares written text.</h3></div>
+        <p style="margin-top:12px">It shows how closely the recognized words match the target text.<br><strong>It is not pronunciation accuracy or treatment effectiveness.</strong></p>
+      </div>
+      <div class="page-end"><span>You do not have to do everything well at once.</span><a href="#privacy">About your recordings →</a></div>
+    </section>
+
+    <section class="sheet" id="privacy" aria-labelledby="privacy-title">
+      <p class="eyebrow"><span class="num">10</span> ABOUT CONSONANT RECORDINGS</p>
+      <h2 id="privacy-title">Server analysis is optional.</h2>
+      <p class="lead">Consonant recordings are saved on your device first.<br>You can listen and compare without server analysis.</p>
+      <figure class="picture" style="margin-top:26px">
+        <svg class="privacy-picture" viewBox="0 0 760 250" role="img" aria-labelledby="privacy-svg-title privacy-svg-desc">
+          <title id="privacy-svg-title">Save on your device, then send to a separate server only if you choose.</title>
+          <desc id="privacy-svg-desc">A microphone is shown inside the phone on the left. A dotted arrow to the server on the right is labeled Separate consent.</desc>
+          <rect x="63" y="22" width="123" height="173" rx="24" fill="#fffdf7" stroke="#203a35" stroke-width="7"/><path d="M111 40h28" stroke="#203a35" stroke-width="5" stroke-linecap="round"/>
+          <svg x="99" y="65" width="56" height="74" class="icon" style="color:#17664e"><use href="#i-mic"/></svg>
+          <path d="M111 170l9 9 20-23" fill="none" stroke="#17664e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M237 108h255" stroke="#71867a" stroke-width="4" stroke-dasharray="10 10"/><path d="M477 96l16 12-16 12" fill="none" stroke="#71867a" stroke-width="4" stroke-linecap="round"/>
+          <rect x="277" y="75" width="173" height="61" rx="16" fill="#17664e"/><text x="363" y="114" text-anchor="middle" fill="white" font-size="18" font-weight="700">Separate consent</text>
+          <rect x="553" y="51" width="130" height="122" rx="17" fill="#e2f0e7" stroke="#203a35" stroke-width="5"/><path d="M553 91h130M553 132h130" stroke="#203a35" stroke-width="4"/><circle cx="572" cy="71" r="5" fill="#17664e"/><circle cx="572" cy="112" r="5" fill="#17664e"/><circle cx="572" cy="151" r="5" fill="#17664e"/>
+          <text x="125" y="236" text-anchor="middle" fill="#203a35" font-size="25" font-weight="700">My device</text><text x="618" y="236" text-anchor="middle" fill="#203a35" font-size="25" font-weight="700">Analysis server</text>
+        </svg><figcaption>A server is another computer that receives recording information for analysis.</figcaption>
+      </figure>
+      <div class="callout"><p><strong>You can skip this for now.</strong><br>Knowing how to record and listen again is enough to practice consonants.</p></div>
+      <details id="analysis-details"><summary>If you want server analysis</summary><p class="note">After recording a consonant, open <span class="ui">Optional: analyze phoneme intervals on the server</span>. Check the destination and data, consent, then choose <span class="ui">Send the consented recording to the server</span>. Your recording and information such as the practice sentence are sent. A connected analysis server is required. While waiting, you can choose <span class="ui">Cancel analysis</span>.</p></details>
+      <div class="page-end"><span>Listen · Speak · Listen again.</span><a href="#top">Back to top ↑</a></div>
+    </section>
+  </main>
+  <footer>
+    <p><b>For someone helping</b> · Help find the buttons, and allow plenty of time to speak.</p>
+    <p>This app helps with speaking practice. It does not replace professional diagnosis or treatment.<br>Stop for pain, choking, swallowing difficulty, breathing discomfort, or dizziness.</p>
+    <p>SpeechBridge easy guide · As of September 17, 2026 · Based on the Korean app screens<br>This illustrated document explains the app. Its picture buttons do not control the app.</p>
+  </footer>
+  <script>
+    (() => {
+      const toggle = document.getElementById('font-toggle');
+      toggle.addEventListener('click', () => {
+        const large = document.documentElement.classList.toggle('large-type');
+        toggle.setAttribute('aria-pressed', String(large));
+        toggle.textContent = large ? 'Normal text' : 'Larger text';
+      });
+      const details = [...document.querySelectorAll('details')];
+      let oldOpen = [];
+      window.addEventListener('beforeprint', () => {
+        oldOpen = details.map(item => item.open);
+        details.forEach(item => item.open = true);
+      });
+      window.addEventListener('afterprint', () => {
+        details.forEach((item, index) => item.open = oldOpen[index] ?? false);
+      });
+      document.getElementById('print-guide').addEventListener('click', () => window.print());
+    })();
+  </script>
+</body>
+</html>

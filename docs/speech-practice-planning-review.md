@@ -1,5 +1,7 @@
 # 말하기 연습 앱 기획 검토
 
+[한국어](speech-practice-planning-review.md) | [English](speech-practice-planning-review.en.md) | [전체 문서](README.md)
+
 작성일: 2026-05-08
 
 영어 버전 출시, OS 언어 자동 선택, 앱 내 언어 설정 및 다국어 분석 API 계획은 [`../spec-english-version-launch.md`](../spec-english-version-launch.md)를 따른다.
