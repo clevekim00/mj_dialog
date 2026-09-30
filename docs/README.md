@@ -2,7 +2,7 @@
 
 [한국어](README.md) | [English](README.en.md)
 
-기존 Markdown 문서 29종을 모두 국문·영문으로 준비했습니다. 이 목록도 두 언어로 제공합니다. 언어 접미사가 없는 파일은 국문, `.en.md`와 `.en.html`은 영문입니다. 문서의 기본 언어는 한국어이며 앱의 언어 설정과는 별개입니다.
+기존 Markdown 문서 29종을 모두 국문·영문으로 준비했습니다. 이 목록과 라이선스 안내도 두 언어로 제공합니다. 언어 접미사가 없는 파일은 국문, `.en.md`와 `.en.html`은 영문입니다. 문서의 기본 언어는 한국어이며 앱의 언어 설정과는 별개입니다.
 
 날짜가 있는 검토서와 초기 기획서는 당시의 사실·제안을 보존한 기록이며, 현재 제공 기능 목록이 아닙니다. 현재 연습 동작은 [9월 30일 구현 기록](implementation-2026-09-30/README.md)과 사용자 가이드부터 확인하세요. 번역 완료가 임상 점수 검증·콘텐츠 승인·출시 조건 완료를 뜻하지는 않습니다.
 
@@ -69,6 +69,7 @@
 | 발음 콘텐츠 제작 도구 | [한국어](../tools/pronunciation_content/README.md) | [English](../tools/pronunciation_content/README.en.md) |
 | Android·Play Store 출시 | [한국어](android-playstore-release.md) | [English](android-playstore-release.en.md) |
 | iOS 시작 화면 자산 | [한국어](../ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md) | [English](../ios/Runner/Assets.xcassets/LaunchImage.imageset/README.en.md) |
+| MIT 라이선스 원문·국문 번역 | [한국어](license.md) | [English](license.en.md) |
 
 ## 두 언어 문서 관리
 

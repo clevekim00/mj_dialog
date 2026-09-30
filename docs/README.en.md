@@ -2,7 +2,7 @@
 
 [한국어](README.md) | [English](README.en.md)
 
-All 29 existing Markdown documents have Korean and English editions. This index is also bilingual. Files without a language suffix are Korean; `.en.md` and `.en.html` are English. Documentation defaults to Korean, independently of the app’s language setting.
+All 29 existing Markdown documents have Korean and English editions. This index and the license information are also bilingual. Files without a language suffix are Korean; `.en.md` and `.en.html` are English. Documentation defaults to Korean, independently of the app’s language setting.
 
 Dated reviews and early plans preserve the facts and proposals at the time; they are not a list of currently released features. For current practice behavior, start with the [September 30 implementation record](implementation-2026-09-30/README.en.md) and user guide. Proposed clinical scoring, content approval, and release gates are not completed by translation.
 
@@ -69,6 +69,7 @@ These links open rendered pages. The archived guide preserves its original scree
 | Pronunciation content tools | [한국어](../tools/pronunciation_content/README.md) | [English](../tools/pronunciation_content/README.en.md) |
 | Android and Play Store release | [한국어](android-playstore-release.md) | [English](android-playstore-release.en.md) |
 | iOS launch-image assets | [한국어](../ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md) | [English](../ios/Runner/Assets.xcassets/LaunchImage.imageset/README.en.md) |
+| MIT license and Korean translation | [한국어](license.md) | [English](license.en.md) |
 
 ## Keeping both editions aligned
 
