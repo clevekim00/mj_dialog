@@ -118,9 +118,9 @@ def main() -> int:
             fail(path, 'unresolved translation placeholder')
         ko = path.with_name(path.name.replace('.en.md', '.md'))
         for label, target in [('한국어', ko.name), ('English', english(ko).name)]:
-            if f'[{label}]({target})' not in '\n'.join(text.splitlines()[:5]):
+            if f'[{label}]({target})' not in '\n'.join(text.splitlines()[:20]):
                 fail(path, f'missing top language link: {label}')
-        for href in md_links(text):
+        for href in md_links(text) + Page(strip_code(text)).links:
             check_link(path, href)
     for index in (INDEX, english(INDEX)):
         if not index.exists():

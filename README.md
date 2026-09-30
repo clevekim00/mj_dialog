@@ -1,6 +1,13 @@
 # 말이음 · SpeechBridge
 
-[한국어](README.md) | [English](README.en.md) | [전체 문서](docs/README.md)
+<p align="center">
+  <img src="assets/branding/app-icon.png" width="128" height="128" alt="말이음 앱 아이콘">
+</p>
+
+| **[한국어](README.md) ✓** | [English](README.en.md) |
+| :---: | :---: |
+
+[전체 문서](docs/README.md)
 
 **마비말장애 말하기 연습 · Speech Practice for Adults with Dysarthria**
 

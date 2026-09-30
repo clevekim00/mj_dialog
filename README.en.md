@@ -1,6 +1,13 @@
 # Malieum · SpeechBridge
 
-[한국어](README.md) | [English](README.en.md) | [All documents](docs/README.en.md)
+<p align="center">
+  <img src="assets/branding/app-icon.png" width="128" height="128" alt="SpeechBridge app icon">
+</p>
+
+| [한국어](README.md) | **[English](README.en.md) ✓** |
+| :---: | :---: |
+
+[All documents](docs/README.en.md)
 
 **Speech Practice for Adults with Dysarthria · 마비말장애 말하기 연습**
 
