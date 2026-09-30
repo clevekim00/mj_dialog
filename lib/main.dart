@@ -178,6 +178,7 @@ class _AppView extends ConsumerWidget {
         '/voice_pitch': (context) => const PitchTrainingScreen(),
         '/target_tone': (context) => const TargetToneScreen(),
         '/voice_volume': (context) => const VolumeTrainingScreen(),
+        '/sentence_completion': (context) => const SentenceCompletionScreen(),
         '/voice_spectrogram': (context) => const SpectrogramTrainingScreen(),
         '/balanced_sentences': (context) => const BalancedSentenceScreen(),
         '/quick_voice_recording': (context) => const QuickRecordingScreen(),

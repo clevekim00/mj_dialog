@@ -228,7 +228,7 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
             title: en ? 'Speak through a sentence' : '문장 끝까지 말하기',
             subtitle: l.rehabVoiceHint,
             icon: Icons.record_voice_over,
-            onTap: () => Navigator.pushNamed(context, '/voice_volume'),
+            onTap: () => Navigator.pushNamed(context, '/sentence_completion'),
           ),
           const SizedBox(height: 20),
           ExpansionTile(

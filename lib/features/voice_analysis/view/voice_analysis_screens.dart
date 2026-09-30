@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import '../../rehab/view/rehab_ui.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -125,6 +126,56 @@ class VolumeTrainingScreen extends StatelessWidget {
     taskType: VoiceAnalysisTaskType.volume,
     chartMode: VoiceChartMode.volume,
   );
+}
+
+/// A sentence task with a visible prompt, distinct from the generic volume tool.
+class SentenceCompletionScreen extends StatelessWidget {
+  const SentenceCompletionScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final en = rehabEnglish(context);
+    return VoiceLiveAnalysisScreen(
+      title: en ? 'Speak through a sentence' : '문장 끝까지 말하기',
+      instruction: en
+          ? 'Start the analysis, then read the sentence at your own pace. Pause for a breath whenever you need to. You do not need to speak louder or flatten the graph.'
+          : '분석 시작을 누른 뒤, 예시 문장을 내 속도로 읽어 보세요. 숨이 필요하면 편안히 쉬어 가세요. 더 크게 말하거나 그래프를 평평하게 맞추지 않아도 돼요.',
+      taskType: VoiceAnalysisTaskType.volume,
+      chartMode: VoiceChartMode.volume,
+      promptId: en ? 'sentence_completion_en_01' : 'sentence_completion_ko_01',
+      showPlayback: true,
+      header: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                en ? 'Read this sentence' : '이 문장을 읽어 보세요',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                en
+                    ? 'I had a meal with my family today.'
+                    : '오늘은 가족과 함께 식사를 했어요.',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                en
+                    ? 'After speaking, stop the analysis and listen to the recent recording. Notice whether the last words are audible. The graph shows microphone level, not pronunciation accuracy.'
+                    : '다 읽으면 분석을 멈추고 최근 녹음을 들어 보세요. 문장 끝말도 잘 들리는지 살펴봐요. 그래프는 마이크 소리 크기이며 발음 점수가 아니에요.',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class SpectrogramTrainingScreen extends StatelessWidget {
