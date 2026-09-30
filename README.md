@@ -16,13 +16,16 @@ Everyday words, at your own pace.
 
 > 이 앱은 전문적인 평가나 도움을 대체하지 않는 연습 보조 도구입니다. 필요할 때는 전문가와 상의해 연습 계획을 조정하는 것을 권장합니다.
 
-### 그림으로 보는 앱 소개
+### 앱 소개와 사용자 가이드
 
-[홍보 문서 — 생활에 필요한 말, 내 속도로 연습해요](docs/user-materials/promotion.html)에서 앱의 목적과 주요 기능을 큰 그림과 쉬운 말로 확인할 수 있습니다. HTML 파일을 브라우저에서 열면 인터넷 없이 읽거나 인쇄/PDF로 저장할 수 있습니다.
+아래 링크는 소스 파일이 아닌 **문서 페이지**를 엽니다. 기본 언어는 한국어이며, 각 페이지 위에서 English로 전환할 수 있습니다.
 
-### 그림으로 보는 쉬운 사용법
+| 문서 | 한국어 (기본) | English |
+| --- | --- | --- |
+| 홍보 문서 | [앱 소개 보기](https://clevekim00.github.io/mj_dialog/promotion.html) | [About SpeechBridge](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
+| 사용자 가이드 | [사용법 보기](https://clevekim00.github.io/mj_dialog/user-guide.html) | [User guide](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 
-[처음 사용하는 분을 위한 사용 가이드](docs/user-guide.html)를 브라우저에서 열어 보세요. 큰 그림과 짧은 문장으로 자음 선택, 녹음, 다시 듣기, 쉬고 이어하기를 설명합니다. 글씨 확대와 인쇄/PDF 저장을 지원하며, 인터넷 없이도 볼 수 있는 단일 HTML 파일입니다.
+큰 그림과 짧은 문장으로 설명하며 인쇄/PDF 저장을 지원합니다. 인터넷 없이 보려면 `docs/user-materials/`의 HTML 파일을 내려받아 브라우저에서 열어 주세요.
 
 ### 핵심 특징
 

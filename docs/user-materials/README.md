@@ -1,10 +1,12 @@
-# 쉬운 말로 보는 말이음 · SpeechBridge
+# 말이음 · SpeechBridge 문서
 
-- [홍보 문서](promotion.html): 생활 말하기 중심의 앱 소개.
-- [사용자 가이드](user-guide.html): 첫 연습, 소리 흐름, 거울, 발성 놀이 사용법.
+| 문서 | 한국어 (기본) | English |
+| --- | --- | --- |
+| 홍보 문서 | [페이지 열기](https://clevekim00.github.io/mj_dialog/promotion.html) | [About the app](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
+| 사용자 가이드 | [페이지 열기](https://clevekim00.github.io/mj_dialog/user-guide.html) | [User guide](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 
-브라우저에서 HTML 파일을 열어 읽거나 하단의 **인쇄 / PDF로 저장**을 이용합니다. 두 문서는 CSS와 SVG 삽화를 포함해 인터넷 연결 없이 열립니다. 그림은 실제 앱 화면을 대체하는 개념 삽화입니다.
+`index.html`과 확장 언어 표기가 없는 HTML은 한국어다. 언어는 자동 감지하지 않으며 페이지 위의 언어 링크로 바꾼다. 영문 문서에서 다른 문서를 열면 영문을 유지한다. CSS와 SVG가 각 파일에 포함되어 오프라인에서도 읽고 인쇄할 수 있다.
 
-성인 사용자를 존중하는 쉬운 표현, 큰 그림, 짧은 문장으로 구성했습니다. 구현되지 않은 MPT 검사와 신규 검수 영상을 제공 기능으로 홍보하지 않습니다. 치료 효과나 발음 정확도를 보장하지 않습니다.
+GitHub Pages는 `.github/workflows/docs-pages.yml`로 이 폴더의 HTML만 배포한다. 앱·녹음·내부 구현 문서는 배포 폴더에 넣지 않는다. 문서 변경을 main에 푸시하면 자동 재배포한다. GitHub 저장소의 HTML 파일 링크는 소스 보기이므로 외부 안내에는 위 Pages URL을 사용한다.
 
-내용 기준: [2026-09-30 구현 문서](../implementation-2026-09-30/README.md). 실제 마이크·카메라 동작 및 임상 성능 검증과는 별개의 사용자 안내 자료입니다.
+[구현 기준](../implementation-2026-09-30/README.md). 삽화는 실제 앱 스크린샷이 아니다. 발성 놀이는 MPT 검사가 아니며 신규 검수 영상은 아직 연결되지 않았다.
