@@ -1,3 +1,4 @@
+import '../mpt/mpt_result.dart';
 import 'dart:async';
 import '../audio/practice_waveform.dart';
 import 'dart:io';
@@ -23,6 +24,7 @@ String recordStatus(String status, bool en) => switch (status) {
   _ => en ? 'Earlier individual practice' : '이전 개별 연습',
 };
 String recordKind(String kind, bool en) => switch (kind) {
+  'mpt' => en ? 'MPT measurement' : 'MPT 측정',
   'game' => en ? 'Voice play' : '발성 놀이',
   'daily' => en ? 'Daily practice' : '오늘의 연습',
   'consonant' => en ? 'Consonant' : '자음',
@@ -125,6 +127,7 @@ class _RecordsState extends ConsumerState<RehabRecordsScreen> {
                         'voice',
                         'chat',
                         'game',
+                        'mpt',
                       ])
                         ChoiceChip(
                           label: Text(
@@ -330,6 +333,8 @@ class _DetailState extends ConsumerState<RehabRecordDetail>
           Text('${r.dateKey} · ${recordStatus(r.status, en)}'),
           const SizedBox(height: 12),
           Text(l.rehabUnscored),
+          if (r.daily?.feedback['kind'] == 'mpt')
+            Text(MptResult.summary(r.daily!.feedback, en)),
           if (r.daily?.feedback['kind'] == 'voiceFlight')
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),

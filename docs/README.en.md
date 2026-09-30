@@ -23,6 +23,7 @@ These links open rendered pages. The archived guide preserves its original scree
 |---|---|---|
 | Project overview, setup, and changelog | [한국어](../README.md) | [English](../README.en.md) |
 | Public document maintenance | [한국어](user-materials/README.md) | [English](user-materials/README.en.md) |
+| MPT measurement and implementation | [한국어](mpt-measurement.md) | [English](mpt-measurement.en.md) |
 | SpeechBridge name and icon | [한국어](branding/README.md) | [English](branding/README.en.md) |
 
 ## Product planning and architecture

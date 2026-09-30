@@ -23,6 +23,7 @@
 |---|---|---|
 | 프로젝트 소개·실행·변경 기록 | [한국어](../README.md) | [English](../README.en.md) |
 | 홍보·사용자 문서 운영 안내 | [한국어](user-materials/README.md) | [English](user-materials/README.en.md) |
+| 최대발성시간(MPT) 측정·구현 | [한국어](mpt-measurement.md) | [English](mpt-measurement.en.md) |
 | 말이음 · SpeechBridge 이름과 아이콘 | [한국어](branding/README.md) | [English](branding/README.en.md) |
 
 ## 제품 기획과 구조

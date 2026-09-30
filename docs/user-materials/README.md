@@ -19,3 +19,5 @@ GitHub Pages는 `.github/workflows/docs-pages.yml`로 이 폴더의 HTML과 `doc
 python3 -m pip install markdown-it-py==4.2.0
 python3 tools/docs/build_readme_page.py
 ```
+
+[MPT 측정 절차와 제한](../mpt-measurement.md): 최신 가이드와 홍보 페이지에 별도 관찰자 타이머 MPT 모드를 안내한다. 기존 발성 놀이와 구분한다.

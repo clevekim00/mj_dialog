@@ -19,3 +19,5 @@ The `readme.html` / `readme.en.html` pages contain both README editions. Their b
 python3 -m pip install markdown-it-py==4.2.0
 python3 tools/docs/build_readme_page.py
 ```
+
+[MPT procedure and limitations](../mpt-measurement.en.md): the current guide and promotional page include a separate observer-timed MPT mode. Voice play remains distinct.

@@ -1,3 +1,4 @@
+import '../../rehab/mpt/mpt_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/features/rehab/game/phonation_flight_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -193,6 +194,17 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
             ),
         ],
         if (section == 'voice') ...[
+          RehabCard(
+            title: en ? 'Maximum phonation time (MPT)' : '최대발성시간 (MPT)',
+            subtitle: en
+                ? 'Observer timer · 3 single-breath trials'
+                : '관찰자 타이머 · 한 번의 숨으로 3회 측정',
+            icon: Icons.timer_outlined,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const MptScreen()),
+            ),
+          ),
           RehabCard(
             title: en ? 'Gentle voice flight' : '목소리로 천천히 날기',
             subtitle: en

@@ -96,7 +96,7 @@ Design a separate future measurement mode:
 5. Keep repetitions as separate trials; summarize only reviewed valid trials according to the protocol. If stopped or capped by the app, mark the maximum as unconfirmed.
 6. Compare estimates against expert-marked intervals and validate error/failure rates before releasing MPT estimation. Do not invent normal ranges or recovery scores.
 
-**An MPT test mode was not implemented or validated here.** Voice play and basic signal estimation were implemented with separate data/UI to avoid confusion with clinical measurement.
+**At the initial implementation, an MPT mode was not implemented or validated. See the subsequent observer-timed mode below.** Voice play and basic signal estimation were implemented with separate data/UI to avoid confusion with clinical measurement.
 
 ## 6. Code and compatibility
 
@@ -140,3 +140,7 @@ The 0.8-second calibration, 20-second game, 120-second recording limit, and moti
 - Meter failure does not interrupt recording. Stop polling on recording end/service disposal and ignore late replies.
 
 Validation: all 143 tests passed; two waveform tests passed again after test-dependency cleanup. macOS debug build and iOS Swift syntax check passed. Actual iOS/Android microphone levels and device-specific display still need verification.
+
+## 11. Follow-up: observer-timed MPT
+
+[A separate MPT mode](../mpt-measurement.en.md) now records three confirmed single-breath trials and their maximum, with audio, waveforms and exclusion reasons. It uses human onset/offset timing rather than automatic pitch detection. Game records remain separate. This implements the administration workflow; clinical validation is still pending.

@@ -98,7 +98,8 @@ class _HomeState extends ConsumerState<PracticeModeSelectionScreen> {
                   .where(
                     (s) =>
                         s.localDate == rehabDate(DateTime.now()) &&
-                        s.feedback['kind'] != 'voiceFlight',
+                        s.feedback['kind'] != 'voiceFlight' &&
+                        s.feedback['kind'] != 'mpt',
                   )
                   .toList();
               return Column(

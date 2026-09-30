@@ -18,6 +18,12 @@ Everyday words, at your own pace.
 
 ---
 
+## Maximum phonation time (MPT)
+
+Training → Comfortable voice practice → **Maximum phonation time (MPT)** provides observer timing for three single-breath “ah” trials. The longest of three confirmed trials is saved with recordings and waveforms in the separate MPT record category. Rest between trials; interrupted or unreviewed attempts do not count. This is a protocol recording tool, not a clinically validated diagnostic test.
+
+[Procedure, limitations and implementation](docs/mpt-measurement.en.md).
+
 ## 📌 Project overview
 
 Malieum (SpeechBridge) helps **adults with acquired dysarthria** practice speaking briefly and regularly at home. Voice conversation, reading aloud, recording playback, fatigue/goal records, and practice history are designed to help users and caregivers review changes over time.
