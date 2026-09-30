@@ -454,14 +454,6 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
                         icon: const Icon(Icons.volume_up),
                         label: Text(l.rehabListen),
                       ),
-                      if (currentTakes.isNotEmpty)
-                        OutlinedButton.icon(
-                          onPressed: _locked || _recording
-                              ? null
-                              : () => _listen(path: currentTakes.last.path),
-                          icon: const Icon(Icons.play_arrow),
-                          label: Text(l.rehabListenMine),
-                        ),
                       if (_audioPlaying)
                         TextButton(
                           onPressed: _stopAudio,
@@ -491,12 +483,6 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
                   const SizedBox(height: 8),
                   Text(l.rehabNoMic),
                   const SizedBox(height: 16),
-                  OutlinedButton(
-                    onPressed: _locked || _recording ? null : _next,
-                    child: Text(
-                      count >= _session.repetitions ? l.rehabNext : l.rehabSkip,
-                    ),
-                  ),
                 ],
               ],
             ),
@@ -509,6 +495,42 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (!_terminal && !paused) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed:
+                              _locked || _recording || currentTakes.isEmpty
+                              ? null
+                              : _audioPlaying
+                              ? _stopAudio
+                              : () => _listen(path: currentTakes.last.path),
+                          icon: Icon(
+                            _audioPlaying ? Icons.stop : Icons.play_arrow,
+                          ),
+                          label: Text(
+                            _audioPlaying
+                                ? l.rehabStopAudio
+                                : l.rehabListenMine,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _locked || _recording ? null : _next,
+                          child: Text(
+                            count >= _session.repetitions
+                                ? l.rehabNext
+                                : l.rehabSkip,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (!_terminal && !paused)
                   SizedBox(
                     width: double.infinity,

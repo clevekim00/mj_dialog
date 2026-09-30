@@ -140,4 +140,58 @@ void main() {
     expect(saved.takes.length, 1);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
   });
+  testWidgets(
+    'waveform does not push playback or next below viewport at 200 percent',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final original = sample();
+      final session = original.copyWith(
+        takes: [
+          RehabTake(
+            id: 'recorded',
+            taskId: original.tasks.first.id,
+            text: original.tasks.first.text,
+            path: '/test.wav',
+            createdAt: DateTime.now(),
+            seconds: 2,
+            waveform: const [.1, .5, .2],
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: RehabPlayerScreen(session: session),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 3; i++) {
+        expect(find.text('내 녹음 듣기').hitTestable(), findsOneWidget);
+        expect(find.text('다음 과제').hitTestable(), findsOneWidget);
+        expect(find.text('녹음 시작').hitTestable(), findsOneWidget);
+        await tester.scrollUntilVisible(
+          find.widgetWithText(SwitchListTile, '소리 흐름 보기'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.widgetWithText(SwitchListTile, '소리 흐름 보기'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+      await tester.tap(find.text('다음 과제'));
+      await tester.pumpAndSettle();
+      expect((await RehabSessionRepository().load()).single.taskIndex, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
