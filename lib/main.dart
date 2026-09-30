@@ -96,7 +96,7 @@ class _AppView extends ConsumerWidget {
     final language = ref.watch(appLanguageProvider);
     final textSize = ref.watch(textSizeProvider);
     return MaterialApp(
-      title: 'Speech Rehab',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: TextScaler.linear(

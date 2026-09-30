@@ -1,9 +1,11 @@
+import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 import 'package:speech_rehab/services/audio/audio_player_service.dart';
 import 'package:camera/camera.dart';
 import 'package:speech_rehab/services/rehab_profile_service.dart';
 import 'package:speech_rehab/services/audio/tts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:speech_rehab/features/rehab/view/rehab_setup_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/practice/view/widgets/mouth_video_preview_sheet.dart';
 import 'package:speech_rehab/services/practice_content_service.dart';
@@ -167,6 +169,29 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen>
               child: _buildTargetCard(context, ref, practice),
             ),
             const SizedBox(height: 16),
+            if (practice.targetText.trim().isNotEmpty && !practice.isFreeMode)
+              OutlinedButton.icon(
+                icon: const Icon(Icons.school_outlined),
+                label: const Text('가이드·소리 흐름으로 연습'),
+                onPressed: locked
+                    ? null
+                    : () async {
+                        await _silence();
+                        if (practice.mouthVideoEnabled) {
+                          await notifier.setMouthVideoEnabled(false);
+                          await notifier.mouthVideoRecorder.dispose();
+                        }
+                        if (!context.mounted) return;
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => RehabSetupScreen(
+                              customText: practice.targetText,
+                            ),
+                          ),
+                        );
+                      },
+              ),
             if (practice.feedback != null) ...[
               ExpansionTile(
                 title: const Text('음성인식 참고 결과'),
@@ -181,6 +206,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen>
               const SizedBox(height: 12),
             ],
             _buildInteractionArea(context, ref, practice, notifier),
+            RecorderWaveform(recorder: notifier.audioRecorder),
             if (_shouldShowPostPracticeActions(practice)) ...[
               _buildActionButtons(context, practice, notifier),
               const SizedBox(height: 12),

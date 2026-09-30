@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:speech_rehab/features/rehab/game/phonation_flight_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
@@ -192,6 +193,19 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
             ),
         ],
         if (section == 'voice') ...[
+          RehabCard(
+            title: en ? 'Gentle voice flight' : '목소리로 천천히 날기',
+            subtitle: en
+                ? 'Easy voice play · no collisions · not an MPT test'
+                : '아주 쉬운 발성 놀이 · 충돌 없음 · MPT 검사 아님',
+            icon: Icons.air,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const PhonationFlightScreen(),
+              ),
+            ),
+          ),
           RehabCard(
             title: en ? 'Comfortable vowel' : '편안한 모음 소리',
             subtitle: l.rehabVoiceHint,

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math' as math;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -24,6 +26,49 @@ class AudioRecorderService {
   AudioRecorder? _platformRecorder;
   AudioRecorder get _recorder => _platformRecorder ??= AudioRecorder();
   bool _isRecording = false;
+  final ValueNotifier<int> waveformRevision = ValueNotifier(0);
+  final List<double> waveform = [];
+  final Stopwatch _waveformClock = Stopwatch();
+  int waveformDurationMs = 0;
+  Timer? _meterTimer;
+  int _meterGeneration = 0;
+  bool _readingMeter = false;
+
+  void _startMeter() {
+    _stopMeter();
+    waveform.clear();
+    waveformDurationMs = 0;
+    _waveformClock.reset();
+    _waveformClock.start();
+    waveformRevision.value++;
+    final generation = _meterGeneration;
+    _meterTimer = Timer.periodic(const Duration(milliseconds: 100), (_) async {
+      if (_readingMeter || !_isRecording) return;
+      _readingMeter = true;
+      try {
+        final db = _useIosNative
+            ? await _iosRecorderChannel.invokeMethod<double>('amplitude')
+            : (await _recorder.getAmplitude()).current;
+        if (generation != _meterGeneration || !_isRecording) return;
+        if (db != null && db.isFinite) {
+          waveform.add(math.pow(10, db.clamp(-160, 0) / 20).toDouble());
+          waveformDurationMs = _waveformClock.elapsedMilliseconds;
+          waveformRevision.value++;
+        }
+      } catch (_) {
+        // Metering is optional: a failed visual update must not stop audio.
+      } finally {
+        _readingMeter = false;
+      }
+    });
+  }
+
+  void _stopMeter() {
+    _meterGeneration++;
+    _meterTimer?.cancel();
+    _meterTimer = null;
+    _waveformClock.stop();
+  }
 
   Future<bool> hasPermission() async {
     if (_useIosNative) {
@@ -53,6 +98,7 @@ class AudioRecorderService {
           'path': filePath,
         });
         _isRecording = true;
+        _startMeter();
         debugPrint('Recording started: $filePath');
         return;
       }
@@ -62,6 +108,7 @@ class AudioRecorderService {
 
       await _recorder.start(config, path: filePath);
       _isRecording = true;
+      _startMeter();
       debugPrint('Recording started: $filePath');
     } catch (e) {
       _isRecording = false;
@@ -71,6 +118,7 @@ class AudioRecorderService {
   }
 
   Future<String?> stopRecording() async {
+    _stopMeter();
     try {
       if (_useIosNative) {
         final path = await _iosRecorderChannel.invokeMethod<String>('stop');
@@ -90,6 +138,7 @@ class AudioRecorderService {
   }
 
   Future<void> dispose() async {
+    _stopMeter();
     _isRecording = false;
     if (_useIosNative) {
       await _iosRecorderChannel.invokeMethod<void>('dispose');

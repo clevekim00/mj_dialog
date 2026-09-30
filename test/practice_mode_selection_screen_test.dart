@@ -28,7 +28,11 @@ void main() {
         find.widgetWithText(FilledButton, '연습 시작'),
       );
       expect(button.onPressed, isNull);
-      await tester.ensureVisible(find.text('2 / 5'));
+      await tester.scrollUntilVisible(
+        find.text('2 / 5'),
+        180,
+        scrollable: find.byType(Scrollable).last,
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('2 / 5'));
       await tester.pumpAndSettle();

@@ -300,6 +300,13 @@ final class SafeFlutterViewController: FlutterViewController {
           return
         }
         self.startRecording(path: path, result: result)
+      case "amplitude":
+        guard let recorder = self.audioRecorder, recorder.isRecording else {
+          result(nil)
+          return
+        }
+        recorder.updateMeters()
+        result(Double(recorder.peakPower(forChannel: 0)))
       case "stop":
         self.stopRecording(result: result)
       case "dispose":
@@ -348,6 +355,7 @@ final class SafeFlutterViewController: FlutterViewController {
       ]
 
       let recorder = try AVAudioRecorder(url: URL(fileURLWithPath: path), settings: settings)
+      recorder.isMeteringEnabled = true
       recorder.prepareToRecord()
       if recorder.record() {
         audioRecorder = recorder

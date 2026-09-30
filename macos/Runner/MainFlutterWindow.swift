@@ -12,5 +12,6 @@ class MainFlutterWindow: NSWindow {
     MacAudioPlayerChannel.register(with: flutterViewController)
 
     super.awakeFromNib()
+    title = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "SpeechBridge"
   }
 }

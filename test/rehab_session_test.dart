@@ -13,7 +13,7 @@ RehabSession sample({String id = 'daily'}) => RehabSession(
   startedAt: DateTime.utc(2026, 9, 25, 16),
   localDate: '2026-09-26',
   offsetMinutes: 540,
-  tasks: rehabScenarios.first.tasks(false),
+  tasks: rehabScenarios.firstWhere((s) => s.id == 'rest').tasks(false),
   repetitions: 1,
   fatigueBefore: 2,
 );

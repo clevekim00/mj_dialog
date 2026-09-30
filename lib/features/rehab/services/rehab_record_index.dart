@@ -64,11 +64,13 @@ class RehabRecordIndex {
       records.add(
         RehabRecord(
           id: 'daily:${session.id}',
-          kind: 'daily',
+          kind: session.feedback['kind'] == 'voiceFlight' ? 'game' : 'daily',
           title: session.title,
           date: session.startedAt,
           dateKey: session.localDate,
-          status: session.status.name,
+          status: session.feedback['kind'] == 'voiceFlight'
+              ? 'voicePlay'
+              : session.status.name,
           daily: session,
           fatigueBefore: session.fatigueBefore,
           fatigueAfter: session.fatigueAfter,

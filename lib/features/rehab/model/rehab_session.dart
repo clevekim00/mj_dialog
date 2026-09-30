@@ -32,10 +32,14 @@ class RehabTake {
     required this.path,
     required this.createdAt,
     required this.seconds,
+    this.waveform = const [],
+    this.durationMs,
   });
   final String id, taskId, text, path;
   final DateTime createdAt;
   final int seconds;
+  final List<double> waveform;
+  final int? durationMs;
   Map<String, dynamic> toJson() => {
     'id': id,
     'taskId': taskId,
@@ -43,6 +47,9 @@ class RehabTake {
     'path': path,
     'createdAt': createdAt.toIso8601String(),
     'seconds': seconds,
+    'waveform': waveform,
+    'durationMs': durationMs,
+    'waveformVersion': 'pcm-peak-64ms-v1',
   };
   factory RehabTake.fromJson(Map<String, dynamic> j) => RehabTake(
     id: j['id'] as String,
@@ -51,6 +58,10 @@ class RehabTake {
     path: j['path'] as String,
     createdAt: DateTime.parse(j['createdAt'] as String),
     seconds: j['seconds'] as int,
+    waveform: (j['waveform'] as List? ?? [])
+        .map((v) => (v as num).toDouble())
+        .toList(),
+    durationMs: j['durationMs'] as int?,
   );
 }
 
@@ -71,6 +82,7 @@ class RehabSession {
     this.takes = const [],
     this.status = RehabStatus.inProgress,
     this.offsetMinutes = 0,
+    this.feedback = const {},
     this.fatigueChecks = const [],
   });
   final String id, title, language, localDate;
@@ -81,6 +93,7 @@ class RehabSession {
   final int? fatigueAfter;
   final RehabStatus status;
   final List<int> fatigueChecks;
+  final Map<String, dynamic> feedback;
   bool get canResume =>
       taskIndex < tasks.length &&
       (status == RehabStatus.inProgress || status == RehabStatus.paused);
@@ -96,6 +109,7 @@ class RehabSession {
     List<int>? fatigueChecks,
   }) => RehabSession(
     id: id,
+    feedback: feedback,
     title: title,
     language: language,
     startedAt: startedAt,
@@ -126,6 +140,7 @@ class RehabSession {
     'takes': takes.map((t) => t.toJson()).toList(),
     'status': status.name,
     'fatigueChecks': fatigueChecks,
+    'feedback': feedback,
   };
   factory RehabSession.fromJson(Map<String, dynamic> j) {
     final tasks = (j['tasks'] as List)
@@ -138,6 +153,7 @@ class RehabSession {
     final unique = {for (final take in takes) take.id: take};
     return RehabSession(
       id: j['id'] as String,
+      feedback: Map<String, dynamic>.from(j['feedback'] as Map? ?? {}),
       title: j['title'] as String,
       language: j['language'] as String,
       startedAt: DateTime.parse(j['startedAt'] as String),
@@ -219,6 +235,17 @@ class RehabScenario {
 }
 
 const rehabScenarios = [
+  RehabScenario(
+    'water',
+    '물을 달라고 부탁하기',
+    'Ask for water',
+    '물',
+    'water',
+    '물을 주세요.',
+    'Please give me some water.',
+    '가족에게 물을 달라고 부탁해 보세요.',
+    'Ask a family member for some water.',
+  ),
   RehabScenario(
     'rest',
     '쉬고 싶다고 말하기',

@@ -5,10 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_rehab/features/rehab/model/rehab_session.dart';
 import 'package:speech_rehab/features/rehab/services/rehab_session_repository.dart';
 import 'package:speech_rehab/features/rehab/view/rehab_player_screen.dart';
-import 'package:speech_rehab/services/audio/audio_recorder_service.dart';
+import 'package:speech_rehab/features/rehab/audio/practice_capture.dart';
 import 'rehab_session_test.dart' show sample;
 
-class Recorder extends AudioRecorderService {
+class Recorder extends PracticeCapture {
   int starts = 0, stops = 0;
   @override
   Future<void> startRecording(String name) async {
@@ -42,7 +42,7 @@ void main() {
         ProviderScope(
           overrides: [
             rehabRepositoryProvider.overrideWithValue(repo),
-            audioRecorderServiceProvider.overrideWithValue(recorder),
+            practiceCaptureProvider.overrideWithValue(recorder),
           ],
           child: MaterialApp(home: RehabPlayerScreen(session: sample())),
         ),
@@ -75,6 +75,7 @@ void main() {
         150,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('다음 과제'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('쉬기'));
@@ -124,7 +125,7 @@ void main() {
     final recorder = Recorder();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [audioRecorderServiceProvider.overrideWithValue(recorder)],
+        overrides: [practiceCaptureProvider.overrideWithValue(recorder)],
         child: MaterialApp(home: RehabPlayerScreen(session: sample())),
       ),
     );

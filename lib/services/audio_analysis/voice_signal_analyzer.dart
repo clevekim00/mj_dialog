@@ -12,6 +12,7 @@ class VoiceSignalAnalyzer {
     Uint8List bytes, {
     required Duration timestamp,
     double noiseFloorDbfs = -80,
+    bool includeSpectrum = true,
   }) {
     final samples = decodePcm16(bytes);
     if (samples.isEmpty) {
@@ -36,7 +37,9 @@ class VoiceSignalAnalyzer {
             .toDouble();
     final pitch = estimatePitch(samples);
     final waveform = downsample(samples, 128);
-    final spectrum = magnitudeSpectrum(samples, 96);
+    final spectrum = includeSpectrum
+        ? magnitudeSpectrum(samples, 96)
+        : const <double>[];
 
     return VoiceAnalysisFrame(
       timestamp: timestamp,

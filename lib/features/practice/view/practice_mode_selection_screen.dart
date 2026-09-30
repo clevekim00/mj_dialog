@@ -95,7 +95,11 @@ class _HomeState extends ConsumerState<PracticeModeSelectionScreen> {
                   )
                   .firstOrNull;
               final today = items
-                  .where((s) => s.localDate == rehabDate(DateTime.now()))
+                  .where(
+                    (s) =>
+                        s.localDate == rehabDate(DateTime.now()) &&
+                        s.feedback['kind'] != 'voiceFlight',
+                  )
                   .toList();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

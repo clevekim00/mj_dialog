@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">말이음 · SpeechBridge 앱 아이콘</title>
+  <desc id="desc">짙은 청록색 바탕에 밝은 말풍선, 길이가 다른 세 개의 둥근 소리 막대가 있는 아이콘</desc>
+  <rect width="1024" height="1024" rx="0" fill="#18594E"/>
+  <g id="symbol">
+  <path d="M302 242H722A112 112 0 0 1 834 354V584A112 112 0 0 1 722 696H470L302 818V696A112 112 0 0 1 190 584V354A112 112 0 0 1 302 242Z" fill="#F6FAF6"/>
+  <rect x="332" y="417" width="80" height="120" rx="40" fill="#247663"/>
+  <rect x="472" y="347" width="80" height="260" rx="40" fill="#247663"/>
+  <rect x="612" y="387" width="80" height="180" rx="40" fill="#247663"/>
+  </g>
+</svg>

@@ -1,3 +1,4 @@
+import 'package:speech_rehab/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 const startupMotivationMessages = [
@@ -26,26 +27,16 @@ class StartupSplashScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(flex: 2),
-              Container(
+              Image.asset(
+                'assets/branding/app-icon.png',
                 width: 74,
                 height: 74,
-                decoration: BoxDecoration(
-                  color: Colors.tealAccent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: Colors.tealAccent.withValues(alpha: 0.28),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.record_voice_over_outlined,
-                  color: Colors.tealAccent,
-                  size: 36,
-                ),
+                excludeFromSemantics: true,
               ),
               const SizedBox(height: 26),
-              const Text(
-                'Speech Rehab',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)?.appTitle ?? 'SpeechBridge',
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,

@@ -13,7 +13,7 @@ void main() {
       await tester.pumpWidget(const MyApp());
       await tester.pump();
 
-      expect(find.text('Speech Rehab'), findsOneWidget);
+      expect(find.text('SpeechBridge'), findsOneWidget);
       expect(find.text('오늘의 한마디'), findsOneWidget);
       expect(
         startupMotivationMessages.any(

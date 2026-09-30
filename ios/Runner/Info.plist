@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Speech Rehab</string>
+	<string>SpeechBridge</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Speech Rehab</string>
+	<string>SpeechBridge</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -48,10 +48,10 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Speech Rehab requires microphone access to record your voice for pronunciation feedback.</string>
+	<string>SpeechBridge requires microphone access to record your voice for pronunciation feedback.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Speech Rehab uses the camera only when you choose to record your mouth shape during practice.</string>
+	<string>SpeechBridge uses the camera only when you choose to record your mouth shape during practice.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Speech Rehab requires speech recognition access to transcribe your spoken words.</string>
+	<string>SpeechBridge requires speech recognition access to transcribe your spoken words.</string>
 </dict>
 </plist>

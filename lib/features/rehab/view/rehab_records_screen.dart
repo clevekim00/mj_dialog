@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../audio/practice_waveform.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import 'rehab_ui.dart';
 import 'rehab_setup_screen.dart';
 
 String recordStatus(String status, bool en) => switch (status) {
+  'voicePlay' => en ? 'Voice play saved' : '발성 놀이 저장',
   'completed' => en ? 'Completed' : '완료',
   'partial' => en ? 'Partly completed' : '일부 완료',
   'paused' || 'inProgress' => en ? 'Can continue' : '이어서 가능',
@@ -21,6 +23,7 @@ String recordStatus(String status, bool en) => switch (status) {
   _ => en ? 'Earlier individual practice' : '이전 개별 연습',
 };
 String recordKind(String kind, bool en) => switch (kind) {
+  'game' => en ? 'Voice play' : '발성 놀이',
   'daily' => en ? 'Daily practice' : '오늘의 연습',
   'consonant' => en ? 'Consonant' : '자음',
   'guided' => en ? 'Guided training' : '구강·호흡',
@@ -121,6 +124,7 @@ class _RecordsState extends ConsumerState<RehabRecordsScreen> {
                         'guided',
                         'voice',
                         'chat',
+                        'game',
                       ])
                         ChoiceChip(
                           label: Text(
@@ -326,6 +330,19 @@ class _DetailState extends ConsumerState<RehabRecordDetail>
           Text('${r.dateKey} · ${recordStatus(r.status, en)}'),
           const SizedBox(height: 12),
           Text(l.rehabUnscored),
+          if (r.daily?.feedback['kind'] == 'voiceFlight')
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                (r.daily!.feedback['longestDetectedMs'] as num? ?? 0) <= 0
+                    ? (en
+                          ? 'No reliable voice segment detected. Not an MPT result.'
+                          : '확실하게 검출된 발성 구간이 없어요. MPT 결과가 아니에요.')
+                    : en
+                    ? 'Voice play: longest detected segment ${((r.daily!.feedback['longestDetectedMs'] as num) / 1000).toStringAsFixed(1)} s (estimate). Not MPT.'
+                    : '발성 놀이: 가장 긴 검출 구간 ${((r.daily!.feedback['longestDetectedMs'] as num) / 1000).toStringAsFixed(1)}초 (추정). MPT가 아니에요.',
+              ),
+            ),
           if (r.fatigueBefore != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -342,6 +359,32 @@ class _DetailState extends ConsumerState<RehabRecordDetail>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(recording.text),
+                    if (r.daily != null &&
+                        r.daily!.takes
+                            .where(
+                              (t) =>
+                                  t.path == recording.path &&
+                                  t.waveform.isNotEmpty,
+                            )
+                            .isNotEmpty)
+                      ExpansionTile(
+                        title: Text(en ? 'Sound over time' : '소리 크기 흐름'),
+                        children: [
+                          Builder(
+                            builder: (_) {
+                              final take = r.daily!.takes.firstWhere(
+                                (t) => t.path == recording.path,
+                              );
+                              return PracticeWaveform(
+                                values: take.waveform,
+                                durationMs:
+                                    take.durationMs ?? take.seconds * 1000,
+                                english: en,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     Wrap(
                       spacing: 12,
                       children: [

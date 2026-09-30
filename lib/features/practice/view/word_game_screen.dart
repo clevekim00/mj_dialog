@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -150,6 +151,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
               _buildStatusChips(practice),
               const SizedBox(height: 18),
               _buildControls(context, practice, notifier),
+              RecorderWaveform(recorder: notifier.audioRecorder),
             ],
           ),
         ),

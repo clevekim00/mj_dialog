@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:speech_rehab/services/audio/audio_recorder_service.dart';
+import '../audio/practice_capture.dart';
+import '../audio/practice_waveform.dart';
+import '../guide/practice_guide.dart';
+import '../guide/practice_mirror.dart';
 import 'package:speech_rehab/services/audio/audio_player_service.dart';
 import 'package:speech_rehab/services/audio/tts_service.dart';
 import '../model/rehab_session.dart';
@@ -19,8 +22,11 @@ class RehabPlayerScreen extends ConsumerStatefulWidget {
 class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
     with WidgetsBindingObserver {
   late RehabSession _session;
+  final _guideKey = GlobalKey<PracticeGuideState>();
   RehabSession? _pending;
-  AudioRecorderService? _recorder;
+  PracticeCapture? _recorder;
+  bool _showWaveform = true;
+  String? _captureNotice;
   AudioPlayerService? _player;
   TtsService? _tts;
   bool _recording = false,
@@ -59,6 +65,8 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _recorder?.problem.removeListener(_captureEnded);
+    _recorder?.limitReached.removeListener(_captureEnded);
     unawaited(_tts?.dispose());
     unawaited(_player?.stop());
     super.dispose();
@@ -94,6 +102,9 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
 
   Future<void> _stopAudio() async {
     try {
+      await _guideKey.currentState?.stopMedia();
+    } catch (_) {}
+    try {
       await _tts?.stop();
     } catch (_) {}
     try {
@@ -102,7 +113,7 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
     if (mounted) setState(() => _audioPlaying = false);
   }
 
-  Future<void> _listen({String? path}) async {
+  Future<void> _listen({String? path, String? text}) async {
     if (_recording || _locked) return;
     setState(() => _busy = true);
     await _stopAudio();
@@ -111,7 +122,7 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
     try {
       if (path == null) {
         _tts ??= TtsService(languageTag: _session.language);
-        await _tts!.speak(_task.text.replaceAll('/', ' '));
+        await _tts!.speak((text ?? _task.text).replaceAll('/', ' '));
         if (mounted) setState(() => _audioPlaying = false);
       } else {
         _player ??= ref.read(audioPlayerServiceProvider);
@@ -138,7 +149,12 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
     });
     await _stopAudio();
     try {
-      _recorder ??= ref.read(audioRecorderServiceProvider);
+      if (_recorder == null) {
+        _recorder = ref.read(practiceCaptureProvider);
+        _recorder!.problem.addListener(_captureEnded);
+        _recorder!.limitReached.addListener(_captureEnded);
+      }
+      _captureNotice = null;
       _takeId = const Uuid().v4();
       await _recorder!.startRecording('rehab_${_takeId!}');
       _clock
@@ -151,6 +167,17 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
       if (mounted) setState(() => _busy = false);
     }
     if (_background && mounted) await _pause();
+    if (mounted) _captureEnded();
+  }
+
+  void _captureEnded() {
+    if (!mounted || !_recording || _busy) return;
+    if (_recorder!.limitReached.value || _recorder!.problem.value != null) {
+      _captureNotice = rehabEnglish(context)
+          ? 'Input ended. Your available audio is being saved.'
+          : '입력이 끝났어요. 수신한 녹음을 저장합니다.';
+      unawaited(_pause());
+    }
   }
 
   Future<bool> _stopRecording() async {
@@ -169,7 +196,9 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
         text: task.text,
         path: path,
         createdAt: DateTime.now(),
-        seconds: (_clock.elapsedMilliseconds / 1000).ceil(),
+        seconds: (_recorder!.durationMs / 1000).ceil(),
+        durationMs: _recorder!.durationMs,
+        waveform: List.of(_recorder!.envelope),
       );
       return await _persist(
         _session.copyWith(takes: [..._session.takes, take]),
@@ -177,7 +206,7 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
     } catch (_) {
       if (mounted) {
         setState(() {
-          _recording = false;
+          _recording = _recorder?.hasPendingAudio == true;
           _error = rehabL10n(context).rehabRecordError;
         });
       }
@@ -265,6 +294,7 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                if (_captureNotice != null) Text(_captureNotice!),
                 if (_error != null)
                   Card(
                     child: Padding(
@@ -364,6 +394,48 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(_task.instruction),
+                  PracticeGuide(
+                    key: _guideKey,
+                    text: _task.text,
+                    instruction: _task.instruction,
+                    english: en,
+                    playing: _audioPlaying,
+                    recording: _recording,
+                    locked: _locked || _recording,
+                    listen: (text) => _listen(text: text),
+                    stop: _stopAudio,
+                  ),
+                  PracticeMirror(english: en, locked: _locked || _recording),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(en ? 'Show sound graph' : '소리 흐름 보기'),
+                    value: _showWaveform,
+                    onChanged: (v) => setState(() => _showWaveform = v),
+                  ),
+                  if (_showWaveform && _recorder != null && _recording)
+                    ValueListenableBuilder(
+                      valueListenable: _recorder!.frame,
+                      builder: (context, frame, _) => PracticeWaveform(
+                        values: _recorder!.envelope,
+                        durationMs: _recorder!.durationMs,
+                        english: en,
+                        live: frame,
+                      ),
+                    ),
+                  if (_showWaveform && !_recording && currentTakes.isEmpty)
+                    PracticeWaveform(
+                      values: const [],
+                      durationMs: 0,
+                      english: en,
+                    ),
+                  if (_showWaveform && !_recording && currentTakes.isNotEmpty)
+                    PracticeWaveform(
+                      values: currentTakes.last.waveform,
+                      durationMs:
+                          currentTakes.last.durationMs ??
+                          currentTakes.last.seconds * 1000,
+                      english: en,
+                    ),
                   const SizedBox(height: 12),
                   Text(
                     en

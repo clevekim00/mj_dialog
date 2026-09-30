@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -528,6 +529,7 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen>
               ),
               const SizedBox(height: 12),
               const SizedBox(height: 8),
+              RecorderWaveform(recorder: _recorder),
               const Text(
                 '녹음은 기기에 저장돼요. 분석 없이도 듣고 비교할 수 있어요.',
                 textAlign: TextAlign.center,
