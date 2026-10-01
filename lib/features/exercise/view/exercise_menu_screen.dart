@@ -29,6 +29,12 @@ class ExerciseMenuScreen extends StatelessWidget {
         Text(l.rehabTraining, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 20),
         RehabCard(
+          title: rehabEnglish(context) ? 'Oral training' : '구강 훈련',
+          subtitle: l.rehabWarmupHint,
+          icon: Icons.self_improvement,
+          onTap: () => Navigator.pushNamed(context, '/guided_training'),
+        ),
+        RehabCard(
           title: l.rehabArticulation,
           subtitle: l.rehabArticulationHint,
           icon: Icons.record_voice_over,
@@ -59,12 +65,6 @@ class ExerciseMenuScreen extends StatelessWidget {
           onTap: () => open('pacing'),
         ),
         const SizedBox(height: 20),
-        RehabCard(
-          title: l.rehabWarmup,
-          subtitle: l.rehabWarmupHint,
-          icon: Icons.self_improvement,
-          onTap: () => Navigator.pushNamed(context, '/guided_training'),
-        ),
         const SizedBox(height: 16),
         Text(l.rehabSafety),
       ],

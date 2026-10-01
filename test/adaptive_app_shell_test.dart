@@ -33,12 +33,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byType(NavigationDestination), findsNWidgets(5));
-      await tester.tap(find.byType(NavigationDestination).at(4));
+      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      await tester.tap(find.byType(NavigationDestination).at(3));
       await tester.pumpAndSettle();
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        4,
+        3,
       );
       expect(tester.takeException(), isNull);
     });
@@ -55,7 +55,7 @@ void main() {
 
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
-    expect(find.byType(NavigationDestination), findsNWidgets(5));
+    expect(find.byType(NavigationDestination), findsNWidgets(4));
     await tester.tap(find.text('설정'));
     await tester.pumpAndSettle();
     expect(find.text('글자 크기'), findsOneWidget);
@@ -76,12 +76,9 @@ void main() {
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
 
-    await tester.tap(find.text('구강·호흡 훈련').first);
+    await tester.tap(find.text('훈련').first);
     await tester.pumpAndSettle();
-    expect(
-      tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex,
-      2,
-    );
+    expect(find.text('구강 훈련'), findsOneWidget);
 
     await tester.tap(find.text('기록').first);
     await tester.pumpAndSettle();
@@ -93,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-      3,
+      2,
     );
     expect(
       tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, '자음')).selected,
