@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [전체 문서](../../docs/README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/tools/pronunciation_content/README.html)
+
 > 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](../../docs/game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
 
 `generate_core_pack.py`는 앱에 포함되는 한국어 자음 연습 팩을 생성합니다. 단어와 문장 후보는 AI의 도움으로 만들고 구조 검증을 통과한 콘텐츠입니다. 언어재활사의 검수가 끝나기 전에는 임상 검수를 받은 콘텐츠로 표시하면 안 됩니다.

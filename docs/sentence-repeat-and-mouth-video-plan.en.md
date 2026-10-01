@@ -2,6 +2,8 @@
 
 [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/sentence-repeat-and-mouth-video-plan.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 > Update, 2026-09-30: For current implementation, video-review requirements, waveform, and the distinction between voice play and MPT, first consult the [additional design and implementation document](implementation-2026-09-30/README.en.md). The earlier plan is preserved below.

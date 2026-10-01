@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 assets/gemma-2b-it-gpu-int4.bin
+
+# Generated bilingual document website
+/docs/site/

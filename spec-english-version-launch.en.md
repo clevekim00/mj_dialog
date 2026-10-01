@@ -2,6 +2,8 @@
 
 [한국어](spec-english-version-launch.md) | [English](spec-english-version-launch.en.md) | [All documents](docs/README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/spec-english-version-launch.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 ## Overview

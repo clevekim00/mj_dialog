@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [All documents](../../docs/README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/server/pronunciation_analysis/README.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../../docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 A separate FastAPI server for consonant training for adults with acquired dysarthria. App recordings are normalized to 16 kHz mono WAV. When signal-quality checks pass, a Montreal Forced Aligner (MFA) model matching the request's `language` aligns target text and phoneme intervals.

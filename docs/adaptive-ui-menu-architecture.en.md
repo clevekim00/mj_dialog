@@ -2,6 +2,8 @@
 
 [한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/adaptive-ui-menu-architecture.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 Revised 2026-09-25. Identity is now centered on adult acquired dysarthria and self-practice. Sections 1–6 are **target designs**, not claims of completed implementation. Feature retention/reduction, record models, and phased acceptance criteria follow [section 5 of the integrated blueprint](../blueprint-acquired-dysarthria-daily-rehab.en.md). Sections 7–10 record the existing oral/breathing subsystem implementation.

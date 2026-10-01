@@ -1,24 +1,20 @@
-# Malieum · SpeechBridge
+<p align="center"><img src="assets/branding/app-icon.png" width="144" height="144" alt="SpeechBridge 앱 아이콘"></p>
+<h1 align="center">SpeechBridge</h1>
+<p align="center"><strong>Speech practice for adults with acquired dysarthria</strong></p>
+<p align="center">Everyday words, at your own pace.</p>
+<p align="center">Flutter · 한국어 / English · MIT</p>
 
-<p align="center">
-  <img src="assets/branding/app-icon.png" width="128" height="128" alt="SpeechBridge app icon">
-</p>
+<p align="center"><a href="https://clevekim00.github.io/mj_dialog/readme.html">한국어 탭으로 읽기</a> · <a href="https://clevekim00.github.io/mj_dialog/readme.en.html">Read in English</a></p>
 
-[📖 Read with Korean / English tabs](https://clevekim00.github.io/mj_dialog/readme.en.html)
+The linked document site opens Korean and English in tabs on the same page. GitHub README supports navigation links only. [All documents](https://clevekim00.github.io/mj_dialog/documents.en.html) · [Illustrated app introduction](https://clevekim00.github.io/mj_dialog/promotion.en.html) · [Illustrated user guide](https://clevekim00.github.io/mj_dialog/user-guide.en.html)
+
+<details><summary>Markdown source files</summary>
 
 [한국어](README.md) · [English](README.en.md)
 
-> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
+</details>
 
-[All documents](docs/README.en.md)
-
-**Speech Practice for Adults with Dysarthria · 마비말장애 말하기 연습**
-
-Everyday words, at your own pace.
-
-> An app supporting self-directed speech practice for people with speaking difficulties.
-
----
+<!-- document-body -->
 
 ## Games
 
@@ -45,7 +41,7 @@ These links open **rendered document pages**, not source files. Korean is the de
 | Promotional document | [About the app](https://clevekim00.github.io/mj_dialog/promotion.html) | [About SpeechBridge](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | User guide | [Instructions](https://clevekim00.github.io/mj_dialog/user-guide.html) | [User guide](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 
-Large illustrations and short sentences explain the app. Printing/PDF saving is supported. For offline reading, download the HTML files from `docs/user-materials/` and open them in a browser.
+Large illustrations and short sentences explain the app. Printing/PDF saving is supported. For offline reading, generate the site, keep the entire `docs/site/` folder, and open `index.html`.
 
 ### Key features
 

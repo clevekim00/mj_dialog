@@ -2,6 +2,8 @@
 
 [한국어](korean-mfa-analysis-api-development.md) | [English](korean-mfa-analysis-api-development.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/korean-mfa-analysis-api-development.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 Date: 2026-08-26

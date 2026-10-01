@@ -2,6 +2,8 @@
 
 [한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) | [전체 문서](README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/docs/adaptive-ui-menu-architecture.html)
+
 > 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
 
 개정: 2026-09-25. 성인 후천성 마비말장애·자가훈련 중심으로 정체성을 확정했다. 1~6절은 **목표 설계**이며 현재 구현 완료를 뜻하지 않는다. 기능별 유지·축소 판단, 기록 모델, 단계별 인수 기준은 [통합 설계서 5절](../blueprint-acquired-dysarthria-daily-rehab.md#5-제품-정체성기능메뉴-재설계--2026-09-25)을 따른다. 7~10절은 기존 구강·호흡 하위 기능의 구현 기록이다.

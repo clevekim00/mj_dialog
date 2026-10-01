@@ -2,6 +2,8 @@
 
 [한국어](training-availability-and-server.md) | [English](training-availability-and-server.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/training-availability-and-server.en.html)
+
 Updated: 2026-10-01. This supersedes earlier descriptions that clinician-guided exercises are locked.
 
 ## Implemented behavior

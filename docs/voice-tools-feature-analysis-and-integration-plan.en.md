@@ -2,6 +2,8 @@
 
 [한국어](voice-tools-feature-analysis-and-integration-plan.md) | [English](voice-tools-feature-analysis-and-integration-plan.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/voice-tools-feature-analysis-and-integration-plan.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 Date: 2026-08-24

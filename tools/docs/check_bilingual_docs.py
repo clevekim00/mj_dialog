@@ -110,7 +110,7 @@ def main() -> int:
             fail(path, 'English edition is missing')
     for path in markdown:
         text = path.read_text()
-        if not text.startswith('# '):
+        if not text.startswith('# ') and not re.search(r'<h1\b[^>]*>.+?</h1>', text[:1000]):
             fail(path, 'missing document title')
         if len(re.findall(r'^```', text, re.M)) % 2:
             fail(path, 'unclosed code fence')

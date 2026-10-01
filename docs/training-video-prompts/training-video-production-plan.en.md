@@ -2,6 +2,8 @@
 
 [한국어](training-video-production-plan.md) | [English](training-video-production-plan.en.md) | [All documents](../README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/training-video-prompts/training-video-production-plan.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 > Updated 2026-09-30: for current implementation, video approval, waveforms, and the distinction between phonation play and MPT, prioritize the [additional design and implementation document](../implementation-2026-09-30/README.en.md). The plan below is preserved as a historical record.

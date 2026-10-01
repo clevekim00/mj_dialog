@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [전체 문서](../../docs/README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/server/pronunciation_analysis/README.html)
+
 > 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](../../docs/game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
 
 성인 후천성 마비말장애 자음 훈련을 위한 별도 FastAPI 서버입니다. 앱의 녹음은 서버에서 16 kHz mono WAV로 정규화되고, 신호 품질 검사를 통과한 경우 요청의 `language`에 맞는 Montreal Forced Aligner(MFA) 모델로 목표 문장과 음소 구간을 정렬합니다.

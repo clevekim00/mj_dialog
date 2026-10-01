@@ -2,6 +2,8 @@
 
 [한국어](training-video-coverage-2026-09-17.md) | [English](training-video-coverage-2026-09-17.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/training-video-coverage-2026-09-17.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 Checked: 2026-09-17 · Based on source and video assets in the current working directory.

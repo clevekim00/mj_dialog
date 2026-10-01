@@ -2,6 +2,8 @@
 
 [한국어](ai-speech-therapy-avatar-platform.md) | [English](ai-speech-therapy-avatar-platform.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/ai-speech-therapy-avatar-platform.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 ## Purpose

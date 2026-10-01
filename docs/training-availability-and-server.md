@@ -2,6 +2,8 @@
 
 [한국어](training-availability-and-server.md) | [English](training-availability-and-server.en.md) | [전체 문서](README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/docs/training-availability-and-server.html)
+
 작성: 2026-10-01. 이 문서는 과거 문서의 ‘전문가 확인 훈련은 잠금’ 설명을 대체한다.
 
 ## 이번에 구현한 동작

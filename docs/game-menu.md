@@ -2,6 +2,8 @@
 
 [한국어](game-menu.md) | [English](game-menu.en.md) | [전체 문서](README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/docs/game-menu.html)
+
 2026-10-01 구현 기준. 이 문서가 이전 기획서의 메뉴 경로보다 우선합니다.
 
 ## 기본 메뉴

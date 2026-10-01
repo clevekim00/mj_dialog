@@ -2,6 +2,8 @@
 
 [한국어](dysarthria-app-review-2026-09-13.md) | [English](dysarthria-app-review-2026-09-13.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/dysarthria-app-review-2026-09-13.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 Reviewed: 2026-09-13 · Source: `1bc2f6b` · Product: Speech Rehab

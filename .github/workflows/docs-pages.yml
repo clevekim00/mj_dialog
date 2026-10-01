@@ -5,6 +5,9 @@ on:
     paths:
       - '**/*.md'
       - 'assets/branding/app-icon.png'
+      - 'docs/**/*.png'
+      - 'docs/**/*.svg'
+      - 'server/training_management/openapi.json'
       - 'tools/docs/**'
       - 'docs/user-materials/**'
       - 'docs/user-guide*.html'
@@ -25,19 +28,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6
-      - name: Verify generated README tab pages
+      - name: Build bilingual document reader
         run: |
           python3 -m pip install markdown-it-py==4.2.0
-          python3 tools/docs/build_readme_page.py --check
+          python3 tools/docs/build_docs_site.py
+          python3 tools/docs/build_docs_site.py --check
+          python3 tools/docs/check_docs_site.py
       - name: Check bilingual document coverage and links
         run: python3 tools/docs/check_bilingual_docs.py
       - uses: actions/configure-pages@v5
-      - name: Prepare public documents only
+      - name: Prepare generated public document site
         run: |
-          mkdir -p _site/archive
-          cp docs/user-materials/*.html _site/
-          cp docs/user-guide*.html _site/archive/
-          touch _site/.nojekyll
+          mkdir -p _site
+          cp -R docs/site/. _site/
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

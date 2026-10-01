@@ -1,25 +1,20 @@
-# 말이음 · SpeechBridge
+<p align="center"><img src="assets/branding/app-icon.png" width="144" height="144" alt="말이음 · SpeechBridge 앱 아이콘"></p>
+<h1 align="center">말이음 · SpeechBridge</h1>
+<p align="center"><strong>성인 후천성 마비말장애를 위한 말하기 재활 연습</strong></p>
+<p align="center">생활에 필요한 말, 내 속도로 연습해요.</p>
+<p align="center">Flutter · 한국어 / English · MIT</p>
 
-<p align="center">
-  <img src="assets/branding/app-icon.png" width="128" height="128" alt="말이음 앱 아이콘">
-</p>
+<p align="center"><a href="https://clevekim00.github.io/mj_dialog/readme.html">한국어 탭으로 읽기</a> · <a href="https://clevekim00.github.io/mj_dialog/readme.en.html">Read in English</a></p>
 
-[📖 한국어 / English 탭으로 읽기](https://clevekim00.github.io/mj_dialog/readme.html)
+문서 사이트에서는 같은 페이지의 한국어·영어 탭으로 내용을 바꿔 읽을 수 있습니다. GitHub README에서는 이동 링크로 제공됩니다. [전체 문서](https://clevekim00.github.io/mj_dialog/documents.html) · [그림으로 보는 앱 소개](https://clevekim00.github.io/mj_dialog/promotion.html) · [그림으로 보는 사용법](https://clevekim00.github.io/mj_dialog/user-guide.html)
+
+<details><summary>Markdown 원본 파일</summary>
 
 [한국어](README.md) · [English](README.en.md)
 
-> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](docs/game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+</details>
 
-[전체 문서](docs/README.md)
-
-**마비말장애 말하기 연습 · Speech Practice for Adults with Dysarthria**
-
-생활에 필요한 말, 내 속도로 연습해요.
-Everyday words, at your own pace.
-
-> 말하기가 불편한 사용자의 자가 말하기 연습을 돕는 앱
-
----
+<!-- document-body -->
 
 ## 게임 메뉴
 
@@ -27,7 +22,7 @@ Everyday words, at your own pace.
 
 ## 최대발성시간 (MPT)
 
-연습 → 편안하게 소리 내기 → **최대발성시간 (MPT)**에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.
+훈련 → 편안하게 소리 내기 → <strong>최대발성시간 (MPT)</strong>에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.
 
 [측정 방법·제한·구현 설명](docs/mpt-measurement.md).
 
@@ -47,7 +42,7 @@ Everyday words, at your own pace.
 | 홍보 문서 | [앱 소개 보기](https://clevekim00.github.io/mj_dialog/promotion.html) | [About SpeechBridge](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | 사용자 가이드 | [사용법 보기](https://clevekim00.github.io/mj_dialog/user-guide.html) | [User guide](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
 
-큰 그림과 짧은 문장으로 설명하며 인쇄/PDF 저장을 지원합니다. 인터넷 없이 보려면 `docs/user-materials/`의 HTML 파일을 내려받아 브라우저에서 열어 주세요.
+큰 그림과 짧은 문장으로 설명하며 인쇄/PDF 저장을 지원합니다. 인터넷 없이 보려면 문서 사이트를 생성한 뒤 `docs/site/` 폴더 전체를 보관하고 `index.html`을 열어 주세요.
 
 ### 핵심 특징
 

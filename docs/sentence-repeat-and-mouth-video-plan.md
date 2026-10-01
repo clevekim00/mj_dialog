@@ -2,6 +2,8 @@
 
 [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) | [전체 문서](README.md)
 
+<!-- reader-link --> [언어 탭으로 읽기](https://clevekim00.github.io/mj_dialog/documents/docs/sentence-repeat-and-mouth-video-plan.html)
+
 > 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
 
 > 2026-09-30 보완: 현재 구현과 영상 검수 조건·파형·발성 놀이/MPT 구분은 [추가 설계 및 구현서](implementation-2026-09-30/README.md)를 우선 참고한다. 아래 내용은 당시 계획을 보존한 것이다.

@@ -2,6 +2,8 @@
 
 [한국어](game-menu.md) | [English](game-menu.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/game-menu.en.html)
+
 Implemented October 1, 2026. This page takes precedence over menu paths in earlier plans.
 
 ## Main navigation

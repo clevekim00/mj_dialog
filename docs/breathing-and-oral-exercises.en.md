@@ -2,6 +2,8 @@
 
 [한국어](breathing-and-oral-exercises.md) | [English](breathing-and-oral-exercises.en.md) | [All documents](README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/breathing-and-oral-exercises.en.html)
+
 
 > Update (2026-10-01): all 46 exercises are open by default. Clinical guidance is separate from administrative availability. [Current policy](training-availability-and-server.en.md).
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.

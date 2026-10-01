@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [All documents](../../docs/README.en.md)
 
+<!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/tools/pronunciation_content/README.en.html)
+
 > Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../../docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
 
 `generate_core_pack.py` builds the bundled Korean consonant practice pack. Word and sentence candidates are AI-assisted content that passes structural validation. They must not be represented as clinician-approved until a speech-language pathologist completes the review.

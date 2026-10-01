@@ -1,27 +1,22 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>말이음 · SpeechBridge | 프로젝트 소개</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f5f7f6;color:#203730;font:18px/1.75 system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif}main{max-width:1040px;margin:32px auto;padding:0 24px 64px}.brand{text-align:center;padding:28px 0}.brand img{border-radius:26px;width:112px;height:112px}h1{font-size:32px;margin:12px 0 0}.document{background:white;border:1px solid #d6e0da;border-radius:18px;overflow:hidden}.tabs{display:flex;gap:8px;padding:0 24px;border-bottom:1px solid #d6e0da;background:#f9fbfa}.tabs button{font:inherit;font-weight:650;min-height:60px;padding:12px 24px;border:0;border-bottom:4px solid transparent;background:transparent;color:#61736b;cursor:pointer}.tabs button[aria-selected="true"]{color:#175a43;border-bottom-color:#217756;background:#eaf3ee}.panel{padding:28px 36px}a{color:#16664a;text-underline-offset:4px}a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid #b76515;outline-offset:3px}h2{font-size:27px;line-height:1.4;margin:36px 0 16px;border-bottom:1px solid #e0e7e3;padding-bottom:10px}h3{font-size:21px;line-height:1.5}pre{overflow-x:auto;padding:18px;background:#f1f5f3;border-radius:10px;font-size:14px;line-height:1.6}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}blockquote{border-left:4px solid #95bbaa;margin:20px 0;padding:8px 18px;background:#f4f8f5}table{border-collapse:collapse;width:100%;font-size:16px}th,td{border:1px solid #d6e0da;padding:10px;text-align:left;overflow-wrap:anywhere}th{background:#edf4ef}li{margin:6px 0}.links{display:flex;flex-wrap:wrap;gap:18px;margin:0 0 26px}.hint{font-size:15px;color:#5c6f65;margin-top:8px}[hidden]{display:none!important}@media(max-width:600px){main{margin:8px auto;padding:0 12px 32px}.panel{padding:18px}.tabs{padding:0 10px}.tabs button{flex:1;padding:12px}h1{font-size:27px}h2{font-size:23px}body{font-size:17px}table{font-size:14px}th,td{padding:7px}}@media(prefers-color-scheme:dark){body{background:#0d1512;color:#e5eee9}.document{background:#15221b;border-color:#354a3d}.tabs,th{background:#1c2d24}.tabs button{color:#becdc4}.tabs button[aria-selected="true"]{background:#243e30;color:#c9f1de;border-color:#79c5a1}a{color:#a0ddbd}pre,blockquote{background:#1d3025}.hint{color:#a9bcb0}th,td,h2,.tabs{border-color:#354a3d}}@media print{.brand{padding:0}.tabs,.links,.hint{display:none}main{margin:0;padding:0}.document{border:0}.panel{padding:0}pre{white-space:pre-wrap}body,.document{background:white;color:black}}
-</style><noscript><style>.panel[hidden]{display:block!important}.tabs,.hint{display:none}</style></noscript></head><body><main><header class="brand"><img id="app-icon" src="data:image/png;base64,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" alt="말이음 앱 아이콘" width="112" height="112"><h1 id="brand-name">말이음 · SpeechBridge</h1><p class="hint" id="tab-hint">탭을 누르면 페이지 이동 없이 언어가 바뀝니다.</p></header><div class="document"><div class="tabs" role="tablist" aria-label="문서 언어"><button type="button" role="tab" id="tab-ko" data-language="ko" aria-controls="panel-ko" aria-selected="true" tabindex="0">한국어</button><button type="button" role="tab" id="tab-en" data-language="en" aria-controls="panel-en" aria-selected="false" tabindex="-1">English</button></div><section class="panel" id="panel-ko" role="tabpanel" aria-labelledby="tab-ko" lang="ko" tabindex="0"><nav class="links"><a href="promotion.html">앱 소개</a><a href="user-guide.html">사용자 가이드</a><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/README.md">전체 문서</a></nav><p><strong>마비말장애 말하기 연습 · Speech Practice for Adults with Dysarthria</strong></p>
-<p>생활에 필요한 말, 내 속도로 연습해요.
-Everyday words, at your own pace.</p>
-<blockquote>
-<p>말하기가 불편한 사용자의 자가 말하기 연습을 돕는 앱</p>
-</blockquote>
-<hr />
-<h2>게임 메뉴</h2>
-<p>기본 메뉴는 <strong>오늘 → 훈련 → 게임 → 기록 → 설정</strong>입니다. 게임에서 <strong>단어 말하기 게임</strong>(시간 제한 없음이 기본)과 <strong>목소리로 천천히 날기</strong>를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/game-menu.md">현재 메뉴와 기존 기록 호환성</a>.</p>
-<h2>최대발성시간 (MPT)</h2>
-<p>연습 → 편안하게 소리 내기 → **최대발성시간 (MPT)**에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.</p>
-<p><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/mpt-measurement.md">측정 방법·제한·구현 설명</a>.</p>
-<h2>📌 프로젝트 개요</h2>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>프로젝트 소개 | SpeechBridge</title><link rel="stylesheet" href="../site/assets/reader.css"><noscript><style>[role=tabpanel][hidden]{display:block!important}.tabs{display:none}</style></noscript></head>
+<body><a class="skip" href="#reader" data-ko="본문 바로가기" data-en="Skip to content">본문 바로가기</a>
+<header class="brand hero"><img src="../site/assets/app-icon.png" width="128" height="128" alt="SpeechBridge"><h1 data-ko="말이음 · SpeechBridge" data-en="SpeechBridge">말이음 · SpeechBridge</h1><p class="subtitle" data-ko="성인 후천성 마비말장애를 위한 말하기 재활 연습" data-en="Speech practice for adults with acquired dysarthria">성인 후천성 마비말장애를 위한 말하기 재활 연습</p><p class="tagline" data-ko="생활에 필요한 말, 내 속도로 연습해요." data-en="Everyday words, at your own pace.">생활에 필요한 말, 내 속도로 연습해요.</p><div class="badges"><span>Flutter</span><span>한국어 · English</span><span>MIT</span></div></header>
+<nav class="site-nav" aria-label="Documents"><a href="../site/readme.html" data-href-ko="../site/readme.html" data-href-en="../site/readme.en.html" data-ko="프로젝트 소개" data-en="Overview">프로젝트 소개</a><a href="../site/documents.html" data-href-ko="../site/documents.html" data-href-en="../site/documents.en.html" data-ko="전체 문서" data-en="All documents">전체 문서</a><a href="../site/promotion.html" data-href-ko="../site/promotion.html" data-href-en="../site/promotion.en.html" data-ko="그림으로 보는 앱 소개" data-en="Illustrated introduction">그림으로 보는 앱 소개</a><a href="../site/user-guide.html" data-href-ko="../site/user-guide.html" data-href-en="../site/user-guide.en.html" data-ko="그림으로 보는 사용법" data-en="Illustrated guide">그림으로 보는 사용법</a></nav>
+<main id="reader"><div class="reader"><div class="tabs" role="tablist" aria-label="문서 언어"><button type="button" role="tab" id="tab-ko" data-language="ko" aria-controls="panel-ko" aria-selected="true" tabindex="0">한국어</button><button type="button" role="tab" id="tab-en" data-language="en" aria-controls="panel-en" aria-selected="false" tabindex="-1">English</button></div><section role="tabpanel" id="panel-ko" aria-labelledby="tab-ko" lang="ko" tabindex="0" ><h2 id="ko--게임-메뉴">게임 메뉴</h2>
+<p>기본 메뉴는 <strong>오늘 → 훈련 → 게임 → 기록 → 설정</strong>입니다. 게임에서 <strong>단어 말하기 게임</strong>(시간 제한 없음이 기본)과 <strong>목소리로 천천히 날기</strong>를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. <a href="../site/documents/docs/game-menu.html">현재 메뉴와 기존 기록 호환성</a>.</p>
+<h2 id="ko--최대발성시간-mpt">최대발성시간 (MPT)</h2>
+<p>훈련 → 편안하게 소리 내기 → <strong>최대발성시간 (MPT)</strong>에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.</p>
+<p><a href="../site/documents/docs/mpt-measurement.html">측정 방법·제한·구현 설명</a>.</p>
+<h2 id="ko---프로젝트-개요">📌 프로젝트 개요</h2>
 <p>말이음(SpeechBridge)은 <strong>성인 후천성 마비말장애 사용자</strong>가 집에서도 짧고 꾸준하게 말하기 연습을 할 수 있도록 돕는 앱입니다.
 음성 기반 대화, 소리 내어 읽기, 녹음 재생, 피로도/목표 기록, 연습 히스토리를 통해 사용자와 보호자가 변화 과정을 확인할 수 있게 설계합니다.</p>
 <blockquote>
 <p>이 앱은 전문적인 평가나 도움을 대체하지 않는 연습 보조 도구입니다. 필요할 때는 전문가와 상의해 연습 계획을 조정하는 것을 권장합니다.</p>
 </blockquote>
-<h3>앱 소개와 사용자 가이드</h3>
+<h3 id="ko--앱-소개와-사용자-가이드">앱 소개와 사용자 가이드</h3>
 <p>아래 링크는 소스 파일이 아닌 <strong>문서 페이지</strong>를 엽니다. 기본 언어는 한국어이며, 각 페이지 위에서 English로 전환할 수 있습니다.</p>
-<table>
+<div class="table-scroll" tabindex="0"><table>
 <thead>
 <tr>
 <th>문서</th>
@@ -32,18 +27,18 @@ Everyday words, at your own pace.</p>
 <tbody>
 <tr>
 <td>홍보 문서</td>
-<td><a href="https://clevekim00.github.io/mj_dialog/promotion.html">앱 소개 보기</a></td>
-<td><a href="https://clevekim00.github.io/mj_dialog/promotion.en.html">About SpeechBridge</a></td>
+<td><a href="../site/promotion.html">앱 소개 보기</a></td>
+<td><a href="../site/promotion.en.html">About SpeechBridge</a></td>
 </tr>
 <tr>
 <td>사용자 가이드</td>
-<td><a href="https://clevekim00.github.io/mj_dialog/user-guide.html">사용법 보기</a></td>
-<td><a href="https://clevekim00.github.io/mj_dialog/user-guide.en.html">User guide</a></td>
+<td><a href="../site/user-guide.html">사용법 보기</a></td>
+<td><a href="../site/user-guide.en.html">User guide</a></td>
 </tr>
 </tbody>
-</table>
-<p>큰 그림과 짧은 문장으로 설명하며 인쇄/PDF 저장을 지원합니다. 인터넷 없이 보려면 <code>docs/user-materials/</code>의 HTML 파일을 내려받아 브라우저에서 열어 주세요.</p>
-<h3>핵심 특징</h3>
+</table></div>
+<p>큰 그림과 짧은 문장으로 설명하며 인쇄/PDF 저장을 지원합니다. 인터넷 없이 보려면 문서 사이트를 생성한 뒤 <code>docs/site/</code> 폴더 전체를 보관하고 <code>index.html</code>을 열어 주세요.</p>
+<h3 id="ko--핵심-특징">핵심 특징</h3>
 <ul>
 <li>🏁 <strong>오늘의 연습 우선 진입</strong> — 앱 실행 시 오늘 할 연습을 바로 고를 수 있는 홈 화면으로 시작</li>
 <li>🧭 <strong>연습 온보딩</strong> — 최초 실행 시 안전 고지, 연습 기간, 연습 목표, 피로도 기준을 설정</li>
@@ -55,7 +50,7 @@ Everyday words, at your own pace.</p>
 <li>🕗 <strong>통합 히스토리 관리</strong> — AI 대화와 읽기 연습 기록을 한데 모아보고 필터링할 수 있는 일원화된 저장소</li>
 </ul>
 <hr />
-<h2>🏗 프로젝트 구조</h2>
+<h2 id="ko---프로젝트-구조">🏗 프로젝트 구조</h2>
 <pre><code>lib/
 ├── main.dart                                    # 앱 진입점 및 권한 기반 조건부 시작(StartupResolver)
 ├── features/
@@ -83,8 +78,8 @@ Everyday words, at your own pace.</p>
     └── profile storage                          # 연습 프로필/온보딩 저장소
 </code></pre>
 <hr />
-<h2>📋 최근 개선 사항 (Changelog)</h2>
-<h3>2026-09-15 · 자음 선택과 연습 안정성</h3>
+<h2 id="ko---최근-개선-사항-changelog">📋 최근 개선 사항 (Changelog)</h2>
+<h3 id="ko--2026-09-15--자음-선택과-연습-안정성">2026-09-15 · 자음 선택과 연습 안정성</h3>
 <ul>
 <li>홈의 <code>자음 골라 연습하기</code>에서 초성·받침을 선택하고 음절·단어·문장을 3·5·10회 녹음합니다. 목표 음절 강조, 동일 항목 녹음 비교, 완료·이어하기를 제공합니다.</li>
 <li>자음·문장 화면에서 녹음/중지 버튼을 하단에 고정하고, 진행 중 항목 변경과 녹음 이탈을 보호합니다.</li>
@@ -92,8 +87,8 @@ Everyday words, at your own pace.</p>
 <li>단어 연습의 기본은 시간 제한 없음입니다. 과거 방식 점수와 미평가 기록은 새로운 텍스트 일치도 통계에서 분리합니다.</li>
 <li>서버 분석은 별도 동의 후 요청하며, 취소·전체 제한시간·접근권한·결과 만료를 적용합니다. 운영 인증 서버 연동과 임상 검증은 별도로 필요합니다.</li>
 </ul>
-<p>상세 사용 흐름·검증·남은 범위는 <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/dysarthria-implementation-2026-09-15.md">구현 기록</a>에 있습니다. 아래 항목은 이전 변경 시점의 기록입니다.</p>
-<h3>0. 구조화된 발음 연습 모드</h3>
+<p>상세 사용 흐름·검증·남은 범위는 <a href="../site/documents/docs/dysarthria-implementation-2026-09-15.html">구현 기록</a>에 있습니다. 아래 항목은 이전 변경 시점의 기록입니다.</p>
+<h3 id="ko--0-구조화된-발음-연습-모드">0. 구조화된 발음 연습 모드</h3>
 <ul>
 <li>한컴타자연습처럼 <code>단어 게임</code>, <code>짧은 문장 읽기</code>, <code>긴 문장 읽기</code>, <code>자유 대화</code>를 선택하는 연습 선택 화면을 추가했습니다.</li>
 <li>단어 게임은 떨어지는 단어를 발음해서 맞히면 사라지고, 단어가 바닥에 닿으면 종료되는 게임형 UI로 동작합니다.</li>
@@ -105,7 +100,7 @@ Everyday words, at your own pace.</p>
 <li>연습 기록에 모드, 콘텐츠 ID, 카테고리, 난이도, 재시도 횟수, 연속 성공 정보를 저장합니다.</li>
 <li>대시보드와 기록 화면에서 모드별 연습 내역과 어려웠던 발음군을 확인할 수 있습니다.</li>
 </ul>
-<h3>0. 혀운동 루틴 및 2D 튜터 가이드</h3>
+<h3 id="ko--0-혀운동-루틴-및-2d-튜터-가이드">0. 혀운동 루틴 및 2D 튜터 가이드</h3>
 <ul>
 <li><code>오늘의 연습</code> 홈의 <code>운동</code> 카드에서 <code>혀운동</code>, <code>얼굴운동</code>, <code>호흡훈련</code>을 선택할 수 있습니다.</li>
 <li><code>혀운동</code> 메뉴 아래에는 기존 <code>혀운동 루틴</code>과 <code>연속 교대운동</code> 메뉴가 있습니다.</li>
@@ -120,7 +115,7 @@ Everyday words, at your own pace.</p>
 <li><code>model_viewer_plus</code> 의존성과 <code>assets/models/tongue_exercise_preview.glb</code> asset 선언을 제거했습니다.</li>
 <li>2D 튜터/발음 mouth-shape/운동 라이브러리 장기 설계는 <code>docs/ai-speech-therapy-avatar-platform.md</code>에 정리했습니다.</li>
 </ul>
-<h3>0. 문장 반복 및 녹음 비교</h3>
+<h3 id="ko--0-문장-반복-및-녹음-비교">0. 문장 반복 및 녹음 비교</h3>
 <ul>
 <li>문장 연습 결과 화면에서 <code>방금 녹음 듣기</code>를 제공하고, 같은 문장을 다시 녹음한 경우 <code>이전 녹음 듣기</code>도 함께 표시합니다.</li>
 <li><code>같은 문장 반복</code>으로 현재 문장을 유지한 채 재녹음할 수 있어, 1-2문장 단위 반복 훈련 흐름을 지원합니다.</li>
@@ -133,36 +128,36 @@ Everyday words, at your own pace.</p>
 <li>자유대화 화면에서도 <code>입모양 촬영</code> 토글을 켜고 대화 중 입모양 영상을 저장한 뒤 마지막 영상을 확인할 수 있습니다.</li>
 <li>상세 구현 순서와 남은 개선 항목은 <code>docs/sentence-repeat-and-mouth-video-plan.md</code>에 정리했습니다.</li>
 </ul>
-<h3>0. 말하기 어려움 연습 목적 반영</h3>
+<h3 id="ko--0-말하기-어려움-연습-목적-반영">0. 말하기 어려움 연습 목적 반영</h3>
 <ul>
 <li>최초 실행 시 안전 고지와 연습 목표 설정을 확인하는 온보딩을 추가했습니다.</li>
 <li>연습 세션에 오늘 목표, 시작 전 피로도, 녹음 시간을 함께 저장하도록 확장했습니다.</li>
 <li>병원/집/가족/전화 상황에서 바로 쓸 수 있는 기능적 의사소통 문장을 추가했습니다.</li>
 <li>대시보드에 최근 7일 연습 지속성과 평균 피로도 정보를 추가했습니다.</li>
 </ul>
-<h3>1. 소리 내어 읽기 연습 (Reading Practice) 추가</h3>
+<h3 id="ko--1-소리-내어-읽기-연습-reading-practice-추가">1. 소리 내어 읽기 연습 (Reading Practice) 추가</h3>
 <ul>
 <li>사용자가 제시된 문장이나 직접 입력한 문장을 읽고 발음 점수와 피드백을 받을 수 있는 기능을 추가했습니다.</li>
 <li>녹음된 자신의 목소리를 다시 들어보며 AI '영은'의 구체적인 코칭을 확인할 수 있습니다.</li>
 </ul>
-<h3>2. 자유 읽기 (Free Reading) 및 통합 히스토리</h3>
+<h3 id="ko--2-자유-읽기-free-reading-및-통합-히스토리">2. 자유 읽기 (Free Reading) 및 통합 히스토리</h3>
 <ul>
 <li>정해진 문장 없이도 자유롭게 말하고 평가받는 '자유 읽기' 모드를 도입했습니다.</li>
 <li>메인 히스토리 화면에서 대화 세션과 연습 세션을 통합하여 조회하고 필터링할 수 있는 기능을 완성했습니다.</li>
 </ul>
-<h3>3. 고도화된 UI 및 버그 수정</h3>
+<h3 id="ko--3-고도화된-ui-및-버그-수정">3. 고도화된 UI 및 버그 수정</h3>
 <ul>
 <li>스크롤 뷰 도입을 통해 긴 피드백 카드 노출 시 발생하던 Bottom Overflow 문제를 해결했습니다.</li>
 <li>발음 연습을 상징하는 전용 아이콘과 프리미엄 뱃지 요소를 적용했습니다.</li>
 </ul>
 <hr />
-<h2>🚀 실행 방법</h2>
-<h3>사전 요구사항</h3>
+<h2 id="ko---실행-방법">🚀 실행 방법</h2>
+<h3 id="ko--사전-요구사항">사전 요구사항</h3>
 <ul>
 <li>Flutter 3.38+ 설치</li>
 <li>Gemma 2B 모델 파일 (모바일): <code>assets/gemma-2b-it-gpu-int4.bin</code></li>
 </ul>
-<h3>빌드 &amp; 실행</h3>
+<h3 id="ko--빌드--실행">빌드 &amp; 실행</h3>
 <pre><code class="language-bash"># 의존성 설치
 flutter pub get
 
@@ -178,7 +173,7 @@ scripts/run_ios_release_device.sh
 # Android 실행
 flutter run -d android
 </code></pre>
-<h3>iOS 실기기 release 실행 스크립트</h3>
+<h3 id="ko--ios-실기기-release-실행-스크립트">iOS 실기기 release 실행 스크립트</h3>
 <p>다음 긴 명령은 iOS debug 앱의 홈 화면 단독 실행 제한을 피하고, 실제 기기에서 release 빌드를 바로 설치/실행하기 위한 명령입니다.</p>
 <pre><code class="language-bash">flutter run --release -d 00008027-000849220A31002E --no-resident
 </code></pre>
@@ -191,27 +186,21 @@ flutter run -d android
 <p>또는 환경 변수로 기본 기기를 바꿀 수 있습니다.</p>
 <pre><code class="language-bash">IOS_DEVICE_ID=&lt;device-id&gt; scripts/run_ios_release_device.sh
 </code></pre>
-<h2>훈련 열림과 관리 서버</h2>
-<p>구강·호흡 훈련 46개는 모두 기본 열림입니다. 앱에는 개별 훈련 원격 정책 적용 구조를 구현했으며, 관리 서버 API는 설계 단계입니다. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/training-availability-and-server.md">API 설계 및 서버 구현 수준</a>을 참고하세요.</p>
-</section><section class="panel" id="panel-en" role="tabpanel" aria-labelledby="tab-en" lang="en" tabindex="0" hidden><nav class="links"><a href="promotion.en.html">About the app</a><a href="user-guide.en.html">User guide</a><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/README.en.md">All documents</a></nav><p><strong>Speech Practice for Adults with Dysarthria · 마비말장애 말하기 연습</strong></p>
-<p>Everyday words, at your own pace.</p>
-<blockquote>
-<p>An app supporting self-directed speech practice for people with speaking difficulties.</p>
-</blockquote>
-<hr />
-<h2>Games</h2>
-<p>Use <strong>Today → Training → Games → Records → Settings</strong>. Games contains <strong>Word speaking game</strong> (untimed by default) and <strong>Gentle voice flight</strong>. Oral training and MPT stay under Training. In Records, select Games to see both games. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/game-menu.en.md">Current navigation and compatibility</a>.</p>
-<h2>Maximum phonation time (MPT)</h2>
+<h2 id="ko--훈련-열림과-관리-서버">훈련 열림과 관리 서버</h2>
+<p>구강·호흡 훈련 46개는 모두 기본 열림입니다. 앱에는 개별 훈련 원격 정책 적용 구조를 구현했으며, 관리 서버 API는 설계 단계입니다. <a href="../site/documents/docs/training-availability-and-server.html">API 설계 및 서버 구현 수준</a>을 참고하세요.</p>
+</section><section role="tabpanel" id="panel-en" aria-labelledby="tab-en" lang="en" tabindex="0" hidden><h2 id="en--games">Games</h2>
+<p>Use <strong>Today → Training → Games → Records → Settings</strong>. Games contains <strong>Word speaking game</strong> (untimed by default) and <strong>Gentle voice flight</strong>. Oral training and MPT stay under Training. In Records, select Games to see both games. <a href="../site/documents/docs/game-menu.en.html">Current navigation and compatibility</a>.</p>
+<h2 id="en--maximum-phonation-time-mpt">Maximum phonation time (MPT)</h2>
 <p>Training → Comfortable voice practice → <strong>Maximum phonation time (MPT)</strong> provides observer timing for three single-breath “ah” trials. The longest of three confirmed trials is saved with recordings and waveforms in the separate MPT record category. Rest between trials; interrupted or unreviewed attempts do not count. This is a protocol recording tool, not a clinically validated diagnostic test.</p>
-<p><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/mpt-measurement.en.md">Procedure, limitations and implementation</a>.</p>
-<h2>📌 Project overview</h2>
+<p><a href="../site/documents/docs/mpt-measurement.en.html">Procedure, limitations and implementation</a>.</p>
+<h2 id="en---project-overview">📌 Project overview</h2>
 <p>Malieum (SpeechBridge) helps <strong>adults with acquired dysarthria</strong> practice speaking briefly and regularly at home. Voice conversation, reading aloud, recording playback, fatigue/goal records, and practice history are designed to help users and caregivers review changes over time.</p>
 <blockquote>
 <p>This is a practice-support tool, not a substitute for professional assessment or support. Consult a professional when adjusting a practice plan.</p>
 </blockquote>
-<h3>App introduction and user guide</h3>
+<h3 id="en--app-introduction-and-user-guide">App introduction and user guide</h3>
 <p>These links open <strong>rendered document pages</strong>, not source files. Korean is the default, and the language controls at the top let readers switch to English.</p>
-<table>
+<div class="table-scroll" tabindex="0"><table>
 <thead>
 <tr>
 <th>Document</th>
@@ -222,18 +211,18 @@ flutter run -d android
 <tbody>
 <tr>
 <td>Promotional document</td>
-<td><a href="https://clevekim00.github.io/mj_dialog/promotion.html">About the app</a></td>
-<td><a href="https://clevekim00.github.io/mj_dialog/promotion.en.html">About SpeechBridge</a></td>
+<td><a href="../site/promotion.html">About the app</a></td>
+<td><a href="../site/promotion.en.html">About SpeechBridge</a></td>
 </tr>
 <tr>
 <td>User guide</td>
-<td><a href="https://clevekim00.github.io/mj_dialog/user-guide.html">Instructions</a></td>
-<td><a href="https://clevekim00.github.io/mj_dialog/user-guide.en.html">User guide</a></td>
+<td><a href="../site/user-guide.html">Instructions</a></td>
+<td><a href="../site/user-guide.en.html">User guide</a></td>
 </tr>
 </tbody>
-</table>
-<p>Large illustrations and short sentences explain the app. Printing/PDF saving is supported. For offline reading, download the HTML files from <code>docs/user-materials/</code> and open them in a browser.</p>
-<h3>Key features</h3>
+</table></div>
+<p>Large illustrations and short sentences explain the app. Printing/PDF saving is supported. For offline reading, generate the site, keep the entire <code>docs/site/</code> folder, and open <code>index.html</code>.</p>
+<h3 id="en--key-features">Key features</h3>
 <ul>
 <li>🏁 <strong>Today's practice first</strong> — Start on Home and choose today's activity directly.</li>
 <li>🧭 <strong>Practice onboarding</strong> — Set safety acknowledgement, practice period, goals, and fatigue criteria on first use.</li>
@@ -245,7 +234,7 @@ flutter run -d android
 <li>🕗 <strong>Unified history</strong> — Review and filter AI conversations and reading practice together.</li>
 </ul>
 <hr />
-<h2>🏗 Project structure</h2>
+<h2 id="en---project-structure">🏗 Project structure</h2>
 <pre><code class="language-text">lib/
 ├── main.dart                                    # App entry and permission-based StartupResolver
 ├── features/
@@ -273,8 +262,8 @@ flutter run -d android
     └── profile storage                         # Practice profile/onboarding
 </code></pre>
 <hr />
-<h2>📋 Changelog</h2>
-<h3>2026-09-15 · Consonant selection and practice stability</h3>
+<h2 id="en---changelog">📋 Changelog</h2>
+<h3 id="en--2026-09-15--consonant-selection-and-practice-stability">2026-09-15 · Consonant selection and practice stability</h3>
 <ul>
 <li>From Home, choose onset/coda and record syllables, words, or sentences 3/5/10 times. Highlight targets, compare recordings of the same item, and complete/resume sessions.</li>
 <li>Fix record/stop controls to the bottom of consonant/sentence screens and protect item changes and exits during recording.</li>
@@ -282,8 +271,8 @@ flutter run -d android
 <li>Word practice defaults to no time limit. Keep legacy scores and unassessed records separate from new text-match statistics.</li>
 <li>Request server analysis only after separate consent; apply cancellation, overall timeouts, access control, and result expiry. Production authentication and clinical validation remain separate requirements.</li>
 </ul>
-<p>See the <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/dysarthria-implementation-2026-09-15.en.md">implementation record</a> for flows, validation, and remaining scope. Entries below describe earlier changes at their respective dates.</p>
-<h3>0. Structured pronunciation-practice modes</h3>
+<p>See the <a href="../site/documents/docs/dysarthria-implementation-2026-09-15.en.html">implementation record</a> for flows, validation, and remaining scope. Entries below describe earlier changes at their respective dates.</p>
+<h3 id="en--0-structured-pronunciation-practice-modes">0. Structured pronunciation-practice modes</h3>
 <ul>
 <li>Add a typing-practice-style selector for word game, short-sentence reading, long-sentence reading, and free conversation.</li>
 <li>Falling words disappear when correctly spoken; the game ends when a word reaches the bottom.</li>
@@ -295,7 +284,7 @@ flutter run -d android
 <li>Store mode, content ID, category, difficulty, retries, and consecutive successes in practice records.</li>
 <li>View per-mode records and difficult sound groups in history/dashboard.</li>
 </ul>
-<h3>0. Tongue routine and 2D tutor</h3>
+<h3 id="en--0-tongue-routine-and-2d-tutor">0. Tongue routine and 2D tutor</h3>
 <ul>
 <li>Select tongue, face, or breathing training from the exercise card on today's-practice Home.</li>
 <li>The tongue menu includes the existing tongue routine and continuous alternating movements.</li>
@@ -308,9 +297,9 @@ flutter run -d android
 <li>Replace 3D GLB previews on preparation/execution screens with a 2D tutor following the attached reference.</li>
 <li>Draw lip outline, mouth cavity, teeth, tongue, center line, and cheek-press highlights with Canvas-based 2D layers based on <code>animationType</code>.</li>
 <li>Remove <code>model_viewer_plus</code> and the <code>assets/models/tongue_exercise_preview.glb</code> declaration.</li>
-<li>Long-term tutor/mouth-shape/exercise-library design: <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/ai-speech-therapy-avatar-platform.en.md">2D platform plan</a>.</li>
+<li>Long-term tutor/mouth-shape/exercise-library design: <a href="../site/documents/docs/ai-speech-therapy-avatar-platform.en.html">2D platform plan</a>.</li>
 </ul>
-<h3>0. Sentence repetition and recording comparison</h3>
+<h3 id="en--0-sentence-repetition-and-recording-comparison">0. Sentence repetition and recording comparison</h3>
 <ul>
 <li>Provide latest-recording playback on sentence results, plus previous-recording playback when repeating the same sentence.</li>
 <li>“Repeat this sentence” preserves the target for re-recording in one- or two-sentence units.</li>
@@ -321,38 +310,38 @@ flutter run -d android
 <li>Enabling mouth-video capture saves silent front-camera video with recording; results offer video playback.</li>
 <li>Practice shows front-camera preview; the library can reopen saved mouth videos.</li>
 <li>Free conversation also offers mouth-video capture and latest-video playback.</li>
-<li>Implementation order and remaining work: <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/sentence-repeat-and-mouth-video-plan.en.md">sentence/video plan</a>.</li>
+<li>Implementation order and remaining work: <a href="../site/documents/docs/sentence-repeat-and-mouth-video-plan.en.html">sentence/video plan</a>.</li>
 </ul>
-<h3>0. Reflecting the speech-practice purpose</h3>
+<h3 id="en--0-reflecting-the-speech-practice-purpose">0. Reflecting the speech-practice purpose</h3>
 <ul>
 <li>Add first-use onboarding for safety acknowledgement and goals.</li>
 <li>Extend session records with today's goal, pre-practice fatigue, and recording time.</li>
 <li>Add functional communication phrases for hospital/home/family/phone situations.</li>
 <li>Add seven-day practice continuity and average fatigue to the dashboard.</li>
 </ul>
-<h3>1. Reading aloud</h3>
+<h3 id="en--1-reading-aloud">1. Reading aloud</h3>
 <ul>
 <li>Let users read supplied or self-entered text and receive pronunciation scores/feedback.</li>
 <li>Replay their recordings and review coaching from the AI “Young-eun.”</li>
 </ul>
-<h3>2. Free reading and unified history</h3>
+<h3 id="en--2-free-reading-and-unified-history">2. Free reading and unified history</h3>
 <ul>
 <li>Introduce free reading without fixed text, with evaluation.</li>
 <li>Integrate conversation and practice sessions into the main history with filtering.</li>
 </ul>
-<h3>3. UI refinements and fixes</h3>
+<h3 id="en--3-ui-refinements-and-fixes">3. UI refinements and fixes</h3>
 <ul>
 <li>Add scrolling to prevent bottom overflow with long feedback cards.</li>
 <li>Add dedicated pronunciation-practice icons and premium badges.</li>
 </ul>
 <hr />
-<h2>🚀 Running the app</h2>
-<h3>Prerequisites</h3>
+<h2 id="en---running-the-app">🚀 Running the app</h2>
+<h3 id="en--prerequisites">Prerequisites</h3>
 <ul>
 <li>Flutter 3.38+</li>
 <li>Gemma 2B model for mobile: <code>assets/gemma-2b-it-gpu-int4.bin</code></li>
 </ul>
-<h3>Build and run</h3>
+<h3 id="en--build-and-run">Build and run</h3>
 <pre><code class="language-bash"># Install dependencies
 flutter pub get
 
@@ -368,7 +357,7 @@ scripts/run_ios_release_device.sh
 # Run on Android
 flutter run -d android
 </code></pre>
-<h3>Physical iOS release script</h3>
+<h3 id="en--physical-ios-release-script">Physical iOS release script</h3>
 <p>The following command avoids the standalone Home-screen launch limitation of iOS debug apps and directly installs/runs a release build on the device:</p>
 <pre><code class="language-bash">flutter run --release -d 00008027-000849220A31002E --no-resident
 </code></pre>
@@ -381,36 +370,7 @@ flutter run -d android
 <p>Or override the default through an environment variable:</p>
 <pre><code class="language-bash">IOS_DEVICE_ID=&lt;device-id&gt; scripts/run_ios_release_device.sh
 </code></pre>
-<h2>Training availability and management server</h2>
-<p>All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/training-availability-and-server.en.md">API design and server status</a>.</p>
-</section></div></main><script>
-const tabs = [...document.querySelectorAll('[role="tab"]')];
-function selectLanguage(language, moveFocus = false) {
-  for (const tab of tabs) {
-    const selected = tab.dataset.language === language;
-    tab.setAttribute('aria-selected', String(selected));
-    tab.tabIndex = selected ? 0 : -1;
-    document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
-    if (selected && moveFocus) tab.focus();
-  }
-  document.documentElement.lang = language;
-  document.title = language === 'ko' ? '말이음 · SpeechBridge | 프로젝트 소개' : 'SpeechBridge | Project overview';
-  document.getElementById('brand-name').textContent = language === 'ko' ? '말이음 · SpeechBridge' : 'SpeechBridge';
-  document.getElementById('app-icon').alt = language === 'ko' ? '말이음 앱 아이콘' : 'SpeechBridge app icon';
-  document.getElementById('tab-hint').textContent = language === 'ko' ? '탭을 누르면 페이지 이동 없이 언어가 바뀝니다.' : 'Choose a tab to change language without leaving this page.';
-  document.querySelector('[role="tablist"]').setAttribute('aria-label', language === 'ko' ? '문서 언어' : 'Document language');
-}
-for (const tab of tabs) {
-  tab.addEventListener('click', () => selectLanguage(tab.dataset.language));
-  tab.addEventListener('keydown', event => {
-    let index = tabs.indexOf(tab);
-    if (event.key === 'ArrowRight') index = (index + 1) % tabs.length;
-    else if (event.key === 'ArrowLeft') index = (index + tabs.length - 1) % tabs.length;
-    else if (event.key === 'Home') index = 0;
-    else if (event.key === 'End') index = tabs.length - 1;
-    else return;
-    event.preventDefault();
-    selectLanguage(tabs[index].dataset.language, true);
-  });
-}
-</script></body></html>
+<h2 id="en--training-availability-and-management-server">Training availability and management server</h2>
+<p>All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. <a href="../site/documents/docs/training-availability-and-server.en.html">API design and server status</a>.</p>
+</section></div><footer><span data-ko="탭을 누르면 같은 페이지에서 언어가 바뀝니다." data-en="Choose a tab to change language on this page.">탭을 누르면 같은 페이지에서 언어가 바뀝니다.</span><button type="button" onclick="printDocument()" data-ko="인쇄 / PDF 저장" data-en="Print / Save PDF">인쇄 / PDF 저장</button></footer></main>
+<script type="application/json" id="page-meta">{"titles": {"ko": "프로젝트 소개", "en": "Project overview"}}</script><script src="../site/assets/reader.js"></script></body></html>
