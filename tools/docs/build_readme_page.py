@@ -49,7 +49,7 @@ def content(language):
     source = ROOT / ('README.md' if language == 'ko' else 'README.en.md')
     text = source.read_text()
     # The README header supplies repository navigation; the page supplies its own tabs.
-    text = text[text.index('**'):]
+    text = text[text.index('\n**') + 1:]
     md = MarkdownIt('commonmark', {'html': False}).enable('table')
     tokens = md.parse(text)
     for block in tokens:

@@ -2,6 +2,8 @@
 
 [한국어](structured-practice-modes-implementation-plan.md) | [English](structured-practice-modes-implementation-plan.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 작성일: 2026-06-01
 
 구현 상태: 2026-06-02 기준 MVP 반영 완료 및 UX 개선 반영

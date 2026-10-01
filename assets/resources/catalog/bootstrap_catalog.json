@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "catalogVersion": "1.0.0",
+  "trainingAvailability": {"schemaVersion": 1, "defaultEnabled": true, "overrides": {}},
   "languages": [
     {
       "locale": "ko-KR",

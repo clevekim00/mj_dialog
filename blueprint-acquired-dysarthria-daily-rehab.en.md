@@ -2,6 +2,8 @@
 
 [한국어](blueprint-acquired-dysarthria-daily-rehab.md) | [English](blueprint-acquired-dysarthria-daily-rehab.en.md) | [All documents](docs/README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 > Created: 2026-08-24
 > Purpose: Codex implementation blueprint
 > Product identity review: 2026-09-25 · User confirmed adult acquired dysarthria and home self-practice scope.
@@ -513,7 +515,7 @@ Clinical review gates content release. Design/tests alone do not approve efficac
 
 Apply sections 0–4 in this revised sequence; full storage migration is not a prerequisite for menu cleanup.
 
-**P0 — Identity and entry:** four menus, compact routing fix, complete Training hub, one Home primary action, corrected calendar/performance labels, remove score-based mode recommendations. Verify every menu mapping and preserve routes/history.
+**P0 — Identity and entry:** five menus, compact routing fix, complete Training hub, one Home primary action, corrected calendar/performance labels, remove score-based mode recommendations. Verify every menu mapping and preserve routes/history.
 
 **P1 — Connect practice:** launch specs/read adapters, resume, word→sentence→scenario, recording comparison, fresh fatigue. Finish the same session and find its history offline, after analysis failure, and after interruption.
 

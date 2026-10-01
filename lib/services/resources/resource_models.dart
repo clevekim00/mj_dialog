@@ -1,3 +1,5 @@
+import '../training/training_availability.dart';
+
 enum ResourcePackType { uiStrings, content, media, model }
 
 ResourcePackType _parsePackType(String value) => switch (value) {
@@ -134,6 +136,7 @@ class ResourceCatalog {
   const ResourceCatalog({
     required this.schemaVersion,
     required this.catalogVersion,
+    this.trainingAvailability = const TrainingAvailability(),
     required this.languages,
     required this.packs,
   });
@@ -181,6 +184,9 @@ class ResourceCatalog {
     return ResourceCatalog(
       schemaVersion: schemaVersion,
       catalogVersion: catalogVersion,
+      trainingAvailability: TrainingAvailability.fromJson(
+        json['trainingAvailability'],
+      ),
       languages: languages,
       packs: packs,
     );
@@ -188,6 +194,7 @@ class ResourceCatalog {
 
   final int schemaVersion;
   final String catalogVersion;
+  final TrainingAvailability trainingAvailability;
   final List<ResourceLanguage> languages;
   final List<ResourcePackDescriptor> packs;
 

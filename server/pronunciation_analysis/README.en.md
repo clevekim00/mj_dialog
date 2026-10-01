@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [All documents](../../docs/README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../../docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 A separate FastAPI server for consonant training for adults with acquired dysarthria. App recordings are normalized to 16 kHz mono WAV. When signal-quality checks pass, a Montreal Forced Aligner (MFA) model matching the request's `language` aligns target text and phoneme intervals.
 
 ## Install Korean and English MFA
@@ -54,3 +56,7 @@ Client `timeout` covers token acquisition, file preparation, upload, and polling
 The former CTC implementation used “maximum target-token frame probability over the entire file × 100.” It was stopped because it lacked position alignment and pronunciation-accuracy validation. `PRONUNCIATION_BACKEND=ctc` or `transformers` downloads no model and generates no numerical score; `/ready` reports not ready and analysis returns unavailable. MFA phoneme alignment remains available with null scores.
 
 Only a separately validated future scoring backend may explicitly declare `score_validated=True`. The server removes scores from other backends, and the client does not present older results lacking `scoreValidated:true` as validated scores. This flag does not perform validation itself and must not be enabled without supporting evidence.
+
+## Training management
+
+This analysis server does not implement training availability administration. The app supports per-exercise policies in signed resource catalogs. See [the management API design and server capability inventory](../../docs/training-availability-and-server.en.md) for implemented versus planned functionality.

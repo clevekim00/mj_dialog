@@ -2,6 +2,8 @@
 
 [한국어](voice-tools-feature-analysis-and-integration-plan.md) | [English](voice-tools-feature-analysis-and-integration-plan.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-08-24
 App reviewed: [Voice Tools — App Store](https://apps.apple.com/us/app/voice-tools/id1447495900)
 Developer: DevExtras Ltd.

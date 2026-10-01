@@ -2,6 +2,8 @@
 
 [한국어](speech-practice-planning-review.md) | [English](speech-practice-planning-review.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 작성일: 2026-05-08
 
 영어 버전 출시, OS 언어 자동 선택, 앱 내 언어 설정 및 다국어 분석 API 계획은 [`../spec-english-version-launch.md`](../spec-english-version-launch.md)를 따른다.

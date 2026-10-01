@@ -2,6 +2,8 @@
 
 [한국어](spec-english-version-launch.md) | [English](spec-english-version-launch.en.md) | [전체 문서](docs/README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](docs/game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 ## 개요
 
 Speech Rehab을 한국어와 미국 영어를 지원하는 단일 앱으로 확장한다. 앱은 첫 설치 시 OS 언어를 따르고, 사용자가 설정에서 `시스템 설정`, `한국어`, `English (US)` 중 하나를 선택해 덮어쓸 수 있다. 선택한 언어는 화면 번역뿐 아니라 STT, TTS, 훈련 콘텐츠, AI 프롬프트, 발음 분석 모델에 동일하게 적용한다.

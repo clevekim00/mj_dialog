@@ -2,6 +2,8 @@
 
 [한국어](structured-practice-modes-implementation-plan.md) | [English](structured-practice-modes-implementation-plan.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Created: 2026-06-01
 
 Implementation: MVP and UX improvements completed as of 2026-06-02.

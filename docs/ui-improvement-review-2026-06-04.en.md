@@ -2,6 +2,8 @@
 
 [한국어](ui-improvement-review-2026-06-04.md) | [English](ui-improvement-review-2026-06-04.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-06-04
 Scope: main-screen captures at mobile 390×844 and Flutter UI code.
 

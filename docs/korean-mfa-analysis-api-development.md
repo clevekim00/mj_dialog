@@ -2,6 +2,8 @@
 
 [한국어](korean-mfa-analysis-api-development.md) | [English](korean-mfa-analysis-api-development.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 작성일: 2026-08-26  
 대상: 성인 후천성 마비말장애 자음 반복 훈련
 

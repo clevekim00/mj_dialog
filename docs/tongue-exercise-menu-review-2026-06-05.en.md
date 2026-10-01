@@ -2,6 +2,8 @@
 
 [한국어](tongue-exercise-menu-review-2026-06-05.md) | [English](tongue-exercise-menu-review-2026-06-05.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-06-05
 Scope: Speech Rehab today's-practice Home, practice screen, dashboard, and history.
 

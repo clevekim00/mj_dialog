@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 기존 Markdown 문서 29종을 모두 국문·영문으로 준비했습니다. 이 목록과 라이선스 안내도 두 언어로 제공합니다. 언어 접미사가 없는 파일은 국문, `.en.md`와 `.en.html`은 영문입니다. 문서의 기본 언어는 한국어이며 앱의 언어 설정과는 별개입니다.
 
 날짜가 있는 검토서와 초기 기획서는 당시의 사실·제안을 보존한 기록이며, 현재 제공 기능 목록이 아닙니다. 현재 연습 동작은 [9월 30일 구현 기록](implementation-2026-09-30/README.md)과 사용자 가이드부터 확인하세요. 번역 완료가 임상 점수 검증·콘텐츠 승인·출시 조건 완료를 뜻하지는 않습니다.
@@ -10,6 +12,7 @@
 
 | 문서 | 한국어 (기본) | English |
 |---|---|---|
+| 훈련 열기·닫기와 서버 구현 수준 | [한국어](training-availability-and-server.md) | [English](training-availability-and-server.en.md) |
 | 언어 탭으로 보는 프로젝트 소개 | [한국어](https://clevekim00.github.io/mj_dialog/readme.html) | [English](https://clevekim00.github.io/mj_dialog/readme.en.html) |
 | 홍보 문서 | [한국어](https://clevekim00.github.io/mj_dialog/promotion.html) | [English](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | 사용자 가이드 | [한국어](https://clevekim00.github.io/mj_dialog/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
@@ -23,6 +26,7 @@
 |---|---|---|
 | 프로젝트 소개·실행·변경 기록 | [한국어](../README.md) | [English](../README.en.md) |
 | 홍보·사용자 문서 운영 안내 | [한국어](user-materials/README.md) | [English](user-materials/README.en.md) |
+| 게임 메뉴와 현재 탐색 구조 | [한국어](game-menu.md) | [English](game-menu.en.md) |
 | 최대발성시간(MPT) 측정·구현 | [한국어](mpt-measurement.md) | [English](mpt-measurement.en.md) |
 | 말이음 · SpeechBridge 이름과 아이콘 | [한국어](branding/README.md) | [English](branding/README.en.md) |
 

@@ -2,6 +2,10 @@
 
 [한국어](breathing-and-oral-exercises.md) | [English](breathing-and-oral-exercises.en.md) | [전체 문서](README.md)
 
+
+> 변경 (2026-10-01): 46개 훈련은 모두 기본 열림이며, 전문가 확인 안내와 관리자의 열기·닫기는 별개입니다. [현재 정책](training-availability-and-server.md).
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 > 첨부 이미지의 표 내용을 Markdown 형식으로 옮겨 정리한 문서입니다.
 
 ## 혀 운동

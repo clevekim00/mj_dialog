@@ -2,6 +2,8 @@
 
 [한국어](dysarthria-implementation-2026-09-15.md) | [English](dysarthria-implementation-2026-09-15.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 2026-09-15 · [기존 검토서](dysarthria-app-review-2026-09-13.md)를 바탕으로 한 구현 결과.
 
 ## 사용 흐름

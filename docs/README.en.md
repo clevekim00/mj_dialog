@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 All 29 existing Markdown documents have Korean and English editions. This index and the license information are also bilingual. Files without a language suffix are Korean; `.en.md` and `.en.html` are English. Documentation defaults to Korean, independently of the app’s language setting.
 
 Dated reviews and early plans preserve the facts and proposals at the time; they are not a list of currently released features. For current practice behavior, start with the [September 30 implementation record](implementation-2026-09-30/README.en.md) and user guide. Proposed clinical scoring, content approval, and release gates are not completed by translation.
@@ -10,6 +12,7 @@ Dated reviews and early plans preserve the facts and proposals at the time; they
 
 | Document | 한국어 (default) | English |
 |---|---|---|
+| Training availability and server status | [한국어](training-availability-and-server.md) | [English](training-availability-and-server.en.md) |
 | Project overview with language tabs | [한국어](https://clevekim00.github.io/mj_dialog/readme.html) | [English](https://clevekim00.github.io/mj_dialog/readme.en.html) |
 | About the app | [한국어](https://clevekim00.github.io/mj_dialog/promotion.html) | [English](https://clevekim00.github.io/mj_dialog/promotion.en.html) |
 | User guide | [한국어](https://clevekim00.github.io/mj_dialog/user-guide.html) | [English](https://clevekim00.github.io/mj_dialog/user-guide.en.html) |
@@ -23,6 +26,7 @@ These links open rendered pages. The archived guide preserves its original scree
 |---|---|---|
 | Project overview, setup, and changelog | [한국어](../README.md) | [English](../README.en.md) |
 | Public document maintenance | [한국어](user-materials/README.md) | [English](user-materials/README.en.md) |
+| Games and current navigation | [한국어](game-menu.md) | [English](game-menu.en.md) |
 | MPT measurement and implementation | [한국어](mpt-measurement.md) | [English](mpt-measurement.en.md) |
 | SpeechBridge name and icon | [한국어](branding/README.md) | [English](branding/README.en.md) |
 

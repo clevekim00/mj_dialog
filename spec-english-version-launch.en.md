@@ -2,6 +2,8 @@
 
 [한국어](spec-english-version-launch.md) | [English](spec-english-version-launch.en.md) | [All documents](docs/README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 ## Overview
 
 Expand Speech Rehab into one app supporting Korean and US English. On first install follow the OS language; Settings can override with System default, Korean, or English (US). Apply the choice consistently to UI, STT, TTS, content, AI prompts, and pronunciation models.

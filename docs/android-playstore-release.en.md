@@ -2,6 +2,8 @@
 
 [한국어](android-playstore-release.md) | [English](android-playstore-release.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 ## Prepared Assets
 
 - Launcher icons are updated under `android/app/src/main/res/mipmap-*`.

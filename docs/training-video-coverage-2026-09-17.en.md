@@ -2,6 +2,8 @@
 
 [한국어](training-video-coverage-2026-09-17.md) | [English](training-video-coverage-2026-09-17.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Checked: 2026-09-17 · Based on source and video assets in the current working directory.
 
 Of **46 exercises, 8 have linked videos and 38 do not**. All 38 have an empty `videoAsset`, and their planned MP4 files are also absent from the project video folder.

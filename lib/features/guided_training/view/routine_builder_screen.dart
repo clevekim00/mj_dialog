@@ -1,16 +1,19 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:speech_rehab/services/training/training_availability_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_rehab/features/guided_training/data/guided_training_catalog.dart';
 import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
 import 'package:speech_rehab/services/training/training_settings_service.dart';
 
-class RoutineBuilderScreen extends StatefulWidget {
+class RoutineBuilderScreen extends ConsumerStatefulWidget {
   const RoutineBuilderScreen({super.key});
 
   @override
-  State<RoutineBuilderScreen> createState() => _RoutineBuilderScreenState();
+  ConsumerState<RoutineBuilderScreen> createState() =>
+      _RoutineBuilderScreenState();
 }
 
-class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
+class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   static const _maximumExercises = 8;
   final List<String> _selectedIds = [];
   GuidedTrainingCategory? _category;
@@ -31,8 +34,7 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
         ids
             .where((id) {
               final exercise = guidedExerciseById(id);
-              return exercise != null &&
-                  exercise.safetyTier != GuidedTrainingSafetyTier.clinicianOnly;
+              return exercise != null;
             })
             .take(_maximumExercises),
       );
@@ -42,15 +44,22 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final policy = ref.watch(trainingAvailabilityProvider);
     final available = allGuidedTrainingExercises.where((exercise) {
-      return (_category == null || exercise.category == _category) &&
-          exercise.safetyTier != GuidedTrainingSafetyTier.clinicianOnly;
+      return _category == null || exercise.category == _category;
     }).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('내 루틴 만들기')),
-      body: _loading
+      body: _loading || policy.isLoading
           ? const Center(child: CircularProgressIndicator())
+          : policy.hasError
+          ? Center(
+              child: TextButton(
+                onPressed: () => ref.invalidate(trainingAvailabilityProvider),
+                child: const Text('설정 불러오기 다시 시도'),
+              ),
+            )
           : Column(
               children: [
                 if (_selectedIds.isNotEmpty) _buildSelected(),
@@ -81,12 +90,14 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
                     itemBuilder: (context, index) {
                       final exercise = available[index];
                       final selected = _selectedIds.contains(exercise.id);
+                      final enabled =
+                          policy.asData?.value.isEnabled(exercise.id) ?? false;
                       final limitReached =
                           _selectedIds.length >= _maximumExercises && !selected;
                       return Card(
                         child: CheckboxListTile(
                           value: selected,
-                          onChanged: limitReached
+                          onChanged: limitReached || (!enabled && !selected)
                               ? null
                               : (_) => setState(() {
                                   if (selected) {
@@ -96,7 +107,11 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
                                   }
                                 }),
                           title: Text(exercise.title),
-                          subtitle: Text(exercise.shortCaption),
+                          subtitle: Text(
+                            enabled
+                                ? exercise.shortCaption
+                                : '관리자가 일시적으로 닫은 훈련 · 루틴 실행 시 건너뜁니다',
+                          ),
                           secondary: CircleAvatar(
                             child: Text('${exercise.sourceOrder}'),
                           ),
@@ -110,7 +125,9 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
         child: FilledButton.icon(
-          onPressed: _saving ? null : _save,
+          onPressed: _saving || _loading || policy.asData == null
+              ? null
+              : _save,
           icon: const Icon(Icons.save_outlined),
           label: Text('저장 (${_selectedIds.length}/$_maximumExercises)'),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(54)),
@@ -151,6 +168,11 @@ class _RoutineBuilderScreenState extends State<RoutineBuilderScreen> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
+    final policy = ref.read(trainingAvailabilityProvider).asData?.value;
+    if (policy == null) {
+      setState(() => _saving = false);
+      return;
+    }
     await TrainingSettingsService.saveCustomRoutineIds(_selectedIds);
     if (!mounted) return;
     Navigator.pop(context, true);

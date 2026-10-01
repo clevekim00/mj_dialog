@@ -2,6 +2,8 @@
 
 [한국어](ai-speech-therapy-avatar-platform.md) | [English](ai-speech-therapy-avatar-platform.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 ## Purpose
 
 This project is a professional speech therapy and oral motor rehabilitation platform, not a game. It supports pronunciation training, oral motor exercise, dysarthria support, aphasia rehabilitation support, Korean language learning, and facial muscle exercise.

@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [All documents](../README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 | Document | Korean (default) | English |
 | --- | --- | --- |
 | Promotional document | [Open page](https://clevekim00.github.io/mj_dialog/promotion.html) | [About the app](https://clevekim00.github.io/mj_dialog/promotion.en.html) |

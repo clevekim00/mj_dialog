@@ -2,6 +2,8 @@
 
 [한국어](speech-practice-planning-review.md) | [English](speech-practice-planning-review.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-05-08
 
 For English release, OS-language selection, in-app language settings, and multilingual analysis API planning, follow the [English-launch specification](../spec-english-version-launch.en.md).

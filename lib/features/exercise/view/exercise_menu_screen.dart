@@ -1,6 +1,5 @@
 import '../../rehab/mpt/mpt_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:speech_rehab/features/rehab/game/phonation_flight_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/consonant_training/view/consonant_training_screens.dart';
 import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
@@ -65,7 +64,6 @@ class ExerciseMenuScreen extends StatelessWidget {
           onTap: () => open('pacing'),
         ),
         const SizedBox(height: 20),
-        const SizedBox(height: 16),
         Text(l.rehabSafety),
       ],
     );
@@ -88,10 +86,7 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
       final notifier = ref.read(practiceProvider.notifier);
       await notifier.prepareLaunch(spec);
       if (!mounted) return;
-      await Navigator.pushNamed(
-        context,
-        spec.mode == PracticeMode.wordGame ? '/word_game' : '/practice',
-      );
+      await Navigator.pushNamed(context, '/practice');
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -129,16 +124,6 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
                 builder: (_) =>
                     const ConsonantTrainingHubScreen(autoResume: true),
               ),
-            ),
-          ),
-          RehabCard(
-            title: l.rehabWords,
-            subtitle: en
-                ? 'One word at a time, without a time limit.'
-                : '시간 제한 없이 한 단어씩 반복해요.',
-            icon: Icons.text_fields,
-            onTap: () => _practice(
-              const TrainingLaunchSpec(mode: PracticeMode.wordGame),
             ),
           ),
         ],
@@ -203,19 +188,6 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const MptScreen()),
-            ),
-          ),
-          RehabCard(
-            title: en ? 'Gentle voice flight' : '목소리로 천천히 날기',
-            subtitle: en
-                ? 'Easy voice play · no collisions · not an MPT test'
-                : '아주 쉬운 발성 놀이 · 충돌 없음 · MPT 검사 아님',
-            icon: Icons.air,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => const PhonationFlightScreen(),
-              ),
             ),
           ),
           RehabCard(

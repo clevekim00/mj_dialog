@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/resources/resource_providers.dart';
 import 'package:speech_rehab/services/accessibility_settings_service.dart';
 import 'dart:math';
 import 'dart:async';
@@ -38,9 +39,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
   // 리소스 확인은 첫 화면 표시를 차단하지 않는다.
-  unawaited(_refreshResources());
   unawaited(_refreshPronunciationContent());
 }
+
+final _startupResourcesProvider = FutureProvider<void>((ref) async {
+  await _refreshResources();
+  // Refresh readers after the background update, including availability.
+  ref.invalidate(resourceCatalogProvider);
+});
 
 Future<void> _refreshResources() async {
   try {
@@ -93,6 +99,7 @@ class _AppView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(_startupResourcesProvider);
     final language = ref.watch(appLanguageProvider);
     final textSize = ref.watch(textSizeProvider);
     return MaterialApp(

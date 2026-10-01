@@ -8,6 +8,8 @@ Everyday words, at your own pace.</p>
 <p>말하기가 불편한 사용자의 자가 말하기 연습을 돕는 앱</p>
 </blockquote>
 <hr />
+<h2>게임 메뉴</h2>
+<p>기본 메뉴는 <strong>오늘 → 훈련 → 게임 → 기록 → 설정</strong>입니다. 게임에서 <strong>단어 말하기 게임</strong>(시간 제한 없음이 기본)과 <strong>목소리로 천천히 날기</strong>를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/game-menu.md">현재 메뉴와 기존 기록 호환성</a>.</p>
 <h2>최대발성시간 (MPT)</h2>
 <p>연습 → 편안하게 소리 내기 → **최대발성시간 (MPT)**에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.</p>
 <p><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/mpt-measurement.md">측정 방법·제한·구현 설명</a>.</p>
@@ -189,12 +191,16 @@ flutter run -d android
 <p>또는 환경 변수로 기본 기기를 바꿀 수 있습니다.</p>
 <pre><code class="language-bash">IOS_DEVICE_ID=&lt;device-id&gt; scripts/run_ios_release_device.sh
 </code></pre>
+<h2>훈련 열림과 관리 서버</h2>
+<p>구강·호흡 훈련 46개는 모두 기본 열림입니다. 앱에는 개별 훈련 원격 정책 적용 구조를 구현했으며, 관리 서버 API는 설계 단계입니다. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/training-availability-and-server.md">API 설계 및 서버 구현 수준</a>을 참고하세요.</p>
 </section><section class="panel" id="panel-en" role="tabpanel" aria-labelledby="tab-en" lang="en" tabindex="0" hidden><nav class="links"><a href="promotion.en.html">About the app</a><a href="user-guide.en.html">User guide</a><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/README.en.md">All documents</a></nav><p><strong>Speech Practice for Adults with Dysarthria · 마비말장애 말하기 연습</strong></p>
 <p>Everyday words, at your own pace.</p>
 <blockquote>
 <p>An app supporting self-directed speech practice for people with speaking difficulties.</p>
 </blockquote>
 <hr />
+<h2>Games</h2>
+<p>Use <strong>Today → Training → Games → Records → Settings</strong>. Games contains <strong>Word speaking game</strong> (untimed by default) and <strong>Gentle voice flight</strong>. Oral training and MPT stay under Training. In Records, select Games to see both games. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/game-menu.en.md">Current navigation and compatibility</a>.</p>
 <h2>Maximum phonation time (MPT)</h2>
 <p>Training → Comfortable voice practice → <strong>Maximum phonation time (MPT)</strong> provides observer timing for three single-breath “ah” trials. The longest of three confirmed trials is saved with recordings and waveforms in the separate MPT record category. Rest between trials; interrupted or unreviewed attempts do not count. This is a protocol recording tool, not a clinically validated diagnostic test.</p>
 <p><a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/mpt-measurement.en.md">Procedure, limitations and implementation</a>.</p>
@@ -375,6 +381,8 @@ flutter run -d android
 <p>Or override the default through an environment variable:</p>
 <pre><code class="language-bash">IOS_DEVICE_ID=&lt;device-id&gt; scripts/run_ios_release_device.sh
 </code></pre>
+<h2>Training availability and management server</h2>
+<p>All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. <a href="https://github.com/clevekim00/mj_dialog/blob/main/docs/training-availability-and-server.en.md">API design and server status</a>.</p>
 </section></div></main><script>
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 function selectLanguage(language, moveFocus = false) {

@@ -2,6 +2,8 @@
 
 [한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Revised 2026-09-25. Identity is now centered on adult acquired dysarthria and self-practice. Sections 1–6 are **target designs**, not claims of completed implementation. Feature retention/reduction, record models, and phased acceptance criteria follow [section 5 of the integrated blueprint](../blueprint-acquired-dysarthria-daily-rehab.en.md). Sections 7–10 record the existing oral/breathing subsystem implementation.
 
 ## 1. Purpose
@@ -62,7 +64,7 @@ Remove Communication as a separate top-level menu and integrate it into everyday
 | 840–1199px | Landscape iPad, small desktop | NavigationRail | Two-column list/detail |
 | ≥1200px | Desktop, wide web | Expanded sidebar | Two/three columns with max width |
 
-Keep Today / Training / Records / Settings in the same order on phones and wide screens. Eliminate More. Retain text beneath icons even on narrow side navigation.
+Keep Today / Training / Games / Records / Settings in the same order on phones and wide screens. Eliminate More. Retain text beneath icons even on narrow side navigation.
 
 Use actual window width, not device name or OS, so iPad Split View and resized desktop windows adapt naturally.
 
@@ -111,22 +113,27 @@ Default results show what was done and recording playback. Show analysis only wh
 ```text
 AdaptiveAppShell
 ├─ Compact (<600)
-│  └─ NavigationBar: Today / Training / Records / Settings
+│  └─ NavigationBar: Today / Training / Games / Records / Settings
 ├─ Medium·Expanded (600–1199)
-│  └─ NavigationRail: same four destinations with text labels
+│  └─ NavigationRail: same five destinations with text labels
 └─ Wide (>=1200)
    └─ Extended NavigationRail and wide content
 
 Training
-├─ Clear speech → consonants / syllables / words
+├─ Oral training → oral/breathing hub
+├─ Clear speech → consonants / syllables
 ├─ Sentences → short / long / personal
 ├─ Everyday speaking → situations / free speech
 ├─ Comfortable voice → breathing/phonation
 ├─ Pace and pauses → follow-up
 └─ Optional preparation / personal plan
+
+Games
+├─ Word speaking game
+└─ Gentle voice flight
 ```
 
-Keep existing players/data while a common shell switches destinations. Use `AppDestination { today, training, records, settings }` rather than overloading integer indices. Pass explicit goals/content/mode/session through `TrainingLaunchSpec`. Replacing the router is not a prerequisite.
+Keep existing players/data while a common shell switches destinations. Use `AppDestination { today, training, games, records, settings }` rather than overloading integer indices. Pass explicit goals/content/mode/session through `TrainingLaunchSpec`. Replacing the router is not a prerequisite.
 
 ## 7. Applied scope
 
@@ -292,7 +299,7 @@ flowchart TD
 | Existing entry | Target entry | Rule |
 |---|---|---|
 | Home consonant card | Training > Clear speech | Reuse existing selection |
-| Word game | Training > Clear speech > Words | Retain stored mode; change label/default experience |
+| Word game | Games > Word speaking game | Retain stored mode; change label/default experience |
 | `/practice` | Training > Sentences | Explicitly pass short/long/personal conditions |
 | Communication > Everyday phrases | Training > Everyday speaking | Pass fixed situation/text, avoiding stale mode |
 | Free conversation | Everyday speaking > Optional mode | Add goal/end conditions; separate typed-input performance |
@@ -305,7 +312,7 @@ Target Home order: today's goal → selected plan/duration → main button → c
 
 ### 11.4 Validation targets
 
-- Verify all four destinations and selection retention at 360px and 599/600px, 1199/1200px boundaries.
+- Verify all five destinations and selection retention at 360px and 599/600px, 1199/1200px boundaries.
 - Verify situation selection opens consistent content regardless of the preceding `/practice` mode.
 - Verify filter changes, deletion, midnight boundaries, and resumed completion do not double-count.
 - After onboarding, start selected practice within two actions from Home; count permission/safety separately.

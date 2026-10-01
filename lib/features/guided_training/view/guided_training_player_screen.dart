@@ -1,3 +1,5 @@
+import 'package:speech_rehab/services/training/training_availability.dart';
+import 'package:speech_rehab/services/training/training_availability_provider.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -66,8 +68,14 @@ class _GuidedTrainingPlayerScreenState
   late final GuidedTrainingHistoryService _history;
 
   GuidedTrainingExercise get _exercise => widget.exercises[_exerciseIndex];
-  bool get _isLocked =>
-      _exercise.safetyTier == GuidedTrainingSafetyTier.clinicianOnly;
+  TrainingAvailability? _sessionAvailability;
+  TrainingAvailability? get _availability =>
+      _sessionAvailability ??
+      ref.read(trainingAvailabilityProvider).asData?.value;
+  bool get _isLocked => !(_availability?.isEnabled(_exercise.id) ?? false);
+  bool get _canStart => widget.exercises.any(
+    (exercise) => _availability?.isEnabled(exercise.id) ?? false,
+  );
 
   @override
   void initState() {
@@ -255,16 +263,22 @@ class _GuidedTrainingPlayerScreenState
   }
 
   Future<void> _start() async {
-    if (_isLocked ||
+    if (!_canStart ||
         !_settingsReady ||
         _transitioning ||
         _fatigueBefore == null) {
       return;
     }
     _transitioning = true;
+    _sessionAvailability = _availability;
     _sessionRepeats = _targetLoops;
     _startedAt = DateTime.now();
     setState(() => _phase = _PlayerPhase.playing);
+    if (_isLocked) {
+      _transitioning = false;
+      await _advance(skipped: true);
+      return;
+    }
     await _persist(GuidedTrainingSessionStatus.paused);
     if (!mounted) return;
     await _prepareVideo(autoPlay: true);
@@ -278,12 +292,15 @@ class _GuidedTrainingPlayerScreenState
 
   Future<void> _resumeSaved() async {
     final saved = _resumable;
-    if (saved == null ||
+    if (!_settingsReady ||
+        _availability == null ||
+        saved == null ||
         !saved.canResume ||
         saved.exerciseIndex >= widget.exercises.length) {
       return;
     }
     setState(() {
+      _sessionAvailability = _availability;
       _sessionId = saved.id;
       _startedAt = saved.startedAt;
       _results.addAll(saved.results);
@@ -299,6 +316,10 @@ class _GuidedTrainingPlayerScreenState
       _exerciseDone = _completedLoops >= _targetLoops;
       _phase = _PlayerPhase.paused;
     });
+    if (_isLocked) {
+      await _advance(skipped: true, autoPlay: false);
+      return;
+    }
     await _prepareVideo(autoPlay: false);
   }
 
@@ -375,7 +396,7 @@ class _GuidedTrainingPlayerScreenState
   }
 
   Future<void> _resume() async {
-    if (_exerciseDone || _transitioning) return;
+    if (_isLocked || _exerciseDone || _transitioning) return;
     setState(() => _phase = _PlayerPhase.playing);
     if (_videoController != null && !_videoFailed) {
       _loopHandled = false;
@@ -397,7 +418,7 @@ class _GuidedTrainingPlayerScreenState
     await _persist(GuidedTrainingSessionStatus.paused);
   }
 
-  Future<void> _advance({bool skipped = false}) async {
+  Future<void> _advance({bool skipped = false, bool autoPlay = true}) async {
     if (_transitioning) return;
     setState(() => _transitioning = true);
     _activeClock.stop();
@@ -433,13 +454,13 @@ class _GuidedTrainingPlayerScreenState
     _targetLoops = _sessionRepeats;
     if (_isLocked) {
       _transitioning = false;
-      await _advance(skipped: true);
+      await _advance(skipped: true, autoPlay: autoPlay);
       return;
     }
-    setState(() => _phase = _PlayerPhase.playing);
+    setState(() => _phase = autoPlay ? _PlayerPhase.playing : _PlayerPhase.paused);
     await _persist(GuidedTrainingSessionStatus.paused);
     if (!mounted) return;
-    await _prepareVideo(autoPlay: true);
+    await _prepareVideo(autoPlay: autoPlay);
     if (!mounted) return;
     setState(() => _transitioning = false);
     if (_phase == _PlayerPhase.playing) {
@@ -477,6 +498,7 @@ class _GuidedTrainingPlayerScreenState
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(trainingAvailabilityProvider);
     if (widget.exercises.isEmpty) {
       return const Scaffold(body: Center(child: Text('선택한 훈련이 없습니다.')));
     }
@@ -556,7 +578,9 @@ class _GuidedTrainingPlayerScreenState
                 '${_resumable!.exerciseIndex + 1}번째 운동 · ${_resumable!.currentCompletedLoops}회 진행',
               ),
               trailing: FilledButton(
-                onPressed: _resumeSaved,
+                onPressed: _settingsReady && _availability != null
+                    ? _resumeSaved
+                    : null,
                 child: const Text('이어하기'),
               ),
             ),
@@ -601,9 +625,28 @@ class _GuidedTrainingPlayerScreenState
         _selectorCard(title: '재생 속도', child: _speedSelector()),
         const SizedBox(height: 18),
         const _SafetyNotice(),
+        if (_availability == null) ...[
+          Text(
+            ref.watch(trainingAvailabilityProvider).hasError
+                ? '훈련 설정을 불러오지 못했어요.'
+                : '훈련 설정을 불러오는 중…',
+          ),
+          if (ref.watch(trainingAvailabilityProvider).hasError)
+            TextButton(
+              onPressed: () => ref.invalidate(trainingAvailabilityProvider),
+              child: const Text('다시 시도'),
+            ),
+        ] else if (!_canStart)
+          const Text('관리자가 이 훈련을 일시적으로 닫았어요.'),
+        if (_availability != null &&
+            _canStart &&
+            widget.exercises.any((e) => !_availability!.isEnabled(e.id)))
+          const Text('관리자가 닫은 운동은 건너뛰고 진행해요.'),
+        if (_exercise.safetyMessage != null) Text(_exercise.safetyMessage!),
         const SizedBox(height: 22),
         FilledButton.icon(
-          onPressed: _settingsReady && !_isLocked && _fatigueBefore != null
+          key: const ValueKey('guided-training-start'),
+          onPressed: _settingsReady && _canStart && _fatigueBefore != null
               ? _start
               : null,
           icon: const Icon(Icons.play_arrow),

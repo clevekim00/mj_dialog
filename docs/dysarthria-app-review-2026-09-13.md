@@ -2,6 +2,8 @@
 
 [한국어](dysarthria-app-review-2026-09-13.md) | [English](dysarthria-app-review-2026-09-13.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 검토일: 2026-09-13 · 소스 기준: `1bc2f6b` · 대상: Speech Rehab
 
 후속 구현은 [2026-09-15 구현 기록](dysarthria-implementation-2026-09-15.md)에 정리했다. 아래 관찰과 줄 번호는 구현 전 검토 시점의 기록이다.

@@ -1,3 +1,4 @@
+import '../../games/view/game_menu_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
@@ -10,7 +11,7 @@ import 'package:speech_rehab/services/app_language_service.dart';
 import 'package:speech_rehab/services/resources/app_strings.dart';
 import 'package:speech_rehab/services/resources/resource_providers.dart';
 
-enum AppDestination { today, training, records, settings }
+enum AppDestination { today, training, games, records, settings }
 
 class AdaptiveAppShell extends ConsumerStatefulWidget {
   const AdaptiveAppShell({super.key});
@@ -37,10 +38,17 @@ class _ShellState extends ConsumerState<AdaptiveAppShell> {
         .asData
         ?.value;
     final s = AppStrings(rehabL10n(context), overrides ?? const {});
-    final labels = [s.today, s.training, s.records, s.settings];
+    final labels = [
+      s.today,
+      s.training,
+      rehabEnglish(context) ? 'Games' : '게임',
+      s.records,
+      s.settings,
+    ];
     const icons = [
       Icons.today_outlined,
       Icons.record_voice_over,
+      Icons.sports_esports_outlined,
       Icons.history,
       Icons.settings_outlined,
     ];
@@ -49,6 +57,7 @@ class _ShellState extends ConsumerState<AdaptiveAppShell> {
       child: switch (_selected) {
         AppDestination.today => const PracticeModeSelectionScreen(),
         AppDestination.training => const ExerciseMenuScreen(),
+        AppDestination.games => const GameMenuScreen(),
         AppDestination.records => const RehabRecordsScreen(),
         AppDestination.settings => const _SettingsScreen(),
       },

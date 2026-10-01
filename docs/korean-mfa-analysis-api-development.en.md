@@ -2,6 +2,8 @@
 
 [한국어](korean-mfa-analysis-api-development.md) | [English](korean-mfa-analysis-api-development.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-08-26
 Target: repeated consonant practice for adults with acquired dysarthria.
 

@@ -2,6 +2,8 @@
 
 [한국어](mpt-measurement.md) | [English](mpt-measurement.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 ## Scope
 
 Open Training → Comfortable voice practice → **Maximum phonation time (MPT)**. This has its own screen and record category, separate from voice play. A helper or examiner presses buttons at actual voice onset and offset: **observer timing**. A person checks the breath and interval instead of relying on automatic detection that may miss weak or irregular voices.

@@ -2,6 +2,8 @@
 
 [한국어](project-structure-review.md) | [English](project-structure-review.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 Date: 2026-04-29
 
 ## 1. Project summary

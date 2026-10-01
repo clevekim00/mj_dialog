@@ -9,6 +9,71 @@ import 'package:speech_rehab/services/resources/resource_models.dart';
 import 'package:speech_rehab/services/resources/resource_signature_verifier.dart';
 
 void main() {
+  test(
+    'remote closure persists offline and invalid replacement retains it',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'training_policy',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final closed = jsonDecode(_catalog('2.0.0')) as Map<String, dynamic>;
+      closed['trainingAvailability'] = {
+        'schemaVersion': 1,
+        'defaultEnabled': true,
+        'overrides': {'breathing_03_rapid_deep': false},
+      };
+      final malformed = {
+        ...closed,
+        'catalogVersion': '3.0.0',
+        'trainingAvailability': {
+          'schemaVersion': 1,
+          'defaultEnabled': true,
+          'overrides': {'breathing_03_rapid_deep': 'false'},
+        },
+      };
+      final repository = ResourceCatalogRepository(
+        dio: Dio()
+          ..httpClientAdapter = _CatalogAdapter([
+            _CatalogReply(200, jsonEncode(closed)),
+            _CatalogReply(200, jsonEncode(malformed)),
+          ]),
+        catalogUrl: 'https://example.test/catalog.json',
+        bundledTextLoader: (_) async => _catalog('1.0.0'),
+        supportDirectoryLoader: () async => directory,
+        signatureVerifier: const _AlwaysValidSignatureVerifier(),
+      );
+      expect(
+        (await repository.checkForUpdates(force: true)).status,
+        ResourceCatalogCheckStatus.updated,
+      );
+      expect(
+        (await repository.checkForUpdates(force: true)).status,
+        ResourceCatalogCheckStatus.rejected,
+      );
+      final offline = ResourceCatalogRepository(
+        dio: Dio()..httpClientAdapter = _OfflineAdapter(),
+        catalogUrl: 'https://example.test/catalog.json',
+        bundledTextLoader: (_) async => _catalog('1.0.0'),
+        supportDirectoryLoader: () async => directory,
+        signatureVerifier: const _AlwaysValidSignatureVerifier(),
+      );
+      final result = await offline.checkForUpdates(force: true);
+      expect(result.status, ResourceCatalogCheckStatus.offline);
+      expect(
+        result.snapshot.catalog.trainingAvailability.isEnabled(
+          'breathing_03_rapid_deep',
+        ),
+        isFalse,
+      );
+      expect(
+        result.snapshot.catalog.trainingAvailability.isEnabled(
+          'breathing_02_pause_inhale',
+        ),
+        isTrue,
+      );
+    },
+  );
+
   test('ETag 304이면 변경사항 없이 현재 catalog를 유지한다', () async {
     final directory = await Directory.systemTemp.createTemp('catalog_etag');
     addTearDown(() => directory.delete(recursive: true));

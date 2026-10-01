@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/training/training_availability_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_rehab/features/guided_training/data/guided_training_catalog.dart';
@@ -260,14 +261,14 @@ class GuidedTrainingHistoryScreen extends ConsumerWidget {
   }
 }
 
-class _ExerciseCard extends StatelessWidget {
+class _ExerciseCard extends ConsumerWidget {
   const _ExerciseCard({required this.exercise});
   final GuidedTrainingExercise exercise;
 
   @override
-  Widget build(BuildContext context) {
-    final locked =
-        exercise.safetyTier == GuidedTrainingSafetyTier.clinicianOnly;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final policy = ref.watch(trainingAvailabilityProvider);
+    final locked = !(policy.asData?.value.isEnabled(exercise.id) ?? false);
     final color = switch (exercise.safetyTier) {
       GuidedTrainingSafetyTier.general => Colors.tealAccent,
       GuidedTrainingSafetyTier.caution => Colors.orangeAccent,
@@ -280,11 +281,22 @@ class _ExerciseCard extends StatelessWidget {
             ? () => showDialog<void>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('전문가 확인이 필요합니다'),
-                  content: Text(exercise.safetyMessage ?? ''),
+                  title: const Text('훈련 이용 안내'),
+                  content: Text(
+                    policy.isLoading
+                        ? '훈련 설정을 불러오고 있어요. 잠시 후 다시 시도해 주세요.'
+                        : policy.hasError
+                        ? '훈련 설정을 불러오지 못했어요. 다시 시도해 주세요.'
+                        : '관리자가 이 훈련을 일시적으로 닫았어요.',
+                  ),
                   actions: [
                     FilledButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        if (policy.hasError) {
+                          ref.invalidate(trainingAvailabilityProvider);
+                        }
+                        Navigator.pop(context);
+                      },
                       child: const Text('확인'),
                     ),
                   ],

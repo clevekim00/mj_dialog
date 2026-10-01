@@ -2,6 +2,8 @@
 
 [한국어](license.md) | [English](license.en.md) | [All documents](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 The project's original license is [LICENSE](../LICENSE) in the repository root. The Korean edition is a convenience translation and does not replace that original. The English license text remains unchanged.
 
 ## MIT license — original English text

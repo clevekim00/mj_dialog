@@ -8,6 +8,8 @@
 
 [한국어](README.md) · [English](README.en.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](docs/game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 [전체 문서](docs/README.md)
 
 **마비말장애 말하기 연습 · Speech Practice for Adults with Dysarthria**
@@ -18,6 +20,10 @@ Everyday words, at your own pace.
 > 말하기가 불편한 사용자의 자가 말하기 연습을 돕는 앱
 
 ---
+
+## 게임 메뉴
+
+기본 메뉴는 **오늘 → 훈련 → 게임 → 기록 → 설정**입니다. 게임에서 **단어 말하기 게임**(시간 제한 없음이 기본)과 **목소리로 천천히 날기**를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. [현재 메뉴와 기존 기록 호환성](docs/game-menu.md).
 
 ## 최대발성시간 (MPT)
 
@@ -206,3 +212,7 @@ scripts/run_ios_release_device.sh --device <device-id>
 ```bash
 IOS_DEVICE_ID=<device-id> scripts/run_ios_release_device.sh
 ```
+
+## 훈련 열림과 관리 서버
+
+구강·호흡 훈련 46개는 모두 기본 열림입니다. 앱에는 개별 훈련 원격 정책 적용 구조를 구현했으며, 관리 서버 API는 설계 단계입니다. [API 설계 및 서버 구현 수준](docs/training-availability-and-server.md)을 참고하세요.

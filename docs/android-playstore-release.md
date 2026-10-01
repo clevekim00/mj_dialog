@@ -2,6 +2,8 @@
 
 [한국어](android-playstore-release.md) | [English](android-playstore-release.en.md) | [전체 문서](README.md)
 
+> 최신 메뉴 안내 (2026-10-01): **오늘 → 훈련 → 게임 → 기록 → 설정**. [게임과 현재 진입 경로](game-menu.md)를 참고하세요. 아래 과거 기획·검토 내용은 작성 당시의 맥락을 보존합니다.
+
 ## 준비된 자료
 
 - 런처 아이콘은 `android/app/src/main/res/mipmap-*`에 반영되어 있습니다.

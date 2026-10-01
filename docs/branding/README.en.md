@@ -2,6 +2,8 @@
 
 [한국어](README.md) | [English](README.en.md) | [All documents](../README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](../game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 - Korean name: **말이음**
 - English name: **SpeechBridge**
 - Korean description: **마비말장애 말하기 연습**

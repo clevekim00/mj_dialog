@@ -25,7 +25,7 @@ String recordStatus(String status, bool en) => switch (status) {
 };
 String recordKind(String kind, bool en) => switch (kind) {
   'mpt' => en ? 'MPT measurement' : 'MPT 측정',
-  'game' => en ? 'Voice play' : '발성 놀이',
+  'game' => en ? 'Games' : '게임',
   'daily' => en ? 'Daily practice' : '오늘의 연습',
   'consonant' => en ? 'Consonant' : '자음',
   'guided' => en ? 'Guided training' : '구강·호흡',
@@ -530,7 +530,7 @@ class _DetailState extends ConsumerState<RehabRecordDetail>
               onPressed: _busy ? null : _delete,
               child: Text(l.rehabDelete),
             ),
-          if (r.kind == 'practice')
+          if (r.id.startsWith('practice:'))
             TextButton(
               onPressed: () =>
                   Navigator.pushNamed(context, '/recording_library'),

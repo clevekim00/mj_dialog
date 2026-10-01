@@ -130,7 +130,7 @@ Iterable<RehabRecord> _practice(Object raw) sync* {
     if (!p.isRecordedAttempt) continue;
     yield RehabRecord(
       id: 'practice:${p.id}',
-      kind: 'practice',
+      kind: p.mode == 'wordGame' ? 'game' : 'practice',
       title: p.targetText,
       date: p.timestamp,
       dateKey: rehabDate(p.timestamp.toLocal()),

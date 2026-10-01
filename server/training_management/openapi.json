@@ -1,0 +1,797 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SpeechBridge Training Management API (design only)",
+    "version": "0.1.0",
+    "description": "Proposed server contract, not deployed. Global per-exercise policy for 46 oral/breathing exercises. No patient-specific rules or clinical suitability decisions."
+  },
+  "paths": {
+    "/v1/admin/trainings": {
+      "get": {
+        "summary": "List registered exercises and draft availability",
+        "description": "Requires role read. Designed only; not implemented.",
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/training-policy": {
+      "get": {
+        "summary": "Read draft policy and revision",
+        "description": "Requires role read. Designed only; not implemented.",
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyState"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Quoted strong entity tag"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/trainings/{trainingId}/availability": {
+      "put": {
+        "summary": "Update one exercise in a new draft revision",
+        "description": "Requires role write. Designed only; not implemented.",
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyState"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Quoted strong entity tag"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown training ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Revision mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "trainingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{0,127}$"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ETag from GET policy, e.g. \"policy-12\". Atomic optimistic concurrency check."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/training-policy/publish": {
+      "post": {
+        "summary": "Publish a draft revision as a signed complete catalog",
+        "description": "Requires role publish. Designed only; not implemented.",
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Publication"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stale revision or idempotency payload conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Signing or publication failed; retain prior public catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Same key and body replay returns the original result. Different body returns 409."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicationRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/training-policy/audit": {
+      "get": {
+        "summary": "Read append-only audit events",
+        "description": "Requires role audit. Designed only; not implemented.",
+        "security": [
+          {
+            "adminBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ]
+      }
+    },
+    "/v1/resources/catalog": {
+      "get": {
+        "summary": "Download complete signed resource catalog",
+        "description": "Public read only; HTTPS required. Catalog version increases for every publication, including rollback. The app verifies Ed25519 before activation. Designed endpoint; hosting not yet implemented.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedCatalog"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Quoted strong entity tag"
+              }
+            }
+          },
+          "304": {
+            "description": "Unchanged; no body",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Quoted strong entity tag"
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "adminBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Validate OIDC issuer, audience, expiry and required administrative role. Never reuse analysis client tokens."
+      }
+    },
+    "schemas": {
+      "AvailabilityPolicy": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "defaultEnabled": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "overrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "defaultEnabled",
+          "overrides"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyState": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "policy": {
+            "$ref": "#/components/schemas/AvailabilityPolicy"
+          }
+        },
+        "required": [
+          "revision",
+          "policy"
+        ],
+        "additionalProperties": false
+      },
+      "AvailabilityChange": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "enabled",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "Training": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{0,127}$"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "tongue",
+              "lip",
+              "alternating",
+              "breathing"
+            ]
+          },
+          "titleKo": {
+            "type": "string"
+          },
+          "titleEn": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "category",
+          "titleKo",
+          "titleEn",
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "TrainingList": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Training"
+            }
+          }
+        },
+        "required": [
+          "revision",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "PublicationRequest": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "catalogVersion": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "etag": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "catalogVersion",
+          "publishedAt",
+          "etag"
+        ],
+        "additionalProperties": false
+      },
+      "AuditEntry": {
+        "type": "object",
+        "properties": {
+          "actorId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "update",
+              "publish"
+            ]
+          },
+          "trainingId": {
+            "type": "string",
+            "nullable": true
+          },
+          "before": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "after": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "actorId",
+          "action",
+          "trainingId",
+          "before",
+          "after",
+          "reason",
+          "revision",
+          "requestId",
+          "timestamp"
+        ],
+        "additionalProperties": false
+      },
+      "AuditPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEntry"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "SignedCatalog": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "catalogVersion",
+          "languages",
+          "packs",
+          "trainingAvailability",
+          "signature"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "catalogVersion": {
+            "type": "string",
+            "pattern": "^[0-9]+(\\.[0-9]+)*$"
+          },
+          "languages": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object"
+            }
+          },
+          "packs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "trainingAvailability": {
+            "$ref": "#/components/schemas/AvailabilityPolicy"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Base64 Ed25519 signature over the canonical complete document excluding signature."
+          }
+        },
+        "additionalProperties": true,
+        "description": "Existing ResourceCatalog envelope. Language and pack objects MUST follow lib/services/resources/resource_models.dart; this API does not replace their schema."
+      }
+    }
+  }
+}

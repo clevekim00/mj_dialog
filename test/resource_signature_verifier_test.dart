@@ -14,6 +14,11 @@ void main() {
       'catalogVersion': '2.0.0',
       'languages': <Object>[],
       'packs': <Object>[],
+      'trainingAvailability': {
+        'schemaVersion': 1,
+        'defaultEnabled': true,
+        'overrides': {'breathing_03_rapid_deep': false},
+      },
     };
     final signature = await algorithm.sign(
       utf8.encode(canonicalResourceJson(document)),
@@ -25,7 +30,9 @@ void main() {
     );
 
     expect(await verifier.verify(document), isTrue);
-    document['catalogVersion'] = '9.9.9';
+    ((document['trainingAvailability'] as Map)['overrides']
+            as Map)['breathing_03_rapid_deep'] =
+        true;
     expect(await verifier.verify(document), isFalse);
   });
 

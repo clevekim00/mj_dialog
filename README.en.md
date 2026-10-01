@@ -8,6 +8,8 @@
 
 [한국어](README.md) · [English](README.en.md)
 
+> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](docs/game-menu.en.md). Earlier plans and reviews below retain their dated context.
+
 [All documents](docs/README.en.md)
 
 **Speech Practice for Adults with Dysarthria · 마비말장애 말하기 연습**
@@ -17,6 +19,10 @@ Everyday words, at your own pace.
 > An app supporting self-directed speech practice for people with speaking difficulties.
 
 ---
+
+## Games
+
+Use **Today → Training → Games → Records → Settings**. Games contains **Word speaking game** (untimed by default) and **Gentle voice flight**. Oral training and MPT stay under Training. In Records, select Games to see both games. [Current navigation and compatibility](docs/game-menu.en.md).
 
 ## Maximum phonation time (MPT)
 
@@ -213,3 +219,7 @@ Or override the default through an environment variable:
 ```bash
 IOS_DEVICE_ID=<device-id> scripts/run_ios_release_device.sh
 ```
+
+## Training availability and management server
+
+All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. [API design and server status](docs/training-availability-and-server.en.md).
