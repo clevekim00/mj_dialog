@@ -1,14 +1,15 @@
+import '../../games/art/pixel_game_art.dart';
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:speech_rehab/features/chat/provider/chat_provider.dart';
-import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 
 class WordGameScreen extends ConsumerStatefulWidget {
-  const WordGameScreen({super.key});
+  const WordGameScreen({super.key, this.continuousListening = true});
+  final bool continuousListening;
 
   @override
   ConsumerState<WordGameScreen> createState() => _WordGameScreenState();
@@ -16,19 +17,135 @@ class WordGameScreen extends ConsumerStatefulWidget {
 
 class _WordGameScreenState extends ConsumerState<WordGameScreen>
     with WidgetsBindingObserver {
+  late bool _continuous;
+  bool _autoActive = false, _judging = false;
+  Timer? _settleTimer, _limitTimer, _nextTimer;
+  String? _listeningNotice;
+
+  void _cancelAutoTimers() {
+    _settleTimer?.cancel();
+    _limitTimer?.cancel();
+    _nextTimer?.cancel();
+  }
+
+  Future<void> _listenNextWord() async {
+    if (!mounted || !_autoActive) return;
+    final notifier = ref.read(practiceProvider.notifier);
+    if (ref.read(practiceProvider).wordGameStatus != WordGameStatus.running) {
+      setState(() => _autoActive = false);
+      return;
+    }
+    try {
+      await notifier.stopPlayback();
+      if (!mounted || !_autoActive) return;
+      await notifier.startRecording();
+      if (!mounted || !_autoActive) return;
+      final progress = ref.read(practiceProvider);
+      if (progress.state == PracticeState.error ||
+          progress.speechRecognitionUnavailable) {
+        await _pauseSession(finishRecording: true);
+        if (mounted) {
+          setState(
+            () => _listeningNotice =
+                '계속 듣기를 사용할 수 없어요. 권한을 확인하거나 버튼 방식으로 연습해 주세요.',
+          );
+        }
+        return;
+      }
+      _limitTimer = Timer(const Duration(seconds: 30), () {
+        unawaited(_pauseSession(finishRecording: true));
+        if (mounted) {
+          setState(() => _listeningNotice = '잠시 쉬고 있어요. 준비되면 이어가 주세요.');
+        }
+      });
+    } catch (_) {
+      _autoActive = false;
+      _cancelAutoTimers();
+      if (mounted) {
+        setState(
+          () => _listeningNotice = '듣기 또는 저장을 마치지 못했어요. 녹음 상태를 확인해 주세요.',
+        );
+      }
+    }
+  }
+
+  Future<void> _judgeAndContinue() async {
+    if (!mounted || !_autoActive || _judging) return;
+    _judging = true;
+    _settleTimer?.cancel();
+    _limitTimer?.cancel();
+    try {
+      await ref.read(practiceProvider.notifier).stopRecording();
+      if (!mounted || !_autoActive) return;
+      final progress = ref.read(practiceProvider);
+      if (progress.state == PracticeState.error ||
+          progress.spokenText.trim().isEmpty ||
+          progress.feedback?.hasComparableScore != true) {
+        await _pauseSession();
+        if (mounted) {
+          setState(
+            () => _listeningNotice = '인식 결과를 확인하지 못했어요. 편할 때 다시 시작해 주세요.',
+          );
+        }
+        return;
+      }
+      _nextTimer = Timer(
+        const Duration(milliseconds: 1500),
+        () => unawaited(_listenNextWord()),
+      );
+    } catch (_) {
+      _autoActive = false;
+      _cancelAutoTimers();
+      if (mounted) {
+        setState(() => _listeningNotice = '저장을 완료하지 못했어요. 계속 듣기를 멈췄어요.');
+      }
+    } finally {
+      _judging = false;
+    }
+  }
+
+  void _startOrResume({bool resume = false}) {
+    final notifier = ref.read(practiceProvider.notifier);
+    resume ? notifier.resumeWordGame() : notifier.startFallingWordGame();
+    setState(() {
+      _autoActive = _continuous;
+      _listeningNotice = null;
+    });
+    if (_autoActive) unawaited(_listenNextWord());
+  }
+
   @override
   void initState() {
     super.initState();
+    _continuous = widget.continuousListening;
+    ref.listenManual(practiceProvider, (previous, next) {
+      if (!_autoActive || _judging || next.state != PracticeState.recording) {
+        return;
+      }
+      if (next.spokenText.trim().isNotEmpty &&
+          previous?.spokenText != next.spokenText) {
+        _settleTimer?.cancel();
+        _settleTimer = Timer(
+          const Duration(milliseconds: 2500),
+          () => unawaited(_judgeAndContinue()),
+        );
+      }
+    });
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    _autoActive = false;
+    _cancelAutoTimers();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   Future<void> _pauseSession({bool finishRecording = false}) async {
+    _autoActive = false;
+    _cancelAutoTimers();
+    if (mounted) setState(() {});
     final notifier = ref.read(practiceProvider.notifier);
     final practice = ref.read(practiceProvider);
     if (finishRecording &&
@@ -54,7 +171,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
   }
 
   Future<void> _openSecondary(String route) async {
-    await _pauseSession();
+    await _pauseSession(finishRecording: true);
     if (mounted) Navigator.pushNamed(context, route);
   }
 
@@ -97,6 +214,10 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
+            ComfortButton(
+              situation: ComfortContext.game,
+              enabled: !locked && !_autoActive,
+            ),
             IconButton(
               icon: const Icon(Icons.library_music),
               tooltip: '녹음 보관함',
@@ -118,11 +239,34 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
             ),
           ],
         ),
+        bottomNavigationBar: _autoActive
+            ? SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: FilledButton.icon(
+                    onPressed: () => _pauseSession(finishRecording: true),
+                    icon: const Icon(Icons.pause),
+                    label: const Text('듣기 중지 · 잠시 쉬기'),
+                  ),
+                ),
+              )
+            : null,
         body: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
             children: [
               _buildHeader(practice),
+              SwitchListTile(
+                title: const Text('계속 듣고 자동 판정'),
+                subtitle: const Text(
+                  '한 번 시작하면 단어마다 자동으로 녹음해요. 인식된 글이 2.5초 유지되면 판정해요. 30초가 지나면 잠시 쉬어요.',
+                ),
+                value: _continuous,
+                onChanged: locked || _autoActive
+                    ? null
+                    : (value) => setState(() => _continuous = value),
+              ),
+              if (_listeningNotice != null) Text(_listeningNotice!),
               SwitchListTile(
                 title: const Text('시간 제한이 있는 낙하 모드'),
                 subtitle: const Text('끄면 단어가 내려오지 않습니다.'),
@@ -167,7 +311,10 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
             : practice.wordGameTimed
             ? '선택한 낙하 모드입니다. 준비되면 시작하세요.'
             : '시간 제한 없이 한 단어씩 편안하게 연습합니다.',
-      WordGameStatus.running => '목표 단어를 말한 뒤 판정하면 맞은 단어가 사라집니다.',
+      WordGameStatus.running =>
+        _autoActive
+            ? '치즈가 듣고 있어요. 목표 단어를 말하면 자동으로 비교해요.'
+            : '목표 단어를 말한 뒤 판정하면 맞은 단어가 사라집니다.',
       WordGameStatus.paused => '잠시 쉬는 중입니다. 준비되면 이어가세요.',
       WordGameStatus.gameOver => '단어가 바닥에 닿아 게임이 끝났습니다.',
     };
@@ -253,9 +400,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
               ),
             ),
           ),
@@ -276,7 +421,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: Colors.white10),
       ),
       child: Row(
@@ -359,7 +504,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.zero,
       ),
       child: Row(
         children: [
@@ -582,7 +727,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
@@ -613,6 +758,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
         practice.state == PracticeState.analyzing;
 
     void handleWordTap(FallingWord word) {
+      if (_autoActive) return;
       if (practice.state == PracticeState.analyzing) {
         return;
       }
@@ -630,7 +776,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: Colors.white10),
       ),
       child: LayoutBuilder(
@@ -638,6 +784,9 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
           final laneWidth = constraints.maxWidth / 3;
           return Stack(
             children: [
+              const Positioned.fill(
+                child: CustomPaint(painter: PixelGameBackdrop(night: true)),
+              ),
               Positioned(
                 left: 0,
                 right: 0,
@@ -706,7 +855,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
   }) {
     final color = isTarget ? Colors.greenAccent : Colors.white70;
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.zero,
       onTap: isBusy && !isTarget ? null : onTap,
       child: Container(
         height: 44,
@@ -716,7 +865,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
           color: isTarget
               ? Colors.greenAccent.withValues(alpha: 0.18)
               : Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           border: Border.all(color: color.withValues(alpha: 0.42)),
         ),
         child: Row(
@@ -809,7 +958,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
   ) {
     if (practice.wordGameStatus == WordGameStatus.paused) {
       return FilledButton.icon(
-        onPressed: notifier.resumeWordGame,
+        onPressed: () => _startOrResume(resume: true),
         icon: const Icon(Icons.play_arrow),
         label: const Text('연습 이어가기'),
       );
@@ -819,7 +968,8 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          onPressed: () => notifier.startFallingWordGame(),
+          key: const ValueKey('word-game-start'),
+          onPressed: () => _startOrResume(),
           icon: const Icon(Icons.play_arrow),
           label: Text(
             practice.wordGameStatus == WordGameStatus.gameOver
@@ -837,14 +987,13 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       );
     }
 
-    final orbState = switch (practice.state) {
-      PracticeState.recording => ConversationState.listening,
-      PracticeState.analyzing => ConversationState.thinking,
-      _ => ConversationState.idle,
-    };
     final isBusy = practice.state == PracticeState.analyzing;
     final isRecording = practice.state == PracticeState.recording;
     void handleOrbTap() {
+      if (_autoActive) {
+        unawaited(_pauseSession(finishRecording: true));
+        return;
+      }
       if (isBusy) {
         return;
       }
@@ -857,17 +1006,23 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
 
     return Column(
       children: [
-        _buildSpeechOrbButton(
-          practice: practice,
-          orbState: orbState,
-          onTap: handleOrbTap,
+        Text(
+          practice.feedback != null
+              ? ((practice.feedback?.pronunciationScore ?? 0) >= 70
+                    ? '치즈: 잘했어! 다음 단어도 같이 해 보자.'
+                    : '치즈: 괜찮아. 천천히 다시 해 보자.')
+              : '치즈: 준비되면 편하게 말해 줘.',
+          style: const TextStyle(color: Colors.amberAccent),
         ),
+        _buildSpeechOrbButton(practice: practice, onTap: handleOrbTap),
         const SizedBox(height: 14),
         Text(
           isBusy
               ? '판정 중입니다'
               : isRecording
-              ? '말한 뒤 말하기 버튼이나 목표 단어를 다시 눌러 판정하세요'
+              ? (_autoActive
+                    ? '듣고 있어요. 말한 뒤 잠깐 기다리면 자동으로 판정해요.'
+                    : '말한 뒤 말하기 버튼이나 목표 단어를 다시 눌러 판정하세요')
               : '말하기 버튼이나 목표 단어를 눌러 녹음을 시작하세요',
           style: const TextStyle(color: Colors.white54),
         ),
@@ -881,7 +1036,11 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
         ],
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          onPressed: isBusy || isRecording ? null : notifier.pauseWordGame,
+          onPressed: _autoActive
+              ? () => _pauseSession(finishRecording: true)
+              : isBusy || isRecording
+              ? null
+              : notifier.pauseWordGame,
           icon: const Icon(Icons.pause),
           label: const Text('잠시 쉬기'),
         ),
@@ -932,6 +1091,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
                       return;
                     }
                     final messenger = ScaffoldMessenger.of(context);
+                    await _pauseSession(finishRecording: true);
                     final ok = await notifier.playRecording(null);
                     if (!ok) {
                       messenger
@@ -957,7 +1117,6 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
 
   Widget _buildSpeechOrbButton({
     required PracticeProgress practice,
-    required ConversationState orbState,
     required VoidCallback onTap,
   }) {
     final isRecording = practice.state == PracticeState.recording;
@@ -973,7 +1132,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
         ? Icons.hourglass_top_rounded
         : Icons.mic_rounded;
     final label = isRecording
-        ? '판정하기'
+        ? (_autoActive ? '치즈가 듣는 중' : '판정하기')
         : isAnalyzing
         ? '판정 중'
         : '말하기 시작';
@@ -981,7 +1140,11 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
     return Semantics(
       button: true,
       enabled: !isAnalyzing,
-      label: isRecording ? '녹음 마치고 텍스트 비교' : '단어 말하기 시작',
+      label: _autoActive
+          ? '계속 듣기 중지'
+          : isRecording
+          ? '녹음 마치고 텍스트 비교'
+          : '단어 말하기 시작',
       onTap: isAnalyzing ? null : onTap,
       child: GestureDetector(
         key: const ValueKey('word-game-microphone'),
@@ -1000,7 +1163,15 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
                 right: 0,
                 child: _buildRecognizedSpeechToast(practice),
               ),
-              Positioned(bottom: 0, child: AnimatedOrb(state: orbState)),
+              Positioned(
+                bottom: 0,
+                child: PixelGameMascot(
+                  active: isRecording,
+                  cheering:
+                      practice.feedback != null &&
+                      (practice.feedback?.pronunciationScore ?? 0) >= 70,
+                ),
+              ),
               Positioned(
                 bottom: 52,
                 child: AnimatedContainer(
@@ -1011,7 +1182,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.zero,
                     border: Border.all(color: accent.withValues(alpha: 0.55)),
                   ),
                   child: Row(
@@ -1077,7 +1248,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: color.withValues(alpha: 0.32)),
         boxShadow: [
           BoxShadow(
@@ -1124,7 +1295,7 @@ class _WordGameScreenState extends ConsumerState<WordGameScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.redAccent.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: Colors.redAccent.withValues(alpha: 0.35)),
       ),
       child: const Row(

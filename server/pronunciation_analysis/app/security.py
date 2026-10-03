@@ -126,7 +126,7 @@ class AnalysisBodyLimitMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or not scope.get("path", "").startswith("/v1/analysis/"):
+        if scope["type"] != "http" or not scope.get("path", "").startswith(("/v1/analysis/", "/v1/sentence-analysis/")):
             return await self.app(scope, receive, send)
         request = Request(scope)
         try:

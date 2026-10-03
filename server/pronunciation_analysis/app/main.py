@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 
+from . import sentence_analysis
 from .acoustic import AcousticBackend, BackendUnavailable
 from .security import AnalysisBodyLimitMiddleware, MAX_AUDIO_BYTES, require_client
 from .audio import inspect_signal, normalize_to_wav
@@ -45,7 +46,8 @@ async def lifespan(app):
             _expire_jobs()
     task = asyncio.create_task(sweep())
     try:
-        yield
+        async with sentence_analysis.lifecycle():
+            yield
     finally:
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
@@ -56,6 +58,7 @@ async def lifespan(app):
 
 app = FastAPI(title="Speech Rehab Pronunciation Analysis", version="0.2.0", lifespan=lifespan)
 app.add_middleware(AnalysisBodyLimitMiddleware)
+app.include_router(sentence_analysis.router)
 _jobs: dict[str, AnalysisJob] = {}
 _lock = Lock()
 _worker_slots = BoundedSemaphore(2)

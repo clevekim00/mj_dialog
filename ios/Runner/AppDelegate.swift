@@ -1,6 +1,9 @@
+import Vision
 import AVFoundation
 import Flutter
 import permission_handler_apple
+import image_picker_ios
+import record_ios
 import Speech
 import UIKit
 
@@ -59,6 +62,17 @@ final class SafeFlutterViewController: FlutterViewController {
       return
     }
 
+    if let controller = currentFlutterViewController() {
+      // This app deliberately registers plugins individually. Register against
+      // the visible controller so image_picker has both a messenger and presenter.
+      if let registrar = controller.registrar(forPlugin: "FLTImagePickerPlugin") {
+        FLTImagePickerPlugin.register(with: registrar)
+      }
+      if let registrar = controller.registrar(forPlugin: "RecordIosPlugin") {
+        RecordIosPlugin.register(with: registrar)
+      }
+      SentenceOCRChannel.register(messenger: controller.binaryMessenger)
+    }
     configureAudioPlayerChannel()
     configureAudioRecorderChannel()
     configureSharedPreferencesChannel()
@@ -639,7 +653,7 @@ final class SafeFlutterViewController: FlutterViewController {
           result(false)
           return
         }
-        self.startSpeechRecognition(result: result)
+        self.startSpeechRecognition(contextualStrings: (call.arguments as? [String: Any])?["contextualStrings"] as? [String] ?? [], result: result)
       case "stopListening":
         self.stopSpeechRecognition(result: result)
       case "cancelListening":
@@ -683,7 +697,7 @@ final class SafeFlutterViewController: FlutterViewController {
     return true
   }
 
-  private func startSpeechRecognition(result: FlutterResult) {
+  private func startSpeechRecognition(contextualStrings: [String], result: FlutterResult) {
     guard hasSpeechAndMicrophonePermission() else {
       result(false)
       return
@@ -703,6 +717,7 @@ final class SafeFlutterViewController: FlutterViewController {
 
       let request = SFSpeechAudioBufferRecognitionRequest()
       request.shouldReportPartialResults = true
+      request.contextualStrings = Array(contextualStrings.prefix(20))
       speechRecognitionRequest = request
 
       let inputNode = speechAudioEngine.inputNode
@@ -844,5 +859,34 @@ extension AppDelegate: AVAudioPlayerDelegate {
     }
     try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     audioEventSink?("complete")
+  }
+}
+
+final class SentenceOCRChannel {
+  static func register(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "speech_rehab/sentence_ocr", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "recognize", let args = call.arguments as? [String: Any],
+        let path = args["path"] as? String else { result(FlutterMethodNotImplemented); return }
+      let language = args["language"] as? String ?? "ko-KR"
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let request = VNRecognizeTextRequest()
+          request.recognitionLevel = .accurate
+          let supported = try request.supportedRecognitionLanguages()
+          guard supported.contains(where: { $0.hasPrefix(String(language.prefix(2))) }) else {
+            DispatchQueue.main.async { result(FlutterError(code: "unsupported_language", message: "OCR language is not supported by this OS.", details: nil)) }; return
+          }
+          request.recognitionLanguages = [language]
+          request.usesLanguageCorrection = true
+          let handler = VNImageRequestHandler(url: URL(fileURLWithPath: path), options: [:])
+          try handler.perform([request])
+          let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+          DispatchQueue.main.async { result(text) }
+        } catch {
+          DispatchQueue.main.async { result(FlutterError(code: "ocr_failed", message: "Could not read this image.", details: nil)) }
+        }
+      }
+    }
   }
 }

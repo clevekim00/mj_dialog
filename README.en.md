@@ -16,9 +16,16 @@ The linked document site opens Korean and English in tabs on the same page. GitH
 
 <!-- document-body -->
 
+## My sentences and easing tension
+
+**Training → Sentence practice → Read my sentence twice** accepts reviewed text or OCR, keeps dated A/B recordings with individual AI feedback, and plays both sequentially for comparison. Recording/playback work offline; AI requires a configured model/server and upload consent.
+
+**Training → Ease speaking tension** and contextual buttons offer comfortable posture, natural breathing and short-phrase preparation. [Flow, design and implementation scope](docs/sentence-repeat-and-mouth-video-plan.en.md#10-implementation-status--2026-10-02).
+
+
 ## Games
 
-Use **Today → Training → Games → Records → Settings**. Games contains **Word speaking game** (untimed by default) and **Gentle voice flight**. Oral training and MPT stay under Training. In Records, select Games to see both games. [Current navigation and compatibility](docs/game-menu.en.md).
+Use **Today → Training → Games → Records → Settings**. Games contains **Word speaking game** (untimed by default) , **Syllable adventure run**, and **Gentle voice flight**. Oral training and MPT stay under Training. In Records, select Games to see both games. [Current navigation and compatibility](docs/game-menu.en.md).
 
 ## Maximum phonation time (MPT)
 
@@ -219,3 +226,13 @@ IOS_DEVICE_ID=<device-id> scripts/run_ios_release_device.sh
 ## Training availability and management server
 
 All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. [API design and server status](docs/training-availability-and-server.en.md).
+
+New **Syllable adventure run**: Korean consonant + ㅏ jumps, consonant + ㅓ ducks. [Game guide](docs/game-menu.en.md).
+
+Choose Cheese or Mochi and run through three stages of 12, 16 and 20 obstacles. Includes free jump/duck actions, comfort mode and challenge mode with two retries per stage.
+
+Word speaking defaults to continuous listening and automatic judging, with Cheese cheering along. A fixed control stops listening for a break.
+
+MPT can automatically time voice onset and offset, with recording review before acceptance. Manual timing remains available. [Timing guide](docs/mpt-measurement.en.md).
+
+[Integrated changes and verification scope](docs/release-notes-2026-10-03.en.md).

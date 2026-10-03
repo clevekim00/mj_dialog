@@ -1057,6 +1057,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     );
   }
 
+  int _recordingEpoch = 0;
   Future<void>? _recordingStartFuture;
   Future<void>? _recordingStopFuture;
 
@@ -1121,9 +1122,11 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
 
     // Start STT before the high-quality recorder so live transcription has the
     // first chance to claim the platform audio session.
+    final epoch = ++_recordingEpoch;
     final sttStartWatch = Stopwatch()..start();
     final sttStarted = await sttService.startListening(
       onResult: (text, isFinal) async {
+        if (epoch != _recordingEpoch) return;
         _tempSpokenText = text;
         state = state.copyWith(spokenText: text);
       },
@@ -1236,6 +1239,7 @@ class PracticeNotifier extends Notifier<PracticeProgress> {
     await Future.delayed(const Duration(milliseconds: 600));
 
     final finalSpokenText = _tempSpokenText;
+    _recordingEpoch++;
 
     state = state.copyWith(spokenText: finalSpokenText);
 

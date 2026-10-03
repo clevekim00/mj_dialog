@@ -1,3 +1,5 @@
+import '../../sentence_practice/sentence_repository.dart';
+import '../../sentence_practice/sentence_screens.dart';
 import '../mpt/mpt_result.dart';
 import 'dart:async';
 import '../audio/practice_waveform.dart';
@@ -24,6 +26,7 @@ String recordStatus(String status, bool en) => switch (status) {
   _ => en ? 'Earlier individual practice' : '이전 개별 연습',
 };
 String recordKind(String kind, bool en) => switch (kind) {
+  'sentencePair' => en ? 'My sentences' : '내 문장',
   'mpt' => en ? 'MPT measurement' : 'MPT 측정',
   'game' => en ? 'Games' : '게임',
   'daily' => en ? 'Daily practice' : '오늘의 연습',
@@ -51,12 +54,40 @@ class _RecordsState extends ConsumerState<RehabRecordsScreen> {
   }
 
   void _reload() {
-    _records = RehabRecordIndex(
-      daily: ref.read(rehabRepositoryProvider),
-    ).load();
+    final daily = ref.read(rehabRepositoryProvider);
+    _records = ref
+        .read(sentenceRepositoryProvider.future)
+        .then(
+          (sentences) =>
+              RehabRecordIndex(daily: daily, sentences: sentences).load(),
+        );
   }
 
   Future<void> _open(RehabRecord record, List<RehabRecord> all) async {
+    if (record.kind == 'sentencePair') {
+      final repo = await ref.read(sentenceRepositoryProvider.future);
+      final id = record.id.substring('sentencePair:'.length);
+      final parent = repo.db.select(
+        'SELECT sentence_id FROM pairs WHERE id=?',
+        [id],
+      );
+      if (parent.isEmpty || !mounted) return;
+      final sentence = repo.sentences().firstWhere(
+        (s) => s['id'] == parent.first['sentence_id'],
+      );
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => SentencePairScreen(
+            repository: repo,
+            sentence: sentence,
+            pairId: id,
+          ),
+        ),
+      );
+      if (mounted) setState(_reload);
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
@@ -114,6 +145,23 @@ class _RecordsState extends ConsumerState<RehabRecordsScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SentenceLibraryScreen(),
+                        ),
+                      );
+                      if (mounted) setState(_reload);
+                    },
+                    icon: const Icon(Icons.compare),
+                    label: Text(
+                      en
+                          ? 'My sentences · paired recordings'
+                          : '내 문장 · 두 녹음 기록',
+                    ),
+                  ),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -128,6 +176,7 @@ class _RecordsState extends ConsumerState<RehabRecordsScreen> {
                         'chat',
                         'game',
                         'mpt',
+                        'sentencePair',
                       ])
                         ChoiceChip(
                           label: Text(

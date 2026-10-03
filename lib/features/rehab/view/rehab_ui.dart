@@ -41,17 +41,48 @@ class RehabPage extends StatelessWidget {
     required this.title,
     required this.children,
     this.actions,
+    this.footer,
   });
   final String title;
   final List<Widget> children;
   final List<Widget>? actions;
+  final Widget? footer;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(title), actions: actions),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
-        child: ListView(padding: const EdgeInsets.all(20), children: children),
+    body: LayoutBuilder(
+      builder: (context, constraints) => Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: ListView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(20),
+                  children: children,
+                ),
+              ),
+            ),
+          ),
+          if (footer != null)
+            SafeArea(
+              top: false,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 760,
+                  maxHeight: constraints.maxHeight * .55,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                    child: footer!,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     ),
   );

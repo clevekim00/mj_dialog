@@ -1,2 +1,5 @@
 "CFBundleDisplayName" = "SpeechBridge";
 "CFBundleName" = "SpeechBridge";
+"NSCameraUsageDescription" = "Use the camera to photograph text for sentence practice or show your mouth during practice.";
+"NSPhotoLibraryUsageDescription" = "Read text from the photo you select for sentence practice.";
+"NSMicrophoneUsageDescription" = "Use the microphone to record your practice and display your voice waveform.";

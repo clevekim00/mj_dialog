@@ -1,3 +1,4 @@
+import Vision
 import Cocoa
 import AVFoundation
 import FlutterMacOS
@@ -195,5 +196,70 @@ final class MacAudioPlayerChannel: NSObject, FlutterStreamHandler, AVAudioPlayer
         details: error?.localizedDescription
       )
     )
+  }
+}
+
+final class SentenceOCRChannel {
+  static func register(messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "speech_rehab/sentence_ocr", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      if call.method == "pickImage" {
+        // Use a non-sheet panel: avoids nested sheet lifecycle during Flutter navigation.
+        DispatchQueue.main.async {
+          let owner = NSApp.keyWindow ?? NSApp.mainWindow
+          let panel = NSOpenPanel()
+          panel.canChooseFiles = true
+          panel.canChooseDirectories = false
+          panel.allowsMultipleSelection = false
+          panel.allowedFileTypes = ["png", "jpg", "jpeg"]
+          panel.begin { response in
+            owner?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            guard response == .OK, let url = panel.url else { result(nil); return }
+            DispatchQueue.global(qos: .userInitiated).async {
+              let access = url.startAccessingSecurityScopedResource()
+              defer { if access { url.stopAccessingSecurityScopedResource() } }
+              do {
+                let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+                guard let size = attributes[.size] as? NSNumber, size.intValue <= 10 * 1024 * 1024 else {
+                  throw NSError(domain: "SentenceOCR", code: 1)
+                }
+                let bytes = try Data(contentsOf: url)
+                DispatchQueue.main.async { result(FlutterStandardTypedData(bytes: bytes)) }
+              } catch {
+                DispatchQueue.main.async { result(FlutterError(code: "image_read_failed", message: "Could not open image (maximum 10 MB).", details: nil)) }
+              }
+            }
+          }
+        }
+        return
+      }
+      guard call.method == "recognize", let args = call.arguments as? [String: Any],
+        let path = args["path"] as? String else { result(FlutterMethodNotImplemented); return }
+      let language = args["language"] as? String ?? "ko-KR"
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          let request = VNRecognizeTextRequest()
+          request.recognitionLevel = .accurate
+          let supported: [String]
+          if #available(macOS 12.0, *) {
+            supported = try request.supportedRecognitionLanguages()
+          } else {
+            supported = try VNRecognizeTextRequest.supportedRecognitionLanguages(for: .accurate, revision: request.revision)
+          }
+          guard supported.contains(where: { $0.hasPrefix(String(language.prefix(2))) }) else {
+            DispatchQueue.main.async { result(FlutterError(code: "unsupported_language", message: "OCR language is not supported by this OS.", details: nil)) }; return
+          }
+          request.recognitionLanguages = [language]
+          request.usesLanguageCorrection = true
+          let handler = VNImageRequestHandler(url: URL(fileURLWithPath: path), options: [:])
+          try handler.perform([request])
+          let text = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
+          DispatchQueue.main.async { result(text) }
+        } catch {
+          DispatchQueue.main.async { result(FlutterError(code: "ocr_failed", message: "Could not read this image.", details: nil)) }
+        }
+      }
+    }
   }
 }

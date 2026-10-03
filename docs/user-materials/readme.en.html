@@ -3,8 +3,11 @@
 <body><a class="skip" href="#reader" data-ko="본문 바로가기" data-en="Skip to content">Skip to content</a>
 <header class="brand hero"><img src="../site/assets/app-icon.png" width="128" height="128" alt="SpeechBridge"><h1 data-ko="말이음 · SpeechBridge" data-en="SpeechBridge">SpeechBridge</h1><p class="subtitle" data-ko="성인 후천성 마비말장애를 위한 말하기 재활 연습" data-en="Speech practice for adults with acquired dysarthria">Speech practice for adults with acquired dysarthria</p><p class="tagline" data-ko="생활에 필요한 말, 내 속도로 연습해요." data-en="Everyday words, at your own pace.">Everyday words, at your own pace.</p><div class="badges"><span>Flutter</span><span>한국어 · English</span><span>MIT</span></div></header>
 <nav class="site-nav" aria-label="Documents"><a href="../site/readme.en.html" data-href-ko="../site/readme.html" data-href-en="../site/readme.en.html" data-ko="프로젝트 소개" data-en="Overview">Overview</a><a href="../site/documents.en.html" data-href-ko="../site/documents.html" data-href-en="../site/documents.en.html" data-ko="전체 문서" data-en="All documents">All documents</a><a href="../site/promotion.en.html" data-href-ko="../site/promotion.html" data-href-en="../site/promotion.en.html" data-ko="그림으로 보는 앱 소개" data-en="Illustrated introduction">Illustrated introduction</a><a href="../site/user-guide.en.html" data-href-ko="../site/user-guide.html" data-href-en="../site/user-guide.en.html" data-ko="그림으로 보는 사용법" data-en="Illustrated guide">Illustrated guide</a></nav>
-<main id="reader"><div class="reader"><div class="tabs" role="tablist" aria-label="Document language"><button type="button" role="tab" id="tab-ko" data-language="ko" aria-controls="panel-ko" aria-selected="false" tabindex="-1">한국어</button><button type="button" role="tab" id="tab-en" data-language="en" aria-controls="panel-en" aria-selected="true" tabindex="0">English</button></div><section role="tabpanel" id="panel-ko" aria-labelledby="tab-ko" lang="ko" tabindex="0" hidden><h2 id="ko--게임-메뉴">게임 메뉴</h2>
-<p>기본 메뉴는 <strong>오늘 → 훈련 → 게임 → 기록 → 설정</strong>입니다. 게임에서 <strong>단어 말하기 게임</strong>(시간 제한 없음이 기본)과 <strong>목소리로 천천히 날기</strong>를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. <a href="../site/documents/docs/game-menu.html">현재 메뉴와 기존 기록 호환성</a>.</p>
+<main id="reader"><div class="reader"><div class="tabs" role="tablist" aria-label="Document language"><button type="button" role="tab" id="tab-ko" data-language="ko" aria-controls="panel-ko" aria-selected="false" tabindex="-1">한국어</button><button type="button" role="tab" id="tab-en" data-language="en" aria-controls="panel-en" aria-selected="true" tabindex="0">English</button></div><section role="tabpanel" id="panel-ko" aria-labelledby="tab-ko" lang="ko" tabindex="0" hidden><h2 id="ko--내-문장-연습과-긴장-낮추기">내 문장 연습과 긴장 낮추기</h2>
+<p><strong>훈련 → 문장으로 말하기 → 내 문장 두 번 읽기</strong>에서 텍스트 또는 사진의 글을 확인하고, 문장마다 날짜별 1·2차 녹음과 개별 AI 피드백을 남깁니다. 두 녹음을 차례로 들어 비교할 수 있습니다. 녹음·듣기는 오프라인으로, AI는 별도 서버·모델과 전송 동의가 있을 때 사용합니다.</p>
+<p><strong>훈련 → 긴장 낮추기</strong>와 각 훈련의 상황별 안내에서 편한 자세·자연스러운 호흡·짧은 구절로 준비합니다. <a href="../site/documents/docs/sentence-repeat-and-mouth-video-plan.html#ko--10-구현-현황--2026-10-02">사용 흐름·설계·구현 범위</a>.</p>
+<h2 id="ko--게임-메뉴">게임 메뉴</h2>
+<p>기본 메뉴는 <strong>오늘 → 훈련 → 게임 → 기록 → 설정</strong>입니다. 게임에서 <strong>단어 말하기 게임</strong>(시간 제한 없음이 기본), <strong>한 음절 모험 달리기</strong>, <strong>목소리로 천천히 날기</strong>를 선택합니다. 구강 훈련과 MPT는 훈련에 남습니다. 기록의 게임 필터에서 두 게임 기록을 확인합니다. <a href="../site/documents/docs/game-menu.html">현재 메뉴와 기존 기록 호환성</a>.</p>
 <h2 id="ko--최대발성시간-mpt">최대발성시간 (MPT)</h2>
 <p>훈련 → 편안하게 소리 내기 → <strong>최대발성시간 (MPT)</strong>에서 보호자·검사자가 한 호흡의 “아~” 발성을 3회 측정합니다. 확인된 세 시도 중 최장 시간을 녹음·파형과 함께 별도 MPT 기록으로 저장합니다. 시도 사이에는 충분히 쉬며, 중단·미확인 시도는 결과에서 제외합니다. 시행 절차를 기록하는 기능으로, 임상 검증을 마친 진단 도구는 아닙니다.</p>
 <p><a href="../site/documents/docs/mpt-measurement.html">측정 방법·제한·구현 설명</a>.</p>
@@ -188,8 +191,16 @@ flutter run -d android
 </code></pre>
 <h2 id="ko--훈련-열림과-관리-서버">훈련 열림과 관리 서버</h2>
 <p>구강·호흡 훈련 46개는 모두 기본 열림입니다. 앱에는 개별 훈련 원격 정책 적용 구조를 구현했으며, 관리 서버 API는 설계 단계입니다. <a href="../site/documents/docs/training-availability-and-server.html">API 설계 및 서버 구현 수준</a>을 참고하세요.</p>
-</section><section role="tabpanel" id="panel-en" aria-labelledby="tab-en" lang="en" tabindex="0" ><h2 id="en--games">Games</h2>
-<p>Use <strong>Today → Training → Games → Records → Settings</strong>. Games contains <strong>Word speaking game</strong> (untimed by default) and <strong>Gentle voice flight</strong>. Oral training and MPT stay under Training. In Records, select Games to see both games. <a href="../site/documents/docs/game-menu.en.html">Current navigation and compatibility</a>.</p>
+<p>새 게임 <strong>한 음절 모험 달리기</strong>: 자음 + ㅏ로 점프, 자음 + ㅓ로 숙이기. <a href="../site/documents/docs/game-menu.html">게임 안내</a>.</p>
+<p>치즈·모찌 고양이를 선택하고 12·16·20개 장애물의 3개 스테이지를 달립니다. 자유 점프·숙이기, 편안 모드, 재시도 2회의 도전 모드를 제공합니다.</p>
+<p>단어 말하기는 기본으로 계속 듣고 자동 판정하며, 치즈가 응원합니다. 하단에서 언제든 듣기를 멈추고 쉴 수 있습니다.</p>
+<p>MPT는 발성 자동 감지로 시작·종료되며, 녹음 확인 후 결과를 채택합니다. 수동 타이머도 선택할 수 있습니다. <a href="../site/documents/docs/mpt-measurement.html">측정 안내</a>.</p>
+<p><a href="../site/documents/docs/release-notes-2026-10-03.html">지금까지의 변경 사항과 검증 범위</a>.</p>
+</section><section role="tabpanel" id="panel-en" aria-labelledby="tab-en" lang="en" tabindex="0" ><h2 id="en--my-sentences-and-easing-tension">My sentences and easing tension</h2>
+<p><strong>Training → Sentence practice → Read my sentence twice</strong> accepts reviewed text or OCR, keeps dated A/B recordings with individual AI feedback, and plays both sequentially for comparison. Recording/playback work offline; AI requires a configured model/server and upload consent.</p>
+<p><strong>Training → Ease speaking tension</strong> and contextual buttons offer comfortable posture, natural breathing and short-phrase preparation. <a href="../site/documents/docs/sentence-repeat-and-mouth-video-plan.en.html#en--10-implementation-status--2026-10-02">Flow, design and implementation scope</a>.</p>
+<h2 id="en--games">Games</h2>
+<p>Use <strong>Today → Training → Games → Records → Settings</strong>. Games contains <strong>Word speaking game</strong> (untimed by default) , <strong>Syllable adventure run</strong>, and <strong>Gentle voice flight</strong>. Oral training and MPT stay under Training. In Records, select Games to see both games. <a href="../site/documents/docs/game-menu.en.html">Current navigation and compatibility</a>.</p>
 <h2 id="en--maximum-phonation-time-mpt">Maximum phonation time (MPT)</h2>
 <p>Training → Comfortable voice practice → <strong>Maximum phonation time (MPT)</strong> provides observer timing for three single-breath “ah” trials. The longest of three confirmed trials is saved with recordings and waveforms in the separate MPT record category. Rest between trials; interrupted or unreviewed attempts do not count. This is a protocol recording tool, not a clinically validated diagnostic test.</p>
 <p><a href="../site/documents/docs/mpt-measurement.en.html">Procedure, limitations and implementation</a>.</p>
@@ -372,5 +383,10 @@ flutter run -d android
 </code></pre>
 <h2 id="en--training-availability-and-management-server">Training availability and management server</h2>
 <p>All 46 oral/breathing exercises are open by default. Per-exercise remote policy support is implemented in the app; the management server API is designed but not deployed. <a href="../site/documents/docs/training-availability-and-server.en.html">API design and server status</a>.</p>
+<p>New <strong>Syllable adventure run</strong>: Korean consonant + ㅏ jumps, consonant + ㅓ ducks. <a href="../site/documents/docs/game-menu.en.html">Game guide</a>.</p>
+<p>Choose Cheese or Mochi and run through three stages of 12, 16 and 20 obstacles. Includes free jump/duck actions, comfort mode and challenge mode with two retries per stage.</p>
+<p>Word speaking defaults to continuous listening and automatic judging, with Cheese cheering along. A fixed control stops listening for a break.</p>
+<p>MPT can automatically time voice onset and offset, with recording review before acceptance. Manual timing remains available. <a href="../site/documents/docs/mpt-measurement.en.html">Timing guide</a>.</p>
+<p><a href="../site/documents/docs/release-notes-2026-10-03.en.html">Integrated changes and verification scope</a>.</p>
 </section></div><footer><span data-ko="탭을 누르면 같은 페이지에서 언어가 바뀝니다." data-en="Choose a tab to change language on this page.">Choose a tab to change language on this page.</span><button type="button" onclick="printDocument()" data-ko="인쇄 / PDF 저장" data-en="Print / Save PDF">Print / Save PDF</button></footer></main>
 <script type="application/json" id="page-meta">{"titles": {"ko": "프로젝트 소개", "en": "Project overview"}}</script><script src="../site/assets/reader.js"></script></body></html>

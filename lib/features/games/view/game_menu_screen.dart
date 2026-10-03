@@ -1,3 +1,5 @@
+import '../runner/syllable_runner_screen.dart';
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../practice/model/practice_mode.dart';
@@ -39,6 +41,9 @@ class _GameMenuState extends ConsumerState<GameMenuScreen> {
     final en = rehabEnglish(context);
     return RehabPage(
       title: en ? 'Games' : '게임',
+      actions: [
+        ComfortButton(situation: ComfortContext.game, enabled: !_opening),
+      ],
       children: [
         Text(
           en ? 'Practise speaking through play.' : '말하기를 놀이로 연습해요.',
@@ -57,6 +62,19 @@ class _GameMenuState extends ConsumerState<GameMenuScreen> {
                     : '한 단어씩 말해요. 기본은 시간 제한이 없어요.',
                 icon: Icons.text_fields,
                 onTap: _openWords,
+              ),
+              RehabCard(
+                title: en ? 'Syllable adventure run' : '한 음절 모험 달리기',
+                subtitle: en
+                    ? 'Cheese & Mochi · 3 stages · ㅏ jumps, ㅓ ducks'
+                    : '치즈·모찌와 3개 스테이지 · ㅏ는 점프, ㅓ는 숙이기',
+                icon: Icons.directions_run,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SyllableRunnerScreen(),
+                  ),
+                ),
               ),
               RehabCard(
                 title: en ? 'Gentle voice flight' : '목소리로 천천히 날기',

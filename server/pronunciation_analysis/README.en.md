@@ -62,3 +62,30 @@ Only a separately validated future scoring backend may explicitly declare `score
 ## Training management
 
 This analysis server does not implement training availability administration. The app supports per-exercise policies in signed resource catalogs. See [the management API design and server capability inventory](../../docs/training-availability-and-server.en.md) for implemented versus planned functionality.
+
+## Free-sentence analysis server (2026-10-02)
+
+Separate from MFA phoneme alignment, local faster-whisper ASR returns `score=null`, recording duration, low-energy gap count, target/transcript differences and fixed practice guidance. These are not diagnostic, pronunciation-accuracy or tension scores.
+
+```bash
+cd server/pronunciation_analysis
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e '.[sentence]'
+# Preinstall a trusted faster-whisper-compatible model as the operator.
+# Example: hf download Systran/faster-whisper-tiny --local-dir ./models/whisper-tiny
+SENTENCE_WHISPER_MODEL="$PWD/models/whisper-tiny" SENTENCE_DATA_DIR="$PWD/sentence_jobs" uvicorn app.main:app --host 127.0.0.1 --port 8001 --workers 1 --no-access-log
+```
+
+The app development default is `http://127.0.0.1:8001`. Override using `--dart-define=SENTENCE_ANALYSIS_URL=https://...` or sentence-screen settings. The loopback development exception is disabled in release builds. Physical mobile devices require HTTPS and an owner-bound short-lived token. Never embed the signing secret in the app. Login/token issuance is a separate integration; entered tokens are not persisted by the app.
+
+| Route | Implementation |
+|---|---|
+| GET `/v1/sentence-analysis/capabilities` | Readiness, Korean/English, versions, 120-second/20-MB limits, 900-second retention |
+| POST `/v1/sentence-analysis/jobs` | Multipart `audio,recordingId,assessmentId,sentenceRevisionId,confirmedText,language,audioSha256,analysisVersion,consentPolicyVersion`; `Idempotency-Key` header; 202 job ID |
+| GET `/v1/sentence-analysis/jobs/{id}` | Owner-only status/results |
+| DELETE `/v1/sentence-analysis/jobs/{id}` | Idempotent 204, removes stored files/results and blocks late results |
+
+Use `analysisVersion=sentence-v1`, `consentPolicyVersion=sentence-local-v1`, language `ko-KR/en-US`, and mono 16 kHz PCM16 WAV. A single-process durable SQLite queue recovers in-progress jobs after restart. Audio is deleted after processing/cancellation; jobs expire after 15 minutes. Cleanup resumes on startup after downtime. Inference may retain audio in memory until computation finishes. Expired files and old files orphaned before a DB commit are swept. No training or external AI forwarding is performed; application logs omit source text/audio.
+
+Tests: `python -m unittest discover -s tests -v`. Synthetic Korean/English speech exercised upload, real inference, results and deletion with a tiny model; this is not clinical dysarthria validation. Production model validation, an administration UI, external token issuance and multi-process queues remain unimplemented. [App design and implemented scope](../../docs/sentence-repeat-and-mouth-video-plan.en.md).

@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/microphone_access.dart';
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -9,7 +10,8 @@ class AudioInputStreamService {
 
   final AudioRecorder _recorder;
 
-  Future<bool> hasPermission() => _recorder.hasPermission();
+  Future<bool> hasPermission() =>
+      MicrophoneAccess.ensure(() => _recorder.hasPermission());
 
   Future<Stream<Uint8List>> start({int sampleRate = 16000}) async {
     return _recorder.startStream(

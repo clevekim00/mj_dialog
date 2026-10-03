@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:speech_rehab/features/sentence_practice/sentence_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -70,7 +73,19 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const ProviderScope(child: _LocalizedTestApp()));
+    final sentences = SentenceRepository(
+      sqlite3.openInMemory(),
+      Directory.systemTemp,
+    );
+    addTearDown(sentences.db.close);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sentenceRepositoryProvider.overrideWith((ref) async => sentences),
+        ],
+        child: const _LocalizedTestApp(),
+      ),
+    );
     await tester.pump();
 
     expect(find.byType(NavigationRail), findsOneWidget);

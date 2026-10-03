@@ -1,5 +1,6 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'dart:async';
-import 'dart:math' as math;
+import '../../games/art/pixel_game_art.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -198,7 +199,15 @@ class _FlightState extends ConsumerState<PhonationFlightScreen>
         if (!didPop) unawaited(_exit());
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(en ? 'Gentle voice flight' : '목소리로 천천히 날기')),
+        appBar: AppBar(
+          title: Text(en ? 'Gentle voice flight' : '목소리로 천천히 날기'),
+          actions: [
+            ComfortButton(
+              situation: ComfortContext.game,
+              enabled: !_running && !_busy,
+            ),
+          ],
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
@@ -357,56 +366,33 @@ class _FlightPainter extends CustomPainter {
   final bool active;
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.clipRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20)),
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(20)),
-      Paint()..color = const Color(0xff102c3f),
-    );
-    // Broad decorative hoops, deliberately no collision detection or score.
+    canvas.clipRect(Offset.zero & size);
+    PixelGameArt.scenery(canvas, size, scroll: distance, night: true);
+    final paint = Paint()
+      ..isAntiAlias = false
+      ..color = const Color(0xff89d9c7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
     for (var i = 0; i < 4; i++) {
       final x =
-          (size.width + i * size.width / 3 - distance * 18) % (size.width + 90);
-      canvas.drawOval(
+          ((size.width + i * size.width / 3 - distance * 18) %
+                  (size.width + 90) /
+                  4)
+              .floor() *
+          4.0;
+      canvas.drawRect(
         Rect.fromCenter(
-          center: Offset(x, size.height * .5),
-          width: 34,
-          height: size.height * .78,
+          center: Offset(x, size.height * .45),
+          width: 36,
+          height: size.height * .65,
         ),
-        Paint()
-          ..color = const Color(0xff89d9c7).withValues(alpha: .4)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
+        paint,
       );
     }
-    final center = Offset(size.width * .26, size.height * height);
-    canvas.drawOval(
-      Rect.fromCenter(center: center, width: 46, height: 34),
-      Paint()..color = const Color(0xffffd27b),
-    );
-    final wing = Path()
-      ..moveTo(center.dx - 10, center.dy)
-      ..quadraticBezierTo(
-        center.dx - 30,
-        center.dy - 20 - (active ? math.sin(distance * 4) * 5 : 0),
-        center.dx - 18,
-        center.dy + 10,
-      )
-      ..close();
-    canvas.drawPath(wing, Paint()..color = const Color(0xffe5a23f));
-    canvas.drawCircle(
-      center + const Offset(13, -5),
-      3,
-      Paint()..color = const Color(0xff142332),
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(center.dx + 21, center.dy)
-        ..lineTo(center.dx + 32, center.dy + 4)
-        ..lineTo(center.dx + 21, center.dy + 8)
-        ..close(),
-      Paint()..color = const Color(0xfff3aa5a),
+    PixelGameArt.bird(
+      canvas,
+      Offset(size.width * .26, size.height * height),
+      flap: active && (distance * 4).floor().isEven,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 import 'package:speech_rehab/services/audio/audio_player_service.dart';
@@ -138,6 +139,10 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           actions: [
+            ComfortButton(
+              situation: ComfortContext.sentences,
+              enabled: !locked,
+            ),
             IconButton(
               icon: const Icon(Icons.library_music),
               tooltip: '녹음 보관함',

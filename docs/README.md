@@ -48,6 +48,7 @@ Markdown 문서 34종을 모두 국문·영문으로 준비했습니다. 이 목
 
 | 문서 | 한국어 | English |
 |---|---|---|
+| 2026-10-03 통합 변경 기록 | [한국어](release-notes-2026-10-03.md) | [English](release-notes-2026-10-03.en.md) |
 | 2026-09-13 앱 검토 | [한국어](dysarthria-app-review-2026-09-13.md) | [English](dysarthria-app-review-2026-09-13.en.md) |
 | 2026-09-15 개선 구현 | [한국어](dysarthria-implementation-2026-09-15.md) | [English](dysarthria-implementation-2026-09-15.en.md) |
 | 2026-09-26 제품 정체성 개편 | [한국어](implementation-2026-09-26/README.md) | [English](implementation-2026-09-26/README.en.md) |
@@ -61,7 +62,7 @@ Markdown 문서 34종을 모두 국문·영문으로 준비했습니다. 이 목
 |---|---|---|
 | 발음 연습 기획 검토 | [한국어](speech-practice-planning-review.md) | [English](speech-practice-planning-review.en.md) |
 | 구조화 연습·자음 분석 설계 | [한국어](structured-practice-modes-implementation-plan.md) | [English](structured-practice-modes-implementation-plan.en.md) |
-| 문장 반복·입모양 영상 설계 | [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) |
+| 내 문장·OCR·두 녹음·AI 피드백 및 영상 설계 | [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) |
 | Voice Tools 기능 분석·통합 계획 | [한국어](voice-tools-feature-analysis-and-integration-plan.md) | [English](voice-tools-feature-analysis-and-integration-plan.en.md) |
 | 구강·교호·호흡 훈련 구현 계획 | [한국어](tongue-exercise-implementation-plan.md) | [English](tongue-exercise-implementation-plan.en.md) |
 | 호흡·구강운동 원본 전사 | [한국어](breathing-and-oral-exercises.md) | [English](breathing-and-oral-exercises.en.md) |

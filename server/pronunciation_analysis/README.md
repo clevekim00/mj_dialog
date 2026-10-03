@@ -62,3 +62,30 @@ API:
 ## 훈련 관리 서버와의 구분
 
 이 발음 분석 서버에는 훈련 열기·닫기 관리 API가 구현되어 있지 않습니다. 앱에는 서명된 리소스 카탈로그의 개별 훈련 정책을 적용하는 구조가 있습니다. [관리 API 설계와 서버 기능별 구현 수준](../../docs/training-availability-and-server.md)에서 구현된 부분과 후속 개발 범위를 확인하세요.
+
+## 자유 문장 분석 서버 (2026-10-02)
+
+MFA 음소 정렬과 별도로 faster-whisper 문장 ASR을 제공한다. `score=null`, 녹음 길이, 저에너지 구간 수, 인식 글과 목표 글의 차이, 정해진 연습 안내를 반환한다. 진단/발음 정확도/긴장도 점수가 아니다.
+
+```bash
+cd server/pronunciation_analysis
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e '.[sentence]'
+# 운영자가 신뢰하는 faster-whisper 호환 모델을 미리 설치한다.
+# 예: hf download Systran/faster-whisper-tiny --local-dir ./models/whisper-tiny
+SENTENCE_WHISPER_MODEL="$PWD/models/whisper-tiny" SENTENCE_DATA_DIR="$PWD/sentence_jobs" uvicorn app.main:app --host 127.0.0.1 --port 8001 --workers 1 --no-access-log
+```
+
+앱의 개발 기본 주소는 `http://127.0.0.1:8001`이다. `--dart-define=SENTENCE_ANALYSIS_URL=https://...` 또는 문장 화면의 서버 설정으로 변경한다. 개발 loopback 예외는 릴리스 앱에는 적용하지 않는다. 실제 모바일 기기에서는 HTTPS 서버와 소유자별 단기 토큰이 필요하다. 비밀 서명키는 앱에 넣지 않는다. 토큰 발급/로그인 서비스는 아직 별도이며 입력한 토큰은 앱이 영속 저장하지 않는다.
+
+| 경로 | 구현 |
+|---|---|
+| GET `/v1/sentence-analysis/capabilities` | 준비 상태, 한국어/영어, 버전, 120초·20MB 한도, 900초 보관 정책 |
+| POST `/v1/sentence-analysis/jobs` | multipart `audio,recordingId,assessmentId,sentenceRevisionId,confirmedText,language,audioSha256,analysisVersion,consentPolicyVersion`; `Idempotency-Key` 헤더, 202 작업 ID |
+| GET `/v1/sentence-analysis/jobs/{id}` | 해당 소유자의 상태·결과만 반환 |
+| DELETE `/v1/sentence-analysis/jobs/{id}` | 반복 안전한 204, 파일/결과 삭제, 늦은 결과 차단 |
+
+`analysisVersion=sentence-v1`, `consentPolicyVersion=sentence-local-v1`, 언어 `ko-KR/en-US`, 오디오 mono 16 kHz PCM16 WAV이다. SQLite 영속 큐는 단일 프로세스에서 재시작 시 진행 중 작업을 재개한다. 음성은 종료/취소 후 삭제하고 작업은 15분에 만료한다. 서버 중단 시 청소는 다음 시작 때 재개한다. 이미 추론 메모리에 올라간 음성은 연산 종료까지 남을 수 있다. 만료 파일과 커밋 전 장애로 남은 오래된 파일도 정리한다. 학습/외부 AI 전송은 하지 않는다. 요청 원문/오디오를 애플리케이션 로그에 쓰지 않는다.
+
+테스트: `python -m unittest discover -s tests -v`. tiny 모델로 한국어/영어 합성 음성의 업로드·추론·결과·삭제 흐름을 확인했으며, 마비말장애 임상 정확도를 검증한 것은 아니다. 실서비스 모델 선택/검증, 관리 UI, 외부 인증 발급, 다중 프로세스 작업 큐는 미구현이다. [앱 설계 및 구현 범위](../../docs/sentence-repeat-and-mouth-video-plan.md).

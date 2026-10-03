@@ -61,7 +61,7 @@ These links open rendered pages. The archived guide preserves its original scree
 |---|---|---|
 | Speech-practice planning review | [한국어](speech-practice-planning-review.md) | [English](speech-practice-planning-review.en.md) |
 | Structured modes and consonant analysis plan | [한국어](structured-practice-modes-implementation-plan.md) | [English](structured-practice-modes-implementation-plan.en.md) |
-| Sentence repetition and mouth-video plan | [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) |
+| Custom sentences, OCR, paired recordings, AI feedback and video | [한국어](sentence-repeat-and-mouth-video-plan.md) | [English](sentence-repeat-and-mouth-video-plan.en.md) |
 | Voice Tools analysis and integration plan | [한국어](voice-tools-feature-analysis-and-integration-plan.md) | [English](voice-tools-feature-analysis-and-integration-plan.en.md) |
 | Oral, alternating, and breathing implementation plan | [한국어](tongue-exercise-implementation-plan.md) | [English](tongue-exercise-implementation-plan.en.md) |
 | Source transcription: breathing and oral exercises | [한국어](breathing-and-oral-exercises.md) | [English](breathing-and-oral-exercises.en.md) |
@@ -86,3 +86,7 @@ Update each Korean/English pair together. Preserve commands, paths, API identifi
 Generated dependency lists, build files, application bootstrap HTML, code/assets, and temporary graph extraction files are not prose documents and are outside this index.
 
 Run `python3 tools/docs/check_bilingual_docs.py` to check coverage, language navigation, index entries, and local links. This checks structure, not translation quality or clinical validity.
+
+## Latest changes
+
+[한국어](release-notes-2026-10-03.md) | [English](release-notes-2026-10-03.en.md)

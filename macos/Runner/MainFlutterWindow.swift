@@ -10,6 +10,7 @@ class MainFlutterWindow: NSWindow {
 
     RegisterGeneratedPlugins(registry: flutterViewController)
     MacAudioPlayerChannel.register(with: flutterViewController)
+    SentenceOCRChannel.register(messenger: flutterViewController.engine.binaryMessenger)
 
     super.awakeFromNib()
     title = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "SpeechBridge"

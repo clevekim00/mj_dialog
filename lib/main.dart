@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/microphone_access.dart';
 import 'package:speech_rehab/services/resources/resource_providers.dart';
 import 'package:speech_rehab/services/accessibility_settings_service.dart';
 import 'dart:math';
@@ -103,6 +104,7 @@ class _AppView extends ConsumerWidget {
     final language = ref.watch(appLanguageProvider);
     final textSize = ref.watch(textSizeProvider);
     return MaterialApp(
+      navigatorKey: MicrophoneAccess.navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(

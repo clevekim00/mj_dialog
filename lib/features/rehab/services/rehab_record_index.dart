@@ -1,3 +1,4 @@
+import '../../sentence_practice/sentence_repository.dart';
 import 'package:speech_rehab/features/consonant_training/model/consonant_training_models.dart';
 import 'package:speech_rehab/features/guided_training/model/guided_training_models.dart';
 import 'package:speech_rehab/features/voice_analysis/model/voice_analysis_models.dart';
@@ -46,9 +47,10 @@ class RehabRecord {
 }
 
 class RehabRecordIndex {
-  RehabRecordIndex({RehabSessionRepository? daily})
+  RehabRecordIndex({RehabSessionRepository? daily, this.sentences})
     : daily = daily ?? RehabSessionRepository();
   final RehabSessionRepository daily;
+  final SentenceRepository? sentences;
   Future<List<RehabRecord>> load() async {
     final results = await Future.wait<Object>([
       daily.load(),
@@ -116,6 +118,36 @@ class RehabRecordIndex {
           details: user.map((m) => '[${m.inputMethod}] ${m.text}').join('\n'),
         ),
       );
+    }
+    final sentenceStore = sentences;
+    if (sentenceStore != null) {
+      for (final sentence in sentenceStore.sentences()) {
+        for (final pair in sentenceStore.pairs(sentence['id'] as String)) {
+          final takes = sentenceStore.recordings(pair['id'] as String);
+          if (takes.isEmpty) continue;
+          final date = DateTime.parse(pair['created'] as String);
+          records.add(
+            RehabRecord(
+              id: 'sentencePair:${pair['id']}',
+              kind: 'sentencePair',
+              title: sentence['text'] as String,
+              date: date,
+              dateKey: rehabDate(date),
+              status: takes.length == 2 ? 'completed' : 'partial',
+              recordings: [
+                for (final take in takes)
+                  IndexedRecording(
+                    id: take['id'] as String,
+                    text: sentence['text'] as String,
+                    path: sentenceStore.audioPath(take),
+                    date: date,
+                    language: sentence['language'] as String,
+                  ),
+              ],
+            ),
+          );
+        }
+      }
     }
     return uniqueRecords(records);
   }

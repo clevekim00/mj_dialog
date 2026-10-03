@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
 import 'dart:io';
@@ -409,6 +410,12 @@ class _ConsonantTrainingScreenState extends State<ConsonantTrainingScreen>
           title: Text(
             '${widget.target.grapheme} ${widget.target.position.label} 연습',
           ),
+          actions: [
+            ComfortButton(
+              situation: ComfortContext.articulation,
+              enabled: !_recording && !_saving,
+            ),
+          ],
         ),
         bottomNavigationBar: SafeArea(
           top: false,

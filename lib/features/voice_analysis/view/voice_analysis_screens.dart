@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'dart:async';
 import 'dart:io';
 import '../../rehab/view/rehab_ui.dart';
@@ -13,6 +14,22 @@ import 'package:uuid/uuid.dart';
 
 class VoiceAnalysisMenuScreen extends StatelessWidget {
   const VoiceAnalysisMenuScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('발성 훈련 · 음성 도구')),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: VoiceAnalysisTools(),
+      ),
+    );
+  }
+}
+
+/// Shared tool list for the standalone menu and inline training disclosure.
+class VoiceAnalysisTools extends StatelessWidget {
+  const VoiceAnalysisTools({super.key});
 
   static const _items = <_VoiceMenuItem>[
     _VoiceMenuItem(
@@ -79,29 +96,26 @@ class VoiceAnalysisMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('발성 훈련 · 음성 도구')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const _SafetyCard(),
-          const SizedBox(height: 18),
-          for (final item in _items)
-            Card(
-              child: ListTile(
-                minTileHeight: 76,
-                leading: Icon(item.icon, color: Colors.lightBlueAccent),
-                title: Text(
-                  item.title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                subtitle: Text(item.subtitle),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.pushNamed(context, item.route),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SafetyCard(),
+        const SizedBox(height: 18),
+        for (final item in _items)
+          Card(
+            child: ListTile(
+              minTileHeight: 76,
+              leading: Icon(item.icon, color: Colors.lightBlueAccent),
+              title: Text(
+                item.title,
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
+              subtitle: Text(item.subtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.pushNamed(context, item.route),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
@@ -447,7 +461,15 @@ class _VoiceLiveAnalysisScreenState extends State<VoiceLiveAnalysisScreen> {
     final frame = _controller.latestFrame;
     final listening = _controller.status == VoiceAnalysisStatus.listening;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          ComfortButton(
+            situation: ComfortContext.voice,
+            enabled: !listening && !_saving,
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

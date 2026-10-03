@@ -112,3 +112,7 @@ Evidence: `server/pronunciation_analysis/app/main.py`, `app/security.py`, `lib/s
 ## Validation
 
 Tests cover all-open defaults, legacy catalogs, individual overrides, malformed policy rejection, offline cached closures, direct-entry blocking, routine skipping and existing player progress/persistence. Production management-server E2E testing requires a future implementation and deployment.
+
+## Sentence analysis server added (2026-10-02)
+
+The separate `/v1/sentence-analysis` API implements readiness/languages, upload/durable queue/polling/cancellation/deletion, local Korean/English ASR, observations/fixed guidance, owner authentication, idempotency and 15-minute expiry. This is separate from per-training availability administration; an admin UI and production login/token issuance still need implementation. [Setup and limitations](../server/pronunciation_analysis/README.en.md#free-sentence-analysis-server-2026-10-02).

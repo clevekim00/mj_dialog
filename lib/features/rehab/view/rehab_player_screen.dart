@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -287,7 +288,15 @@ class _RehabPlayerScreenState extends ConsumerState<RehabPlayerScreen>
         if (!didPop) unawaited(_exit());
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(_terminal ? l.rehabSaved : _session.title)),
+        appBar: AppBar(
+          title: Text(_terminal ? l.rehabSaved : _session.title),
+          actions: [
+            ComfortButton(
+              situation: ComfortContext.everyday,
+              enabled: !_recording && !_locked,
+            ),
+          ],
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),

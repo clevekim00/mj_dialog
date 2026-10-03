@@ -1,3 +1,8 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'package:speech_rehab/services/audio_analysis/voice_signal_analyzer.dart';
+import 'package:speech_rehab/features/rehab/mpt/mpt_voice_timer.dart';
+import 'package:speech_rehab/features/voice_analysis/model/voice_analysis_models.dart';
 import 'package:speech_rehab/features/exercise/view/exercise_menu_screen.dart';
 import 'package:speech_rehab/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -98,6 +103,7 @@ void main() {
     WidgetTester tester,
     MptCapture capture, {
     RetryRepo? repo,
+    bool automatic = false,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -109,10 +115,144 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    if (!automatic) await tap(tester, '발성 자동 감지');
     await tap(tester, '2 / 5');
-    await tap(tester, '충분히 쉬었고, 조용한 곳에서 측정을 도와줄 사람이 준비됐어요.');
+    await tap(
+      tester,
+      automatic
+          ? '충분히 쉬었고, 조용한 곳에서 녹음을 확인할 준비가 됐어요.'
+          : '충분히 쉬었고, 조용한 곳에서 측정을 도와줄 사람이 준비됐어요.',
+    );
     await tap(tester, '녹음 준비');
   }
+
+  VoiceAnalysisFrame frame(int ms, {bool voice = false, double? level}) =>
+      VoiceAnalysisFrame(
+        timestamp: Duration(milliseconds: ms),
+        sampleDuration: const Duration(milliseconds: 64),
+        waveform: const [],
+        spectrum: const [],
+        dbfs: level ?? (voice ? -24 : -65),
+        peak: voice ? .2 : .001,
+        noiseFloorDbfs: -65,
+        clipping: false,
+        pitchHz: voice ? 180 : null,
+        pitchConfidence: voice ? .9 : 0,
+      );
+
+  test(
+    'automatic timing excludes onset confirmation and trailing silence delays',
+    () {
+      final timer = MptVoiceTimer();
+      for (var ms = 64; ms <= 1536; ms += 64) {
+        timer.add(frame(ms));
+      }
+      expect(timer.phase, MptVoicePhase.waiting);
+      // A single short tap cannot start the timer.
+      timer.add(frame(1600, voice: true));
+      timer.add(frame(1664));
+      expect(timer.phase, MptVoicePhase.waiting);
+      for (var ms = 1728; ms <= 3648; ms += 64) {
+        timer.add(frame(ms, voice: true));
+      }
+      expect(timer.onsetMs, 1664);
+      expect(timer.durationMs, 1984);
+      for (var ms = 3712; ms <= 4288; ms += 64) {
+        timer.add(frame(ms));
+      }
+      expect(timer.phase, MptVoicePhase.ended);
+      expect(timer.durationMs, 1984);
+      timer.add(frame(4352, voice: true));
+      expect(timer.endMs, 3648);
+    },
+  );
+  test(
+    'short gaps are flagged, silence times out, and noisy calibration fails',
+    () {
+      final timer = MptVoiceTimer();
+      for (var ms = 64; ms <= 1536; ms += 64) {
+        timer.add(frame(ms));
+      }
+      for (var ms = 1600; ms <= 2176; ms += 64) {
+        timer.add(frame(ms, voice: true));
+      }
+      for (var ms = 2240; ms <= 2432; ms += 64) {
+        timer.add(frame(ms));
+      }
+      timer.add(frame(2496, voice: true));
+      expect(timer.hadGap, isTrue);
+      expect(timer.phase, MptVoicePhase.phonating);
+      final silent = MptVoiceTimer();
+      for (var ms = 64; ms <= 21632; ms += 64) {
+        silent.add(frame(ms));
+      }
+      expect(silent.failure, 'no_voice');
+      final noisy = MptVoiceTimer();
+      for (var ms = 64; ms <= 1536; ms += 64) {
+        noisy.add(frame(ms, level: -22));
+      }
+      expect(noisy.failure, 'noisy_environment');
+    },
+  );
+  testWidgets(
+    'automatic onset and offset save an unconfirmed PCM-timed trial without taps',
+    (tester) async {
+      final capture = MptCapture();
+      await setup(tester, capture, automatic: true);
+      expect(find.text('소리 시작 · 타이머 시작'), findsNothing);
+      for (var ms = 64; ms <= 1536; ms += 64) {
+        capture.ms = ms;
+        capture.frame.value = frame(ms);
+      }
+      for (var ms = 1600; ms <= 3456; ms += 64) {
+        capture.ms = ms;
+        capture.frame.value = frame(ms, voice: true);
+      }
+      await tester.pump();
+      expect(find.text('1.9 초'), findsOneWidget);
+      for (var ms = 3520; ms <= 4096; ms += 64) {
+        capture.ms = ms;
+        capture.frame.value = frame(ms);
+      }
+      await tester.pumpAndSettle();
+      final saved = (await RehabSessionRepository().load()).single;
+      final value = MptResult.trials(saved.feedback).single;
+      expect(capture.stops, 1);
+      expect(value.durationMs, 1920);
+      expect(value.onsetOffsetMs, 1536);
+      expect(value.endOffsetMs, 3456);
+      expect(value.accepted, isFalse);
+      expect(value.timingMethod, 'automatic-acoustic');
+      expect(saved.feedback['maximumMs'], isNull);
+      expect(saved.feedback['version'], MptResult.automaticProtocol);
+      expect(MptResult.summary(saved.feedback, false), contains('자동 감지 추정'));
+    },
+  );
+
+  test('real PCM analysis drives the automatic timer', () {
+    final timer = MptVoiceTimer();
+    const analyzer = VoiceSignalAnalyzer();
+    for (var n = 0; n < 64; n++) {
+      final bytes = ByteData(2048);
+      for (var sample = 0; sample < 1024; sample++) {
+        final voiced = n >= 24 && n < 54;
+        final value = voiced
+            ? (4000 * math.sin(2 * math.pi * 180 * (n * 1024 + sample) / 16000))
+                  .round()
+            : 0;
+        bytes.setInt16(sample * 2, value, Endian.little);
+      }
+      timer.add(
+        analyzer.analyzePcm16(
+          bytes.buffer.asUint8List(),
+          timestamp: Duration(milliseconds: (n + 1) * 64),
+          includeSpectrum: false,
+        ),
+      );
+    }
+    expect(timer.phase, MptVoicePhase.ended);
+    expect(timer.durationMs, 1920);
+  });
 
   Future<void> timed(WidgetTester tester, MptCapture capture) async {
     capture.ms = 500;

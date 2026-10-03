@@ -27,7 +27,10 @@ class _NoMicrophone extends SttService {
   @override
   Future<void> stopListening() async => stops++;
   @override
-  Future<bool> startListening({required SttResultCallback onResult}) async {
+  Future<bool> startListening({
+    required SttResultCallback onResult,
+    List<String> contextualStrings = const [],
+  }) async {
     starts++;
     return false;
   }

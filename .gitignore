@@ -47,3 +47,8 @@ assets/gemma-2b-it-gpu-int4.bin
 
 # Generated bilingual document website
 /docs/site/
+
+# Temporary private sentence analysis data
+sentence_jobs/
+
+*.egg-info/

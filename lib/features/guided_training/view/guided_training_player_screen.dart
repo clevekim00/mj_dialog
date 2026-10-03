@@ -1,3 +1,4 @@
+import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:speech_rehab/services/training/training_availability.dart';
 import 'package:speech_rehab/services/training/training_availability_provider.dart';
 import 'dart:async';
@@ -457,7 +458,9 @@ class _GuidedTrainingPlayerScreenState
       await _advance(skipped: true, autoPlay: autoPlay);
       return;
     }
-    setState(() => _phase = autoPlay ? _PlayerPhase.playing : _PlayerPhase.paused);
+    setState(
+      () => _phase = autoPlay ? _PlayerPhase.playing : _PlayerPhase.paused,
+    );
     await _persist(GuidedTrainingSessionStatus.paused);
     if (!mounted) return;
     await _prepareVideo(autoPlay: autoPlay);
@@ -511,6 +514,12 @@ class _GuidedTrainingPlayerScreenState
         backgroundColor: const Color(0xFF0C1319),
         appBar: AppBar(
           title: Text(widget.routineName),
+          actions: [
+            ComfortButton(
+              situation: ComfortContext.oral,
+              enabled: _phase != _PlayerPhase.playing,
+            ),
+          ],
           backgroundColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.close),

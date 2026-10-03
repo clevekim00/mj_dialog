@@ -1,3 +1,4 @@
+import 'package:speech_rehab/services/microphone_access.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:io';
@@ -70,7 +71,9 @@ class AudioRecorderService {
     _waveformClock.stop();
   }
 
-  Future<bool> hasPermission() async {
+  Future<bool> hasPermission() => MicrophoneAccess.ensure(_requestPermission);
+
+  Future<bool> _requestPermission() async {
     if (_useIosNative) {
       return await _iosRecorderChannel.invokeMethod<bool>('hasPermission') ??
           false;

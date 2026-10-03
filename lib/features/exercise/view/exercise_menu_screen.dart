@@ -1,3 +1,6 @@
+import '../../sentence_practice/sentence_screens.dart';
+import '../../rehab/comfort/comfort_training.dart';
+import '../../voice_analysis/view/voice_analysis_screens.dart';
 import '../../rehab/mpt/mpt_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,6 +66,19 @@ class ExerciseMenuScreen extends StatelessWidget {
           icon: Icons.pause_circle_outline,
           onTap: () => open('pacing'),
         ),
+        RehabCard(
+          title: rehabEnglish(context) ? 'Ease speaking tension' : '긴장 낮추기',
+          subtitle: rehabEnglish(context)
+              ? 'Optional preparation for each practice situation'
+              : '훈련 상황에 맞는 편안한 준비와 쉬는 방법',
+          icon: Icons.spa_outlined,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => const ComfortTrainingScreen(),
+            ),
+          ),
+        ),
         const SizedBox(height: 20),
         Text(l.rehabSafety),
       ],
@@ -111,6 +127,16 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
     };
     return RehabPage(
       title: title,
+      actions: [
+        ComfortButton(
+          situation: switch (section) {
+            'articulation' => ComfortContext.articulation,
+            'voice' => ComfortContext.voice,
+            'everyday' => ComfortContext.everyday,
+            _ => ComfortContext.sentences,
+          },
+        ),
+      ],
       children: [
         if (_opening) const LinearProgressIndicator(),
         if (section == 'articulation') ...[
@@ -128,6 +154,19 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
           ),
         ],
         if (section == 'sentences') ...[
+          RehabCard(
+            title: en ? 'Read my sentence twice' : '내 문장 두 번 읽기',
+            subtitle: en
+                ? 'Type or import an image · two recordings · AI feedback'
+                : '직접 입력·사진의 글 · 두 녹음 비교 · AI 피드백',
+            icon: Icons.compare,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const SentenceLibraryScreen(),
+              ),
+            ),
+          ),
           RehabCard(
             title: l.rehabShort,
             subtitle: l.rehabSentencesHint,
@@ -182,8 +221,8 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
           RehabCard(
             title: en ? 'Maximum phonation time (MPT)' : '최대발성시간 (MPT)',
             subtitle: en
-                ? 'Observer timer · 3 single-breath trials'
-                : '관찰자 타이머 · 한 번의 숨으로 3회 측정',
+                ? 'Automatic voice timer · review 3 single-breath trials'
+                : '발성 자동 타이머 · 한 호흡 3회 측정 후 확인',
             icon: Icons.timer_outlined,
             onTap: () => Navigator.push(
               context,
@@ -205,14 +244,7 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
           const SizedBox(height: 20),
           ExpansionTile(
             title: Text(l.rehabTools),
-            children: [
-              ListTile(
-                title: Text(l.rehabTools),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () =>
-                    Navigator.pushNamed(context, '/voice_analysis_menu'),
-              ),
-            ],
+            children: const [VoiceAnalysisTools()],
           ),
         ],
       ],

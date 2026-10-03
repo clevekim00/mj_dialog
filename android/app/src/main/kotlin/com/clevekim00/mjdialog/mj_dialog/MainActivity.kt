@@ -12,6 +12,22 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "speech_rehab/sentence_ocr")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "recognize") { result.notImplemented(); return@setMethodCallHandler }
+                val path = call.argument<String>("path")
+                if (path == null) { result.error("invalid_args", "Missing image.", null); return@setMethodCallHandler }
+                val recognizer = if (call.argument<String>("language") == "ko-KR")
+                    com.google.mlkit.vision.text.TextRecognition.getClient(com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions.Builder().build())
+                else com.google.mlkit.vision.text.TextRecognition.getClient(com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS)
+                try {
+                    val image = com.google.mlkit.vision.common.InputImage.fromFilePath(this, android.net.Uri.fromFile(java.io.File(path)))
+                    recognizer.process(image).addOnSuccessListener { result.success(it.text) }
+                        .addOnFailureListener { result.error("ocr_failed", "Could not read image.", null) }
+                        .addOnCompleteListener { recognizer.close() }
+                } catch (e: Exception) { recognizer.close(); result.error("ocr_failed", "Could not open image.", null) }
+            }
+
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:speech_rehab/features/chat/view/widgets/animated_orb.dart';
+import 'package:speech_rehab/features/games/art/pixel_game_art.dart';
 import 'package:speech_rehab/features/practice/model/practice_mode.dart';
 import 'package:speech_rehab/features/practice/provider/practice_provider.dart';
 import 'package:speech_rehab/features/practice/view/word_game_screen.dart';
@@ -65,7 +65,10 @@ class _FailingAudioRecorderService extends _FakeAudioRecorderService {
 
 class _FakeSttService extends SttService {
   @override
-  Future<bool> startListening({required SttResultCallback onResult}) async {
+  Future<bool> startListening({
+    required SttResultCallback onResult,
+    List<String> contextualStrings = const [],
+  }) async {
     return false;
   }
 
@@ -79,8 +82,28 @@ class _FakeTranscriptSttService extends SttService {
   final String transcript;
 
   @override
-  Future<bool> startListening({required SttResultCallback onResult}) async {
+  Future<bool> startListening({
+    required SttResultCallback onResult,
+    List<String> contextualStrings = const [],
+  }) async {
     await onResult(transcript, true);
+    return true;
+  }
+
+  @override
+  Future<void> stopListening() async {}
+}
+
+class _ContinuousStt extends SttService {
+  int starts = 0;
+  SttResultCallback? callback;
+  @override
+  Future<bool> startListening({
+    required SttResultCallback onResult,
+    List<String> contextualStrings = const [],
+  }) async {
+    starts++;
+    callback = onResult;
     return true;
   }
 
@@ -143,6 +166,117 @@ class _TranscriptScoringAiService extends AiService {
 
 void main() {
   testWidgets(
+    'continuous listening judges once, resumes, and stays stopped after pause',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      tester.view.physicalSize = const Size(800, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final speech = _ContinuousStt();
+      final recorder = _FakeAudioRecorderService();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(recorder),
+            sttServiceProvider.overrideWithValue(speech),
+            aiServiceProvider.overrideWithValue(const _FakeAiService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: const MaterialApp(home: WordGameScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      await container
+          .read(practiceProvider.notifier)
+          .setMode(PracticeMode.wordGame);
+      await tester.pumpAndSettle();
+      final start = find.byKey(const ValueKey('word-game-start'));
+      await tester.scrollUntilVisible(start, 300);
+      await tester.tap(start);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(speech.starts, 1);
+      final previousCallback = speech.callback!;
+      final target = container.read(practiceProvider).targetText;
+      await speech.callback!(target, false);
+      await tester.pump(const Duration(seconds: 2));
+      expect(container.read(practiceProvider).state, PracticeState.recording);
+      await speech.callback!(target, true);
+      await tester.pump(const Duration(milliseconds: 600));
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 200));
+      }
+      expect(container.read(practiceProvider).history, hasLength(1));
+      expect(speech.starts, 2);
+      await previousCallback('late stale word', true);
+      expect(container.read(practiceProvider).spokenText, isEmpty);
+      await tester.tap(find.text('듣기 중지 · 잠시 쉬기'));
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 200));
+      }
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.paused,
+      );
+      expect(speech.starts, 2);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'continuous listening stops on silence instead of creating endless attempts',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      tester.view.physicalSize = const Size(800, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final speech = _ContinuousStt();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioRecorderServiceProvider.overrideWithValue(
+              _FakeAudioRecorderService(),
+            ),
+            sttServiceProvider.overrideWithValue(speech),
+            aiServiceProvider.overrideWithValue(const _FakeAiService()),
+            audioPlayerServiceProvider.overrideWithValue(
+              _FakeAudioPlayerService(),
+            ),
+          ],
+          child: const MaterialApp(home: WordGameScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WordGameScreen)),
+      );
+      await container
+          .read(practiceProvider.notifier)
+          .setMode(PracticeMode.wordGame);
+      await tester.pumpAndSettle();
+      final start = find.byKey(const ValueKey('word-game-start'));
+      await tester.scrollUntilVisible(start, 300);
+      await tester.tap(start);
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(seconds: 1));
+      }
+      expect(speech.starts, 1);
+      expect(
+        container.read(practiceProvider).wordGameStatus,
+        WordGameStatus.paused,
+      );
+      expect(container.read(practiceProvider).wordGameHits, 0);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     'recording blocks navigation; background stops audio and pauses game',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
@@ -164,7 +298,9 @@ void main() {
         ),
       );
       navigator.currentState!.push(
-        MaterialPageRoute<void>(builder: (_) => const WordGameScreen()),
+        MaterialPageRoute<void>(
+          builder: (_) => const WordGameScreen(continuousListening: false),
+        ),
       );
       await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(
@@ -234,7 +370,9 @@ void main() {
               _FakeAudioPlayerService(),
             ),
           ],
-          child: const MaterialApp(home: WordGameScreen()),
+          child: const MaterialApp(
+            home: WordGameScreen(continuousListening: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -283,7 +421,9 @@ void main() {
               _FakeAudioPlayerService(),
             ),
           ],
-          child: const MaterialApp(home: WordGameScreen()),
+          child: const MaterialApp(
+            home: WordGameScreen(continuousListening: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -307,7 +447,9 @@ void main() {
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       await tester.pumpWidget(
-        const ProviderScope(child: MaterialApp(home: WordGameScreen())),
+        const ProviderScope(
+          child: MaterialApp(home: WordGameScreen(continuousListening: false)),
+        ),
       );
       await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(
@@ -361,7 +503,9 @@ void main() {
               _FakeAudioPlayerService(),
             ),
           ],
-          child: const MaterialApp(home: WordGameScreen()),
+          child: const MaterialApp(
+            home: WordGameScreen(continuousListening: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -398,7 +542,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: WordGameScreen())),
+      const ProviderScope(
+        child: MaterialApp(home: WordGameScreen(continuousListening: false)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -441,7 +587,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -460,7 +608,7 @@ void main() {
       WordGameStatus.running,
     );
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -492,7 +640,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -507,7 +657,7 @@ void main() {
     await tester.pump();
 
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -544,7 +694,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -559,7 +711,7 @@ void main() {
     await tester.pump();
 
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -600,7 +752,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -615,7 +769,7 @@ void main() {
     await tester.pump();
 
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -653,7 +807,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -668,7 +824,7 @@ void main() {
     await tester.pump();
 
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -719,7 +875,9 @@ void main() {
             _FakeAudioPlayerService(),
           ),
         ],
-        child: const MaterialApp(home: WordGameScreen()),
+        child: const MaterialApp(
+          home: WordGameScreen(continuousListening: false),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -737,7 +895,7 @@ void main() {
     expect(initialWords, greaterThan(0));
 
     await tester.scrollUntilVisible(
-      find.byType(AnimatedOrb),
+      find.byType(PixelGameMascot),
       240,
       scrollable: find.byType(Scrollable),
     );
@@ -781,7 +939,9 @@ void main() {
               _FakeAudioPlayerService(),
             ),
           ],
-          child: const MaterialApp(home: WordGameScreen()),
+          child: const MaterialApp(
+            home: WordGameScreen(continuousListening: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -799,7 +959,7 @@ void main() {
       expect(initialWords, greaterThan(0));
 
       await tester.scrollUntilVisible(
-        find.byType(AnimatedOrb),
+        find.byType(PixelGameMascot),
         240,
         scrollable: find.byType(Scrollable),
       );
@@ -843,7 +1003,9 @@ void main() {
               _FakeAudioPlayerService(),
             ),
           ],
-          child: const MaterialApp(home: WordGameScreen()),
+          child: const MaterialApp(
+            home: WordGameScreen(continuousListening: false),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -858,7 +1020,7 @@ void main() {
       await tester.pump();
 
       await tester.scrollUntilVisible(
-        find.byType(AnimatedOrb),
+        find.byType(PixelGameMascot),
         240,
         scrollable: find.byType(Scrollable),
       );
@@ -900,7 +1062,9 @@ void main() {
     });
 
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: WordGameScreen())),
+      const ProviderScope(
+        child: MaterialApp(home: WordGameScreen(continuousListening: false)),
+      ),
     );
     await tester.pumpAndSettle();
 

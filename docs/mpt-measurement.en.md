@@ -4,43 +4,39 @@
 
 <!-- reader-link --> [Read with language tabs](https://clevekim00.github.io/mj_dialog/documents/docs/mpt-measurement.en.html)
 
-> Current navigation (2026-10-01): **Today → Training → Games → Records → Settings**. See [Games and current entry points](game-menu.en.md). Earlier plans and reviews below retain their dated context.
-
 ## Scope
 
-Open Training → Comfortable voice practice → **Maximum phonation time (MPT)**. This has its own screen and record category, separate from voice play. A helper or examiner presses buttons at actual voice onset and offset: **observer timing**. A person checks the breath and interval instead of relying on automatic detection that may miss weak or irregular voices.
+Open **Training → Comfortable voice practice → Maximum phonation time (MPT)**. Automatic voice timing is the default. Prepare once; no onset/offset button presses are needed during phonation. Disable automatic timing to use the existing observer timer. Timing mode stays fixed within a set. Records remain separate from voice games.
 
-This implements a way to record an MPT procedure, not a clinically validated automated test or diagnostic device. It does not replace professional assessment or provide normal/abnormal grading, recovery scores or sex-specific normal ranges. A professional should interpret clinical results.
+Automatic timing estimates acoustic boundaries. It does not verify the vowel “ah”, a single breath, or coughs. Weak/irregular voices and background noise can affect boundaries. This is not a clinically validated test or diagnostic tool and gives no normal/abnormal grade.
 
 ## Instructions
 
-1. Sit comfortably in a quiet place. Keep the device, microphone distance and environment consistent. A helper or examiner gives instructions and operates the timer.
-2. Choose fatigue, confirm sufficient rest and that a helper is ready. Postpone if tired.
-3. Select **Prepare recording**. Preparation time is not itself MPT.
-4. Take a full breath and sustain “ah” on one exhalation as long as comfortably possible at your usual pitch and loudness. Do not strain.
-5. The helper selects **Voice onset · Start timer** when sound actually begins, then **Voice offset · Stop timer** when it ends. Do not include waiting or inhalation.
-6. Review the recording and waveform. Select **Confirm valid trial** only after checking one breath, no cough or interference, and correct start/end timing. Exclude another breath, mistimed buttons or poor recordings.
-7. Rest sufficiently, then repeat until 3 valid trials are confirmed. The **longest of the three** is the final MPT, not their sum or average.
-8. In Records → **MPT measurement**, review each attempt, inclusion/exclusion, the final result and recordings. Leaving an unreviewed attempt preserves it but does not count it. Incomplete sets cannot be resumed; start a new set if needed.
+1. Rest in a quiet place and keep the device, microphone distance and environment consistent. Select fatigue and confirm readiness.
+2. Select **Prepare recording** once. Stay quiet for about 1.5 seconds while background sound is checked.
+3. After **Ready**, take a full breath and sustain a comfortable “ah” on one exhalation. Do not strain.
+4. A large fixed timer starts when voice is detected and stops automatically after it ends. Detection confirmation delays are not added to the measured interval.
+5. **Listen to recording**. Confirm only a single-breath trial with no interference and correct boundaries. Exclude extra breaths, coughs or incorrect detection. Check any brief-gap warning carefully.
+6. Rest, then repeat preparation, phonation and review. The longest of three confirmed valid attempts is the result, not the sum or average.
+7. **Records → MPT measurement** shows automatic estimate/observer timing, duration, inclusion/exclusion and audio. Incomplete sets cannot resume; start a new set.
 
-Stop immediately for pain, dizziness or breathlessness. Do not use this as an endurance competition or daily repetition target. Discuss suitability and frequency with a clinician.
+If automatic detection is difficult, disable **Automatic voice timing** for a new set. A helper can press the existing onset and offset buttons. Stop for discomfort, dizziness or breathlessness. Automation removes timing taps during phonation; preparation and recording review still require confirmation.
 
-## Timing and failure handling
+## Timing and failures
 
-- A monotonic `Stopwatch` measures between button presses, displayed to 0.1 seconds. Display precision is not accuracy: observer reaction and button timing affect the result.
-- Uses the existing single PCM input (16 kHz, 16-bit mono). Full audio including preparation, waveform and recording offsets at button presses are preserved. The waveform shows input level, not pronunciation accuracy.
-- Automatic VAD, pitch detection and accumulated game detection time do not calculate MPT. Human confirmation does not automatically verify voice content or breaths.
-- Backgrounding the app or losing microphone input excludes that attempt. Zero duration or no recorded interval between onset/offset also prevents confirmation.
-- Reaching the existing 120-second recording cap stores an **excluded attempt**, not a 120-second MPT result. This is a memory limit, not a clinical protocol time limit.
-- Each attempt is saved unreviewed first, then updated on confirmation. `maximumMs` remains null until 3 valid trials are accepted. Invalid attempts remain in the audit trail and can be retried.
-- Audio/record storage failure blocks new attempts and offers retry. The same attempt ID and original stop time are preserved. Retry before closing the app when a save error remains. Recovery of unsaved in-memory data after force quit is not guaranteed.
+- One PCM input (16 kHz, 16-bit mono) supplies both recording and analysis. Boundaries use actual audio timestamps in roughly 64 ms frames. A 0.1-second display does not imply that accuracy.
+- Calibration lasts 1536 ms. The onset threshold is 10 dB above background, clamped to -55 through -20 dBFS. A voiced signal lasting 192 ms confirms onset, backdated to its first frame. These are initial product settings, not clinical standards.
+- Offset is confirmed after 640 ms without detected voice. Duration ends at the last voiced frame, excluding trailing silence. Brief gaps may remain inside the interval; detected gaps are stored for review.
+- Voice/loud noise during calibration, or no detected onset within 20 seconds after calibration, ends an excluded attempt. Check the environment or use manual timing rather than forcing louder voice.
+- Leaving the app, missing input, input errors or the 120-second recording cap excludes the attempt. This cap is a memory limit, not a clinical MPT cutoff.
+- Attempts save as unreviewed. They never count toward a final result without review. Save failures block new attempts and retry with the same attempt and original boundaries.
 
 ## Storage and validation
 
-Uses the existing `RehabSession` store with `feedback.kind = mpt`, `version = mpt-observer-3-trials-v1`, and `timingMethod = observer-stopwatch`. Attempts store ID, timer duration, recording onset/end offsets, acceptance and exclusion reason. `maximumMs` is calculated only for exactly 3 confirmed valid attempts. Incomplete sets are `partial`; finished sets are `completed`. These records do not link to ordinary sentence-practice resume/comparison. Existing recording playback, sharing and deletion remain available. MPT attempts are excluded from daily practice totals.
+`RehabSession.feedback.kind = mpt`. Automatic timing uses `version = mpt-auto-reviewed-3-trials-v1`, `timingMethod = automatic-acoustic` and `detectorVersion = adaptive-voice-v1`, with detector settings. Manual timing retains `mpt-observer-3-trials-v1` / `observer-stopwatch`. Each trial preserves duration, recording offsets, method, gap flag, acceptance and exclusion reason. Legacy records default to observer timing. `maximumMs` stays null until three valid attempts are confirmed. MPT remains separate from ordinary practice resume, pronunciation comparisons and daily practice totals.
 
-`test/mpt_test.dart` covers three-trial maximum, incomplete sets, interruption, input failure, save retry, denied microphone permission and record separation. These tests are not clinical validation. Before release, verify real-device recording, audio latency, background interruption and error against expert manual timing.
+Tests cover automatic boundaries, trailing-silence exclusion, short-sound rejection, gaps, silence, noisy calibration, manual timing, save retry and permission errors. Real-device and clinical comparison against expert timing, including weak voices and noisy environments, remains necessary.
 
-## Source
+## Sources
 
-The [PhenX adult MPT protocol](https://s3.amazonaws.com/phenx-portal/public/phenx-content/consensus/speech_hearing/14_Voice_Impairments_MPT.pdf) describes a sustained /a/ on one breath at comfortable pitch and loudness, taking the longest of three attempts. This implementation follows those administration principles. Recording review, failure handling, the 120-second memory cap and app UI are product decisions. The source's normal ranges are not used for app grading.
+[ASHA adult dysarthria assessment](https://www.asha.org/practice-portal/clinical-topics/dysarthria-in-adults/) includes sustained vowel prolongation. The [PhenX adult MPT protocol](https://s3.amazonaws.com/phenx-portal/public/phenx-content/consensus/speech_hearing/14_Voice_Impairments_MPT.pdf) informs the single-breath vowel and longest-of-three principles. Automatic thresholds, delays and UI are product decisions; these sources do not validate this detector.

@@ -97,7 +97,10 @@ class SttService {
     return _sttEnabled;
   }
 
-  Future<bool> startListening({required SttResultCallback onResult}) async {
+  Future<bool> startListening({
+    required SttResultCallback onResult,
+    List<String> contextualStrings = const [],
+  }) async {
     debugPrint(
       '[STT] start requested: enabled=$_sttEnabled '
       'isListening=${_speechToText.isListening}',
@@ -148,6 +151,7 @@ class SttService {
         _iosListening =
             await _iosSpeechChannel.invokeMethod<bool>('startListening', {
               'language': languageTag,
+              'contextualStrings': contextualStrings,
             }) ??
             false;
         debugPrint('[STT] iOS listen started: $_iosListening');
