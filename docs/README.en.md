@@ -36,6 +36,8 @@ These links open rendered pages. The archived guide preserves its original scree
 
 | Document | 한국어 | English |
 |---|---|---|
+| Architecture plan without an owned backend | [한국어](server-free-architecture-plan.md) | [English](server-free-architecture-plan.en.md) |
+| Open Chat feedback management blueprint | [한국어](../blueprint-kakao-feedback-management.md) | [English](../blueprint-kakao-feedback-management.en.md) |
 | Daily rehabilitation and product identity blueprint | [한국어](../blueprint-acquired-dysarthria-daily-rehab.md) | [English](../blueprint-acquired-dysarthria-daily-rehab.en.md) |
 | English launch and multilingual resource specification | [한국어](../spec-english-version-launch.md) | [English](../spec-english-version-launch.en.md) |
 | Adaptive navigation and screen architecture | [한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) |

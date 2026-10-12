@@ -9,6 +9,40 @@ import UIKit
 
 @objc(SafeFlutterViewController)
 final class SafeFlutterViewController: FlutterViewController {
+  private var windowLayoutChannel: FlutterMethodChannel?
+  private var lastWindowTopInset: CGFloat = -1
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    let channel = FlutterMethodChannel(
+      name: "speech_rehab/window_layout", binaryMessenger: binaryMessenger)
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "getTopInset" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      result(Double(self?.windowTopInset ?? 0))
+    }
+    windowLayoutChannel = channel
+  }
+
+  private var windowTopInset: CGFloat {
+    guard #available(iOS 26.0, *), traitCollection.userInterfaceIdiom == .pad else {
+      return 0
+    }
+    // Ordinary safeAreaInsets do not avoid iPad window controls. Use the
+    // system's vertically adapted region, without changing UIKit's own insets.
+    return view.edgeInsets(for: .safeArea(cornerAdaptation: .vertical)).top
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    let top = windowTopInset
+    guard abs(top - lastWindowTopInset) > 0.5 else { return }
+    lastWindowTopInset = top
+    windowLayoutChannel?.invokeMethod("topInsetChanged", arguments: Double(top))
+  }
+
   @objc func createTouchRateCorrectionVSyncClientIfNeeded() {
     // Flutter 3.38.5 can crash here on iPadOS 26.5 when creating the
     // high-refresh-rate touch correction VSync client before the platform

@@ -36,6 +36,8 @@ Markdown 문서 34종을 모두 국문·영문으로 준비했습니다. 이 목
 
 | 문서 | 한국어 | English |
 |---|---|---|
+| 자체 서버 없는 아키텍처 구현 계획 | [한국어](server-free-architecture-plan.md) | [English](server-free-architecture-plan.en.md) |
+| 오픈채팅 피드백 관리 기획·설계 | [한국어](../blueprint-kakao-feedback-management.md) | [English](../blueprint-kakao-feedback-management.en.md) |
 | 일상 재활·제품 정체성 통합 설계 | [한국어](../blueprint-acquired-dysarthria-daily-rehab.md) | [English](../blueprint-acquired-dysarthria-daily-rehab.en.md) |
 | 영어판 출시·다국어 리소스 설계 | [한국어](../spec-english-version-launch.md) | [English](../spec-english-version-launch.en.md) |
 | 적응형 메뉴와 화면 구조 | [한국어](adaptive-ui-menu-architecture.md) | [English](adaptive-ui-menu-architecture.en.md) |

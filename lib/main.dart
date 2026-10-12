@@ -19,6 +19,7 @@ import 'package:speech_rehab/features/guided_training/view/guided_training_setti
 import 'package:speech_rehab/features/guided_training/view/routine_builder_screen.dart';
 import 'package:speech_rehab/features/onboarding/view/rehab_onboarding_screen.dart';
 import 'package:speech_rehab/features/navigation/view/adaptive_app_shell.dart';
+import 'package:speech_rehab/features/navigation/view/window_safe_area.dart';
 import 'package:speech_rehab/features/practice/view/practice_screen.dart';
 import 'package:speech_rehab/features/practice/view/practice_mode_selection_screen.dart';
 import 'package:speech_rehab/features/practice/view/word_game_screen.dart';
@@ -112,7 +113,7 @@ class _AppView extends ConsumerWidget {
             MediaQuery.textScalerOf(context).scale(1) * textSize,
           ),
         ),
-        child: child ?? const SizedBox.shrink(),
+        child: WindowSafeArea(child: child ?? const SizedBox.shrink()),
       ),
       locale: language.resolvedLocale,
       supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
