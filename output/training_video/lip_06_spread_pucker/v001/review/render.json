@@ -1,0 +1,92 @@
+{
+  "id": "lip_06_spread_pucker",
+  "title": "입술 벌렸다 모으기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9994163034265312,
+          0.00026123064849841446,
+          0.36987416704096693
+        ],
+        [
+          -0.00026123064849841446,
+          0.9994163034265312,
+          0.9296826864637122
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9993306622926276,
+          -2.7334111711110366e-06,
+          0.4936119493851917
+        ],
+        [
+          2.7334111711110366e-06,
+          0.9993306622926276,
+          0.7769697620142466
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "c7ea9c9a854bc7fe986f1755ef42c665090487e456c0caf50b178fdade1c2b87",
+  "file_bytes": 223386,
+  "atlas_sha256": "e1a8b21816551f47835b243ba277cacbedf5892945fc14cce949388097fa3ed5",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

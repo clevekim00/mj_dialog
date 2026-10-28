@@ -1,0 +1,100 @@
+{
+  "id": "tongue_10_molars",
+  "title": "양쪽 어금니 대기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "frontal_cutaway",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0000868824478826,
+          -8.219282015995205e-05,
+          -0.01601948766229136
+        ],
+        [
+          8.219282015995205e-05,
+          1.0000868824478826,
+          0.4383645294088227
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0000127015448772,
+          -5.580274836494219e-06,
+          0.0004840126777695058
+        ],
+        [
+          5.580274836494219e-06,
+          1.0000127015448772,
+          0.3848704307793714
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "2bc3bdd2cdf802373313d478b07fec07c92f95b69640b8cb360682ae56a64890",
+  "file_bytes": 953510,
+  "atlas_sha256": "635cf691c903cf7a081fcadee9b7a3c2db2f8a38b501d71a44fbb865c7a62ade",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

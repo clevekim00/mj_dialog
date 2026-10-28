@@ -26,7 +26,7 @@ CTC 실험 백엔드는 검증되지 않은 채점을 방지하기 위해 비활
 
 API:
 
-- `POST /v1/analysis/jobs`: audio, text, language, target_phone, position, target_occurrence(optional), content_version, baseline_score(optional)
+- `POST /v1/analysis/jobs`: audio, text, language, target_phone, position, target_occurrence(optional), all_occurrences(optional, default false), content_version, baseline_score(optional)
 - `GET /v1/analysis/jobs/{job_id}`
 - `DELETE /v1/analysis/jobs/{job_id}`
 - `GET /health`, `GET /ready`
@@ -89,3 +89,8 @@ SENTENCE_WHISPER_MODEL="$PWD/models/whisper-tiny" SENTENCE_DATA_DIR="$PWD/senten
 `analysisVersion=sentence-v1`, `consentPolicyVersion=sentence-local-v1`, 언어 `ko-KR/en-US`, 오디오 mono 16 kHz PCM16 WAV이다. SQLite 영속 큐는 단일 프로세스에서 재시작 시 진행 중 작업을 재개한다. 음성은 종료/취소 후 삭제하고 작업은 15분에 만료한다. 서버 중단 시 청소는 다음 시작 때 재개한다. 이미 추론 메모리에 올라간 음성은 연산 종료까지 남을 수 있다. 만료 파일과 커밋 전 장애로 남은 오래된 파일도 정리한다. 학습/외부 AI 전송은 하지 않는다. 요청 원문/오디오를 애플리케이션 로그에 쓰지 않는다.
 
 테스트: `python -m unittest discover -s tests -v`. tiny 모델로 한국어/영어 합성 음성의 업로드·추론·결과·삭제 흐름을 확인했으며, 마비말장애 임상 정확도를 검증한 것은 아니다. 실서비스 모델 선택/검증, 관리 UI, 외부 인증 발급, 다중 프로세스 작업 큐는 미구현이다. [앱 설계 및 구현 범위](../../docs/sentence-repeat-and-mouth-video-plan.md).
+
+
+## ㄹ 집중 연습 구간 반환 (2026-10-20)
+
+`POST /v1/analysis/jobs`에 `all_occurrences=true`를 보내면 백엔드가 반환한 해당 목표 음소 구간을 모두 반환한다. 생략하면 기존처럼 `target_occurrence`(기본 0) 한 구간만 반환한다. 이 옵션은 실제 반복 횟수를 검증하거나 ㄹㄹ의 두 글자를 두 독립 음소로 판정하지 않는다. 미검증 모델의 모든 구간에서 `practiceScore`와 `gop`를 제거하는 정책을 동일하게 적용한다. 앱은 유효한 구간을 파형·문맥 재생에 사용한다.

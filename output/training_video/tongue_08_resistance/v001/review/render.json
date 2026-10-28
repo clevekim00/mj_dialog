@@ -1,0 +1,131 @@
+{
+  "id": "tongue_08_resistance",
+  "title": "설압자 저항 운동",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "clinicianOnly",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "dental_model",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.1,
+      1
+    ],
+    [
+      1.3333333333333335,
+      1
+    ],
+    [
+      1.9333333333333336,
+      0
+    ],
+    [
+      2.166666666666667,
+      0
+    ],
+    [
+      2.7666666666666666,
+      2
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      3.6,
+      0
+    ],
+    [
+      3.8333333333333335,
+      0
+    ],
+    [
+      4.433333333333334,
+      3
+    ],
+    [
+      4.666666666666667,
+      3
+    ],
+    [
+      5.266666666666667,
+      0
+    ],
+    [
+      5.5,
+      0
+    ],
+    [
+      6,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0001716608379807,
+          -5.0928403600065584e-05,
+          -0.16802632011419566
+        ],
+        [
+          5.0928403600065584e-05,
+          1.0001716608379807,
+          -0.03720205273842536
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0004651928401977,
+          3.7361142182429754e-05,
+          -0.23934562033004445
+        ],
+        [
+          -3.7361142182429754e-05,
+          1.0004651928401977,
+          0.5755442871949721
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0007453752363684,
+          -0.0002848179789386631,
+          -0.3784507010939913
+        ],
+        [
+          0.0002848179789386631,
+          1.0007453752363684,
+          0.855170092612644
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 144,
+  "seconds": 6,
+  "audio": false,
+  "sha256": "58f21068a694face889d81241203b448ba88e063b81fa47ec79c106fc375c426",
+  "file_bytes": 1054433,
+  "atlas_sha256": "010ab1e8f7ea6449b7d6c0e8856200080170ca36ef0553bc3f32f6938fabdcf1",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "tongue_07_hard_palate_hold",
+  "title": "입천장에 혀 대고 유지하기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "caution",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "sagittal",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.7,
+      0
+    ],
+    [
+      1.7,
+      1
+    ],
+    [
+      3.7,
+      1
+    ],
+    [
+      5.3,
+      0
+    ],
+    [
+      6,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0001640366087219,
+          -0.0005014283591343625,
+          -0.02391607460788847
+        ],
+        [
+          0.0005014283591343625,
+          1.0001640366087219,
+          0.29096195195888275
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 144,
+  "seconds": 6,
+  "audio": false,
+  "sha256": "1546673f6d0a8869374fbcb3bdc67c8ece96dec25b99f833cf31d7a3779049b2",
+  "file_bytes": 846130,
+  "atlas_sha256": "54ada7c2646a51dc59f197aeb4b8f1d7b549b0c44ac45d189c605b3141d98a23",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

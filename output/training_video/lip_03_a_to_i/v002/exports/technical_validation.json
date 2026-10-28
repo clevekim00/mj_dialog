@@ -1,0 +1,28 @@
+{
+  "lip_03_a_to_i_v001_vs_v002.mp4": {
+    "fps": 24.0,
+    "width": 1440.0,
+    "height": 800.0,
+    "decoded_frames": 120,
+    "seconds": 5.0,
+    "bytes": 398048,
+    "h264": true,
+    "yuv420p": true,
+    "audio_absent": true,
+    "decode_exit_code": 0,
+    "loop_mean_pixel_error": 0.3794751157407407
+  },
+  "lip_03_a_to_i_v002_review.mp4": {
+    "fps": 24.0,
+    "width": 1280.0,
+    "height": 720.0,
+    "decoded_frames": 120,
+    "seconds": 5.0,
+    "bytes": 240913,
+    "h264": true,
+    "yuv420p": true,
+    "audio_absent": true,
+    "decode_exit_code": 0,
+    "loop_mean_pixel_error": 0.26359266493055555
+  }
+}

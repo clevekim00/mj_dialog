@@ -1,0 +1,92 @@
+{
+  "id": "lip_12_sad_smile",
+  "title": "슬픈 표정·웃는 표정",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.99808230908375,
+          0.00021732226577788938,
+          1.3066318493965852
+        ],
+        [
+          -0.00021732226577788938,
+          0.99808230908375,
+          2.4315319997573583
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0019506807591123,
+          0.0003529992438172829,
+          -1.0478360184684876
+        ],
+        [
+          -0.0003529992438172829,
+          1.0019506807591123,
+          1.067823990708002
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "3bddbff36157e3e5ae5eb6b4b7fb6311106a26dd948d0144e14429f700278aba",
+  "file_bytes": 238171,
+  "atlas_sha256": "b6899a53d20f140b0b55c3734b7cc64fd2da2bdffa22551649af32bedcc508ca",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

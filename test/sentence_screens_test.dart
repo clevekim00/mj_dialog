@@ -24,7 +24,7 @@ class FakeCapture extends PracticeCapture {
   @override
   Future<String?> stopRecording() async {
     final f = File('${root.path}/input${count++}.wav');
-    await f.writeAsBytes([1, 2, 3, 4]);
+    await f.writeAsBytes([count, 2, 3, 4]);
     return f.path;
   }
 }
@@ -86,15 +86,129 @@ void main() {
     home: home,
   );
   testWidgets(
+    'sentence and full screen editors dismiss keyboard without losing text',
+    (tester) async {
+      await tester.pumpWidget(app(SentenceInputScreen(repository: repo)));
+      final sentence = find.byKey(const ValueKey('sentence-text'));
+      await tester.enterText(sentence, '편집할 문장');
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+      await tester.tap(find.byTooltip('키보드 내리기'));
+      await tester.pumpAndSettle();
+      expect(tester.testTextInput.isVisible, isFalse);
+      await tester.ensureVisible(find.text('문장 크게 편집하기'));
+      await tester.tap(find.text('문장 크게 편집하기'));
+      await tester.pumpAndSettle();
+      final editor = find.byType(TextField).last;
+      await tester.enterText(editor, '수정 완료한 문장');
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+      await tester.tap(find.byTooltip('키보드 내리기'));
+      await tester.pumpAndSettle();
+      expect(tester.testTextInput.isVisible, isFalse);
+      await tester.tap(find.text('편집 완료'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(sentence).controller!.text, '수정 완료한 문장');
+    },
+  );
+
+  testWidgets(
+    'library opens with folders and supports create rename and bulk move',
+    (tester) async {
+      tester.view.physicalSize = const Size(1024, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      repo.addSentence('옮길 문장', 'ko-KR');
+      await tester.pumpWidget(app(SentenceLibraryScreen(repository: repo)));
+      await tester.pumpAndSettle();
+      expect(find.text('아직 담지 않은 문장'), findsOneWidget);
+      expect(find.text('옮길 문장'), findsNothing);
+      await tester.tap(find.text('문장집 추가'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '병원');
+      await tester.tap(find.text('저장'));
+      await tester.pumpAndSettle();
+      expect(find.text('병원'), findsOneWidget);
+      await tester.tap(find.byTooltip('문장집 이름 변경'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '진료');
+      await tester.tap(find.text('저장'));
+      await tester.pumpAndSettle();
+      expect(find.text('진료'), findsOneWidget);
+      await tester.tap(find.text('아직 담지 않은 문장'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('문장 선택'));
+      await tester.pump();
+      await tester.tap(find.text('전체 선택'));
+      await tester.pump();
+      await tester.tap(find.text('1개 이동'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('진료'));
+      await tester.pumpAndSettle();
+      expect(repo.sentences().single['folder'], '진료');
+      expect(find.text('옮길 문장'), findsNothing);
+      await tester.tap(find.text('문장집 목록'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('진료'));
+      await tester.pumpAndSettle();
+      expect(find.text('옮길 문장'), findsOneWidget);
+      await tester.tap(find.text('문장 추가 · 입력 / 사진 / 음성'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const ValueKey('sentence-folder')))
+            .controller!
+            .text,
+        '진료',
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('edits imported text and saves all lines into a folder', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app(SentenceInputScreen(repository: repo)));
+    await tester.enterText(find.byKey(const ValueKey('sentence-folder')), '병원');
+    await tester.enterText(
+      find.byKey(const ValueKey('sentence-text')),
+      '인식 오류',
+    );
+    await tester.ensureVisible(find.text('문장 크게 편집하기'));
+    await tester.tap(find.text('문장 크게 편집하기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '수정한 문장\n두 번째 문장');
+    await tester.tap(find.text('편집 완료'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byType(CheckboxListTile));
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pump();
+    await tester.tap(find.text('문장 저장'));
+    await tester.pumpAndSettle();
+    expect(repo.sentences().map((s) => s['text']).toSet(), {
+      '수정한 문장',
+      '두 번째 문장',
+    });
+    expect(repo.sentences().every((s) => s['folder'] == '병원'), isTrue);
+    expect(repo.folders(), ['병원']);
+  });
+
+  testWidgets(
     'photo library and camera dispatch separately and cancellation keeps text',
     (tester) async {
       final ocr = MobileOcr();
       await tester.pumpWidget(
         app(SentenceInputScreen(repository: repo, ocr: ocr)),
       );
-      await tester.enterText(find.byType(TextField), '기존 문장');
+      await tester.enterText(
+        find.byKey(const ValueKey('sentence-text')),
+        '기존 문장',
+      );
+      await tester.ensureVisible(find.text('사진 보관함에서 선택'));
       await tester.tap(find.text('사진 보관함에서 선택'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('카메라로 촬영'));
       await tester.tap(find.text('카메라로 촬영'));
       await tester.pumpAndSettle();
       expect(ocr.sources, [
@@ -102,7 +216,12 @@ void main() {
         SentenceImageSource.camera,
       ]);
       expect(find.text('기존 문장'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const ValueKey('sentence-text')))
+            .enabled,
+        isTrue,
+      );
     },
   );
   for (final code in [
@@ -118,15 +237,31 @@ void main() {
       await tester.pumpWidget(
         app(SentenceInputScreen(repository: repo, ocr: ocr)),
       );
-      await tester.enterText(find.byType(TextField), '남겨 둘 문장');
+      await tester.enterText(
+        find.byKey(const ValueKey('sentence-text')),
+        '남겨 둘 문장',
+      );
+      await tester.ensureVisible(
+        find.text(code.startsWith('photo') ? '사진 보관함에서 선택' : '카메라로 촬영'),
+      );
       await tester.tap(
         find.text(code.startsWith('photo') ? '사진 보관함에서 선택' : '카메라로 촬영'),
       );
       await tester.pumpAndSettle();
       expect(find.text('남겨 둘 문장'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const ValueKey('sentence-text')))
+            .enabled,
+        isTrue,
+      );
       final settings = find.text('앱 권한 설정 열기');
       if (code.endsWith('_denied')) {
+        await tester.scrollUntilVisible(
+          settings,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         expect(settings, findsOneWidget);
         await Scrollable.ensureVisible(tester.element(settings), alignment: .5);
         await tester.pumpAndSettle();
@@ -143,6 +278,7 @@ void main() {
         );
       }
       ocr.failure = null;
+      await tester.ensureVisible(find.text('카메라로 촬영'));
       await tester.ensureVisible(find.text('카메라로 촬영'));
       await tester.tap(find.text('카메라로 촬영'));
       await tester.pumpAndSettle();
@@ -162,7 +298,10 @@ void main() {
         (i) => '$i ${List.filled(600, "가").join()}',
       );
       await tester.pumpWidget(app(SentenceInputScreen(repository: repo)));
-      await tester.enterText(find.byType(TextField), lines.join('\n'));
+      await tester.enterText(
+        find.byKey(const ValueKey('sentence-text')),
+        lines.join('\n'),
+      );
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byType(CheckboxListTile),
@@ -191,8 +330,13 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
     await tester.pumpWidget(app(SentenceInputScreen(repository: repo)));
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('sentence-text')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.enterText(
-      find.byType(TextField),
+      find.byKey(const ValueKey('sentence-text')),
       List.generate(42, (i) => '$i 번째 연습 문장입니다.').join('\n'),
     );
     await tester.pumpAndSettle();
@@ -210,7 +354,10 @@ void main() {
   });
   testWidgets('input requires review and saves separate lines', (tester) async {
     await tester.pumpWidget(app(SentenceInputScreen(repository: repo)));
-    await tester.enterText(find.byType(TextField), '물을 주세요.\n천천히 말할게요.');
+    await tester.enterText(
+      find.byKey(const ValueKey('sentence-text')),
+      '물을 주세요.\n천천히 말할게요.',
+    );
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNull,
@@ -232,10 +379,20 @@ void main() {
     );
     await tester.tap(find.text('사진에서 글 가져오기 (OCR)'));
     await tester.pump();
-    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('sentence-text')))
+          .enabled,
+      isFalse,
+    );
     await tester.tap(find.text('가져오기 취소'));
     await tester.pump();
-    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('sentence-text')))
+          .enabled,
+      isTrue,
+    );
     ocr.picked.complete(Uint8List.fromList([1, 2, 3]));
     await tester.pumpAndSettle();
     expect(find.text('문장 입력·확인'), findsOneWidget);
@@ -244,6 +401,10 @@ void main() {
   testWidgets(
     'two recordings remain distinct and controls stay visible with waveform',
     (tester) async {
+      tester.view.physicalSize = const Size(1024, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       final id = repo.addSentence('물을 주세요.', 'ko-KR');
       final sentence = repo.sentences().single;
       await tester.pumpWidget(
@@ -289,6 +450,93 @@ void main() {
       final takes = repo.recordings(repo.pairs(id).single['id'] as String);
       expect(takes.length, 2);
       expect(takes[0]['id'], isNot(takes[1]['id']));
+      expect(takes[0]['hash'], isNot(takes[1]['hash']));
+      final playedPaths = <String>[];
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('speech_rehab/audio_player/events'),
+        (_) async => null,
+      );
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('speech_rehab/audio_player'),
+        (call) async {
+          if (call.method == 'playFile') {
+            playedPaths.add((call.arguments as Map)['path'] as String);
+          }
+          return null;
+        },
+      );
+      Future<void> completePlayback() async {
+        await tester.runAsync(() async {
+          await messenger.handlePlatformMessage(
+            'speech_rehab/audio_player/events',
+            const StandardMethodCodec().encodeSuccessEnvelope('complete'),
+            (_) {},
+          );
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        });
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pumpAndSettle();
+      }
+
+      // Latest recording is first, but each button keeps its explicit slot.
+      await tester.ensureVisible(find.text('2차 녹음 듣기'));
+      await tester.tap(find.text('2차 녹음 듣기'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('2차 녹음 듣기')).dy,
+        lessThan(tester.getTopLeft(find.text('1차 녹음 듣기')).dy),
+      );
+      expect(playedPaths, [repo.audioPath(takes[1])]);
+      await completePlayback();
+      await tester.ensureVisible(find.text('1차 녹음 듣기'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('1차 녹음 듣기'));
+      await tester.pumpAndSettle();
+      expect(playedPaths.last, repo.audioPath(takes[0]));
+      await completePlayback();
+      playedPaths.clear();
+      await tester.ensureVisible(find.text('1차 → 2차 순서대로 듣기'));
+      await tester.tap(find.text('1차 → 2차 순서대로 듣기'));
+      await tester.pumpAndSettle();
+      expect(playedPaths, [repo.audioPath(takes[0])]);
+      await completePlayback();
+      expect(playedPaths, [repo.audioPath(takes[0]), repo.audioPath(takes[1])]);
+      await completePlayback();
+
+      // Native stop replies may arrive out of order during quick switching.
+      final pendingStops = <Completer<void>>[];
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('speech_rehab/audio_player'),
+        (call) async {
+          if (call.method == 'stop') {
+            final pending = Completer<void>();
+            pendingStops.add(pending);
+            await pending.future;
+          } else if (call.method == 'playFile') {
+            playedPaths.add((call.arguments as Map)['path'] as String);
+          }
+          return null;
+        },
+      );
+      playedPaths.clear();
+      await tester.tap(find.text('1차 녹음 듣기'));
+      await tester.pump();
+      await tester.tap(find.text('2차 녹음 듣기'));
+      await tester.pump();
+      expect(pendingStops, hasLength(2));
+      pendingStops[1].complete();
+      await tester.pumpAndSettle();
+      pendingStops[0].complete();
+      await tester.pumpAndSettle();
+      expect(playedPaths, [repo.audioPath(takes[1])]);
+      await completePlayback();
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('speech_rehab/audio_player'),
+        (_) async => null,
+      );
       expect(find.text('오늘 마치기'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

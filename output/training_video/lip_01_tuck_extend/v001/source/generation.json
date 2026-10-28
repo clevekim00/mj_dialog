@@ -1,0 +1,67 @@
+{
+  "id": "lip_01_tuck_extend",
+  "title": "입술 넣었다 내밀기",
+  "instruction": "입술을 입 안으로 넣었다가 앞으로 쭉 내미세요.",
+  "caption": "입술을 안으로 넣었다가 앞으로 내미세요.",
+  "seconds": 5,
+  "safety": "general",
+  "visual": "faceCloseUp",
+  "pilot_order": null,
+  "motion_prompt": "Roll both lips gently inward over the teeth, hold briefly, then release and extend both lips straight forward into a soft pucker before returning to neutral.",
+  "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+  "destination_after_review": "assets/videos/training/lip_01_tuck_extend.mp4",
+  "unlinked_file_exists": false,
+  "status": "awaiting_atlas",
+  "clinical_review": "pending",
+  "mode": "face",
+  "poses": [
+    "relaxed neutral closed lips",
+    "BOTH lips rolled inward over the teeth; red lip surfaces are tucked away, a soft compressed closed seam visible; cheeks and chin adapt naturally",
+    "both lips released and extended forward in a gentle pucker; natural lip texture and cheeks"
+  ],
+  "layout": {
+    "columns": 1,
+    "rows": 3
+  },
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_01_tuck_extend. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: BOTH lips rolled inward over the teeth; red lip surfaces are tucked away, a soft compressed closed seam visible; cheeks and chin adapt naturally. TILE 3: both lips released and extended forward in a gentle pucker; natural lip texture and cheeks. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+  "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+  "version": "v001"
+}

@@ -1,0 +1,100 @@
+{
+  "id": "tongue_02_touch_lips",
+  "title": "윗입술·아랫입술 대기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9983504000178645,
+          -0.0002099548890665702,
+          1.201484085947505
+        ],
+        [
+          0.0002099548890665702,
+          0.9983504000178645,
+          0.7957790131718298
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9984637593940805,
+          -0.00027483338376739925,
+          1.1505161783877451
+        ],
+        [
+          0.00027483338376739925,
+          0.9984637593940805,
+          0.8987965520962572
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "f9ef517f119b79b4fa9796f1d4fdb0e53021615fe17303211daf91be0009fb9a",
+  "file_bytes": 228242,
+  "atlas_sha256": "6f386e56ca183642d00f06dcfe491c8674ba932f423519b47d6201e02a251ed8",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

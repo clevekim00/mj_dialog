@@ -106,6 +106,27 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(result["phonemes"][0]["status"], "aligned")
         self.assertIn("MFA 음소 정렬", result["message"])
 
+    def test_all_occurrences_returns_all_regions_without_unvalidated_scores(self):
+        class RepeatedBackend(FakeBackend):
+            score_validated = False
+            def analyze(self, *args):
+                first = super().analyze(*args)[0]
+                return [first, dict(first, startMs=300, endMs=450)]
+        configure_backend(RepeatedBackend())
+        for all_regions, expected_count in (("true", 2), ("false", 1)):
+            response = self.client.post(
+                "/v1/analysis/jobs",
+                files={"audio": ("sample.wav", make_wav(), "audio/wav")},
+                data={"text": "라 라", "language": "ko-KR", "target_phone": "r",
+                      "position": "onset", "content_version": "ko-liquid-v1",
+                      "all_occurrences": all_regions},
+            )
+            self.assertEqual(response.status_code, 202)
+            result = self.client.get(f"/v1/analysis/jobs/{response.json()['jobId']}").json()
+            self.assertEqual(len(result["phonemes"]), expected_count)
+            self.assertIsNone(result["overallPracticeScore"])
+            self.assertTrue(all(p["practiceScore"] is None for p in result["phonemes"]))
+
     def test_routes_english_request_and_localizes_contract(self):
         english = FakeMfaBackend()
         english.model_version = "mfa-english-test"

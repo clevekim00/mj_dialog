@@ -781,7 +781,7 @@ final class SafeFlutterViewController: FlutterViewController {
           }
           if let error {
             debugPrint("Speech recognition failed: \(error.localizedDescription)")
-            self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true])
+            self.speechEventSink?(["text": self.lastSpeechText, "isFinal": false, "done": true, "error": "recognition_failed"])
             self.finishSpeechRecognition()
           }
         }

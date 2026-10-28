@@ -1,3 +1,5 @@
+import 'liquid_practice_screen.dart';
+import 'liquid_attempt_detail_screen.dart';
 import 'package:speech_rehab/features/rehab/comfort/comfort_training.dart';
 import 'package:speech_rehab/features/rehab/audio/recorder_waveform.dart';
 import 'dart:async';
@@ -152,6 +154,20 @@ class _ConsonantTrainingHubScreenState
               '연습할 자음과 위치를 고르세요. 음절, 단어, 짧은 문장으로 연습할 수 있어요.',
               style: TextStyle(fontSize: 18),
             ),
+            if (pack.language == 'ko-KR') ...[
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => LiquidPracticeScreen(history: _history),
+                  ),
+                ),
+                icon: const Icon(Icons.record_voice_over),
+                label: const Text('ㄹ 집중 연습'),
+              ),
+              const Text('단어 속 ㄹ · 받침·연속 ㄹ · 라라라 반복과 파형 비교'),
+            ],
             if (recentAvailable) ...[
               const SizedBox(height: 16),
               FilledButton.tonalIcon(
@@ -990,20 +1006,26 @@ class TargetPracticeText extends StatelessWidget {
   );
 }
 
-class ConsonantTrainingHistoryScreen extends StatelessWidget {
+class ConsonantTrainingHistoryScreen extends StatefulWidget {
   const ConsonantTrainingHistoryScreen({
     super.key,
     required this.historyService,
   });
 
   final ConsonantTrainingHistoryService historyService;
+  @override
+  State<ConsonantTrainingHistoryScreen> createState() =>
+      _ConsonantTrainingHistoryScreenState();
+}
 
+class _ConsonantTrainingHistoryScreenState
+    extends State<ConsonantTrainingHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('자음 연습 기록')),
       body: FutureBuilder<List<ConsonantTrainingAttempt>>(
-        future: historyService.load(),
+        future: widget.historyService.load(),
         builder: (context, snapshot) {
           final attempts = snapshot.data ?? const <ConsonantTrainingAttempt>[];
           if (snapshot.connectionState != ConnectionState.done) {
@@ -1022,6 +1044,20 @@ class ConsonantTrainingHistoryScreen extends StatelessWidget {
                   ? attempt.analysis.overallPracticeScore
                   : null;
               return ListTile(
+                onTap: attempt.exerciseKind == null
+                    ? null
+                    : () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => LiquidAttemptDetailScreen(
+                              attempt: attempt,
+                              history: widget.historyService,
+                            ),
+                          ),
+                        );
+                        if (mounted) setState(() {});
+                      },
                 title: Text('${attempt.text} · ${attempt.level.label}'),
                 subtitle: Text(
                   '${attempt.createdAt.month}/${attempt.createdAt.day} · ${attempt.analysis.message ?? attempt.analysis.status.name}',

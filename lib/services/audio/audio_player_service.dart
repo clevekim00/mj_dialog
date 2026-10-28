@@ -13,7 +13,12 @@ class AudioPlayerService {
     'speech_rehab/audio_player/events',
   );
 
-  Stream<dynamic>? _completionEvents;
+  // The native channel has one event sink. Share it across player instances
+  // so reference playback cannot replace a waveform player's subscription.
+  static Stream<dynamic>? _completionEvents;
+
+  Stream<dynamic> get playbackEvents =>
+      _completionEvents ??= _events.receiveBroadcastStream();
 
   void onPlaybackComplete(VoidCallback callback) {
     _completionEvents ??= _events.receiveBroadcastStream();

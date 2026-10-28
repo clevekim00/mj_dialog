@@ -1,0 +1,100 @@
+{
+  "id": "lip_09_one_side_grimace",
+  "title": "입꼬리 한쪽씩 움직이기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9998964429811648,
+          -0.00010639689762567412,
+          0.29608213358615804
+        ],
+        [
+          0.00010639689762567412,
+          0.9998964429811648,
+          1.286316915852864
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0008506211897374,
+          -0.0007352792309525888,
+          0.1637809820878784
+        ],
+        [
+          0.0007352792309525888,
+          1.0008506211897374,
+          0.7540987525044486
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "5ea1cba7a234d26da191019cc5188b8dbd5db4ae59ba3fb774cbc25b59ef5f03",
+  "file_bytes": 247834,
+  "atlas_sha256": "3e4b930e0a615635297ca1b3f7e3c65d58fe1b9d891697c9cda2ed8df2f3c3a2",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

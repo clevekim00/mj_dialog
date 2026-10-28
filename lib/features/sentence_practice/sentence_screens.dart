@@ -1,3 +1,6 @@
+import 'sentence_keyboard_dismiss_button.dart';
+import 'sentence_voice_input_screen.dart';
+import '../../services/audio/stt_service.dart';
 import 'image_review_screen.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -35,6 +38,9 @@ class SentenceLibraryScreen extends StatefulWidget {
 class _LibraryState extends State<SentenceLibraryScreen> {
   late Future<SentenceRepository> _repo;
   String _search = '';
+  String? _folder;
+  bool _selecting = false;
+  final _selected = <String>{};
   @override
   void initState() {
     super.initState();
@@ -47,10 +53,102 @@ class _LibraryState extends State<SentenceLibraryScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => SentenceInputScreen(repository: repo),
+        builder: (_) =>
+            SentenceInputScreen(repository: repo, initialFolder: _folder ?? ''),
       ),
     );
     if (mounted) setState(() {});
+  }
+
+  Future<void> _folderName(SentenceRepository repo, [String? oldName]) async {
+    final controller = TextEditingController(text: oldName ?? '');
+    String? error;
+    await showDialog<void>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (c, update) => AlertDialog(
+          title: Text(
+            st(
+              c,
+              oldName == null ? '문장집 추가' : '문장집 이름 변경',
+              oldName == null
+                  ? 'Add sentence collection'
+                  : 'Rename sentence collection',
+            ),
+          ),
+          content: TextField(
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: st(c, '문장집 이름', 'Collection name'),
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: Text(st(c, '취소', 'Cancel')),
+            ),
+            FilledButton(
+              onPressed: () {
+                try {
+                  if (oldName == null) {
+                    repo.addFolder(controller.text);
+                  } else {
+                    repo.renameFolder(oldName, controller.text);
+                  }
+                  Navigator.pop(c);
+                  setState(() {
+                    if (_folder == oldName && oldName != null) {
+                      _folder = controller.text.trim();
+                    }
+                  });
+                } catch (_) {
+                  update(
+                    () => error = st(
+                      c,
+                      '다른 문장집와 겹치지 않는 이름을 입력하세요.',
+                      'Enter a unique, nonempty name.',
+                    ),
+                  );
+                }
+              },
+              child: Text(st(c, '저장', 'Save')),
+            ),
+          ],
+        ),
+      ),
+    );
+    // Dispose after the dialog's closing transition has finished.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    controller.dispose();
+  }
+
+  Future<void> _move(SentenceRepository repo) async {
+    final target = await showDialog<String>(
+      context: context,
+      builder: (c) => SimpleDialog(
+        title: Text(st(c, '이동할 문장집 선택', 'Choose destination collection')),
+        children: [
+          for (final folder in ['', ...repo.folders()])
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(c, folder),
+              child: Text(
+                folder.isEmpty
+                    ? st(c, '아직 담지 않은 문장', 'Uncollected sentences')
+                    : folder,
+              ),
+            ),
+        ],
+      ),
+    );
+    if (target == null || !mounted) return;
+    repo.moveSentences(_selected, target);
+    setState(() {
+      _selected.clear();
+      _selecting = false;
+    });
   }
 
   @override
@@ -95,28 +193,177 @@ class _LibraryState extends State<SentenceLibraryScreen> {
             onPressed: () => _add(repo),
             icon: const Icon(Icons.add),
             label: Text(
-              st(context, '문장 추가 · 입력 / 사진', 'Add sentence · text / image'),
+              st(
+                context,
+                '문장 추가 · 입력 / 사진 / 음성',
+                'Add sentence · text / image / voice',
+              ),
             ),
           ),
-          TextField(
-            decoration: InputDecoration(
-              labelText: st(context, '문장 검색', 'Search sentences'),
+          if (_folder == null) ...[
+            OutlinedButton.icon(
+              onPressed: () => _folderName(repo),
+              icon: const Icon(Icons.create_new_folder_outlined),
+              label: Text(st(context, '문장집 추가', 'Add sentence collection')),
             ),
-            onChanged: (v) => setState(() => _search = v),
-          ),
+            for (final folder in ['', ...repo.folders()])
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(
+                    folder.isEmpty
+                        ? st(context, '아직 담지 않은 문장', 'Uncollected sentences')
+                        : folder,
+                  ),
+                  subtitle: Text(
+                    st(
+                      context,
+                      '${repo.sentences().where((s) => s['folder'] == folder).length}개 문장',
+                      '${repo.sentences().where((s) => s['folder'] == folder).length} sentences',
+                    ),
+                  ),
+                  onTap: () => setState(() {
+                    _folder = folder;
+                    _search = '';
+                  }),
+                  trailing: folder.isEmpty
+                      ? const Icon(Icons.chevron_right)
+                      : IconButton(
+                          tooltip: st(
+                            context,
+                            '문장집 이름 변경',
+                            'Rename sentence collection',
+                          ),
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () => _folderName(repo, folder),
+                        ),
+                ),
+              ),
+          ] else ...[
+            TextButton.icon(
+              onPressed: () => setState(() {
+                _folder = null;
+                _selected.clear();
+                _selecting = false;
+                _search = '';
+              }),
+              icon: const Icon(Icons.arrow_back),
+              label: Text(st(context, '문장집 목록', 'Sentence collections')),
+            ),
+            Text(
+              _folder!.isEmpty
+                  ? st(context, '아직 담지 않은 문장', 'Uncollected sentences')
+                  : _folder!,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            if (_folder!.isNotEmpty)
+              TextButton.icon(
+                onPressed: () => _folderName(repo, _folder),
+                icon: const Icon(Icons.edit_outlined),
+                label: Text(
+                  st(context, '문장집 이름 변경', 'Rename sentence collection'),
+                ),
+              ),
+            TextField(
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              decoration: InputDecoration(
+                labelText: st(context, '문장 검색', 'Search sentences'),
+              ),
+              onChanged: (v) => setState(() => _search = v),
+            ),
+            Wrap(
+              spacing: 8,
+              children: [
+                TextButton(
+                  onPressed: () => setState(() {
+                    _selecting = !_selecting;
+                    _selected.clear();
+                  }),
+                  child: Text(
+                    st(
+                      context,
+                      _selecting ? '선택 취소' : '문장 선택',
+                      _selecting ? 'Cancel selection' : 'Select sentences',
+                    ),
+                  ),
+                ),
+                if (_selecting) ...[
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _selected.addAll(
+                        repo
+                            .sentences()
+                            .where(
+                              (s) =>
+                                  s['folder'] == _folder &&
+                                  (s['text'] as String).toLowerCase().contains(
+                                    _search.toLowerCase(),
+                                  ),
+                            )
+                            .map((s) => s['id'] as String),
+                      );
+                    }),
+                    child: Text(st(context, '전체 선택', 'Select all')),
+                  ),
+                  FilledButton.icon(
+                    onPressed: _selected.isEmpty ? null : () => _move(repo),
+                    icon: const Icon(Icons.drive_file_move_outlined),
+                    label: Text(
+                      st(
+                        context,
+                        '${_selected.length}개 이동',
+                        'Move ${_selected.length}',
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (!repo.sentences().any((s) => s['folder'] == _folder))
+              Text(
+                st(
+                  context,
+                  '아직 문장이 없어요. 문장을 추가하거나 다른 문장집에서 옮겨 주세요.',
+                  'No sentences yet. Add sentences or move them from another collection.',
+                ),
+              ),
+          ],
           for (final sentence in repo.sentences().where(
-            (s) => (s['text'] as String).toLowerCase().contains(
-              _search.toLowerCase(),
-            ),
+            (s) =>
+                (_folder != null && s['folder'] == _folder) &&
+                (s['text'] as String).toLowerCase().contains(
+                  _search.toLowerCase(),
+                ),
           ))
             Card(
               child: ListTile(
+                leading: _selecting
+                    ? Checkbox(
+                        value: _selected.contains(sentence['id']),
+                        onChanged: (value) => setState(() {
+                          if (value == true) {
+                            _selected.add(sentence['id'] as String);
+                          } else {
+                            _selected.remove(sentence['id']);
+                          }
+                        }),
+                      )
+                    : null,
                 title: Text(sentence['text'] as String),
                 subtitle: Text(
-                  '${sentence['language']} · ${sentence['count']} ${st(context, '회 연습', 'practice pairs')}',
+                  '${(sentence['folder'] as String).isEmpty ? st(context, '아직 담지 않은 문장', 'Uncollected sentences') : sentence['folder']} · ${sentence['language']} · ${sentence['count']} ${st(context, '회 연습', 'practice pairs')}',
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
+                  if (_selecting) {
+                    setState(() {
+                      if (!_selected.add(sentence['id'] as String)) {
+                        _selected.remove(sentence['id']);
+                      }
+                    });
+                    return;
+                  }
                   await Navigator.push(
                     context,
                     MaterialPageRoute<void>(
@@ -137,15 +384,31 @@ class _LibraryState extends State<SentenceLibraryScreen> {
 }
 
 class SentenceInputScreen extends StatefulWidget {
-  const SentenceInputScreen({super.key, required this.repository, this.ocr});
+  const SentenceInputScreen({
+    super.key,
+    required this.repository,
+    this.ocr,
+    this.speechFactory,
+    this.initialFolder = '',
+  });
+  final String initialFolder;
   final SentenceRepository repository;
   final SentenceOcr? ocr;
+  final SttService Function(String language)? speechFactory;
   @override
   State<SentenceInputScreen> createState() => _InputState();
 }
 
 class _InputState extends State<SentenceInputScreen> {
   final _text = TextEditingController();
+  final _textFocus = FocusNode();
+  final _folder = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _folder.text = widget.initialFolder;
+  }
+
   String _language = 'ko-KR', _source = 'text';
   Uint8List? _sourceImage;
   bool _busy = false, _reviewed = false;
@@ -155,6 +418,8 @@ class _InputState extends State<SentenceInputScreen> {
   int _ocrGeneration = 0;
   @override
   void dispose() {
+    _folder.dispose();
+    _textFocus.dispose();
     _text.dispose();
     super.dispose();
   }
@@ -205,7 +470,9 @@ class _InputState extends State<SentenceInputScreen> {
           _text.text = text;
           _source = 'ocr';
           _reviewed = false;
+          _busy = false;
         });
+        await _editText();
       }
     } catch (error) {
       if (active()) {
@@ -260,6 +527,42 @@ class _InputState extends State<SentenceInputScreen> {
     }
   }
 
+  Future<void> _voice() async {
+    if (_busy) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    final value = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SentenceVoiceInputScreen(
+          language: _language,
+          initialText: _text.text,
+          speech: widget.speechFactory?.call(_language),
+        ),
+      ),
+    );
+    if (mounted && value != null) {
+      setState(() {
+        _text.text = value;
+        _source = 'voice';
+        _reviewed = false;
+        _error = null;
+      });
+    }
+  }
+
+  Future<void> _editText() async {
+    final edited = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => _SentenceTextEditor(text: _text.text)),
+    );
+    if (mounted && edited != null) {
+      setState(() {
+        _text.text = edited;
+        _reviewed = false;
+      });
+    }
+  }
+
   Future<void> _openPermissionSettings() async {
     bool opened = false;
     try {
@@ -279,6 +582,7 @@ class _InputState extends State<SentenceInputScreen> {
   }
 
   void _save() {
+    FocusManager.instance.primaryFocus?.unfocus();
     final lines = _text.text
         .split('\n')
         .map((s) => s.trim())
@@ -297,7 +601,12 @@ class _InputState extends State<SentenceInputScreen> {
     try {
       widget.repository.transaction(() {
         for (final line in lines) {
-          widget.repository.addSentence(line, _language, source: _source);
+          widget.repository.addSentence(
+            line,
+            _language,
+            source: _source,
+            folder: _folder.text,
+          );
         }
       });
       Navigator.pop(context);
@@ -315,6 +624,7 @@ class _InputState extends State<SentenceInputScreen> {
   @override
   Widget build(BuildContext context) => RehabPage(
     title: st(context, '문장 입력·확인', 'Enter and review sentences'),
+    actions: const [SentenceKeyboardDismissButton()],
     footer: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -335,6 +645,34 @@ class _InputState extends State<SentenceInputScreen> {
       ],
     ),
     children: [
+      TextField(
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        key: const ValueKey('sentence-folder'),
+        controller: _folder,
+        enabled: !_busy,
+        decoration: InputDecoration(
+          labelText: st(context, '문장집 (선택)', 'Sentence collection (optional)'),
+          hintText: st(
+            context,
+            '예: 일상 대화, 병원, 책 제목',
+            'e.g. Daily conversation, Book title',
+          ),
+          prefixIcon: const Icon(Icons.folder_outlined),
+        ),
+      ),
+      if (widget.repository.folders().isNotEmpty)
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final folder in widget.repository.folders())
+              ActionChip(
+                label: Text(folder),
+                onPressed: _busy
+                    ? null
+                    : () => setState(() => _folder.text = folder),
+              ),
+          ],
+        ),
       DropdownButtonFormField<String>(
         initialValue: _language,
         items: const [
@@ -350,6 +688,11 @@ class _InputState extends State<SentenceInputScreen> {
         decoration: InputDecoration(
           labelText: st(context, '읽을 문장의 언어', 'Language to read'),
         ),
+      ),
+      OutlinedButton.icon(
+        onPressed: _busy ? null : _voice,
+        icon: const Icon(Icons.mic_none),
+        label: Text(st(context, '음성으로 입력', 'Enter by voice')),
       ),
       if ((widget.ocr ?? SentenceOcr()).mobileSources) ...[
         OutlinedButton.icon(
@@ -395,7 +738,15 @@ class _InputState extends State<SentenceInputScreen> {
           title: Text(st(context, '원본 영역과 대조하기', 'Compare with image')),
           children: [Image.memory(_sourceImage!, height: 220)],
         ),
+      OutlinedButton.icon(
+        onPressed: _busy ? null : _editText,
+        icon: const Icon(Icons.edit_outlined),
+        label: Text(st(context, '문장 크게 편집하기', 'Edit sentences in full screen')),
+      ),
       TextField(
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        key: const ValueKey('sentence-text'),
+        focusNode: _textFocus,
         controller: _text,
         enabled: !_busy,
         minLines: 5,
@@ -416,6 +767,59 @@ class _InputState extends State<SentenceInputScreen> {
           ),
         ),
     ],
+  );
+}
+
+class _SentenceTextEditor extends StatefulWidget {
+  const _SentenceTextEditor({required this.text});
+  final String text;
+  @override
+  State<_SentenceTextEditor> createState() => _SentenceTextEditorState();
+}
+
+class _SentenceTextEditorState extends State<_SentenceTextEditor> {
+  late final _controller = TextEditingController(text: widget.text);
+  final _focus = FocusNode();
+  @override
+  void dispose() {
+    _focus.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: Text(st(context, '가져온 문장 편집', 'Edit imported sentences')),
+      actions: [
+        const SentenceKeyboardDismissButton(),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: Text(st(context, '편집 완료', 'Done')),
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        controller: _controller,
+        focusNode: _focus,
+        autofocus: true,
+        expands: true,
+        minLines: null,
+        maxLines: null,
+        textAlignVertical: TextAlignVertical.top,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          helperText: st(
+            context,
+            '한 줄에 한 문장씩 수정한 뒤 완료를 눌러 주세요.',
+            'Use one sentence per line, then tap Done.',
+          ),
+        ),
+      ),
+    ),
   );
 }
 
@@ -633,45 +1037,63 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _stopPlayback() async {
-    _playGeneration++;
-    if (_playDone?.isCompleted == false) _playDone!.complete();
-    await _completion?.cancel();
-    _completion = null;
+    final generation = ++_playGeneration;
+    final done = _playDone;
+    _playDone = null;
+    if (done != null && !done.isCompleted) done.complete();
     await _player.stop();
-    if (mounted) setState(() => _playing = false);
+    if (mounted && generation == _playGeneration) {
+      setState(() => _playing = false);
+    }
   }
 
   Future<void> _play(List<Map<String, dynamic>> takes) async {
+    // Capture the request before awaiting stop, so an older request cannot
+    // resume and replace a newer selection after asynchronous platform work.
+    final generation = _playGeneration + 1;
     await _stopPlayback();
-    final generation = _playGeneration;
+    if (!mounted || generation != _playGeneration) return;
+    // Keep one completion subscription for this screen. Cancelling and
+    // recreating the native EventChannel between takes races with switching.
+    _completion ??= const EventChannel('speech_rehab/audio_player/events')
+        .receiveBroadcastStream()
+        .listen(
+          (event) {
+            final done = _playDone;
+            if (event == 'complete' && done != null && !done.isCompleted) {
+              done.complete();
+            }
+          },
+          onError: (Object error) {
+            final done = _playDone;
+            if (done != null && !done.isCompleted) done.completeError(error);
+          },
+        );
     try {
       for (final take in takes) {
         if (generation != _playGeneration || !mounted) return;
         final done = Completer<void>();
         _playDone = done;
-        _completion = const EventChannel('speech_rehab/audio_player/events')
-            .receiveBroadcastStream()
-            .listen(
-              (event) {
-                if (event == 'complete' && !done.isCompleted) done.complete();
-              },
-              onError: (Object e) {
-                if (!done.isCompleted) done.completeError(e);
-              },
-            );
-        setState(() => _playing = true);
+        setState(() {
+          _playing = true;
+          _error = null;
+        });
         await _player.playFile(widget.repository.audioPath(take));
         await done.future.timeout(
           Duration(milliseconds: (take['duration'] as int) + 5000),
         );
-        await _completion?.cancel();
-        _completion = null;
-        if (generation != _playGeneration) return;
+        if (generation != _playGeneration || !mounted) return;
+        _playDone = null;
         await Future<void>.delayed(const Duration(milliseconds: 350));
       }
-      if (mounted) setState(() => _playing = false);
+      if (mounted && generation == _playGeneration) {
+        setState(() => _playing = false);
+      }
     } catch (_) {
       if (mounted && generation == _playGeneration) {
+        _playDone = null;
+        await _player.stop();
+        if (!mounted || generation != _playGeneration) return;
         setState(() {
           _playing = false;
           _error = tr(
@@ -1024,7 +1446,9 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
                 onPressed: _stopPlayback,
                 child: Text(tr('듣기 멈추기', 'Stop playback')),
               ),
-            for (final take in takes) _takeCard(take, en),
+            // Keep the recording just saved within reach. Sequential playback
+            // still uses the repository's chronological slot order above.
+            for (final take in takes.reversed) _takeCard(take, en),
             if (takes.isNotEmpty) _tension(false),
             Text(
               tr(
@@ -1036,6 +1460,8 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
               title: Text(tr('AI 분석 서버 설정', 'AI analysis server settings')),
               children: [
                 TextField(
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                   controller: _server,
                   enabled: _analyses.isEmpty,
                   decoration: InputDecoration(
@@ -1043,6 +1469,8 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
                   ),
                 ),
                 TextField(
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                   controller: _token,
                   enabled: _analyses.isEmpty,
                   obscureText: true,
@@ -1088,6 +1516,7 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
       alignedEnvelope.addAll(List.filled(bins - envelope.length, 0));
     }
     return Card(
+      key: ValueKey('sentence-take-${take['id']}'),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -1099,7 +1528,12 @@ class _PairState extends State<SentencePairScreen> with WidgetsBindingObserver {
             OutlinedButton.icon(
               onPressed: _recording || _busy ? null : () => _play([take]),
               icon: const Icon(Icons.play_arrow),
-              label: Text(tr('이 녹음 듣기', 'Listen to this recording')),
+              label: Text(
+                tr(
+                  '${(take['slot'] as int) + 1}차 녹음 듣기',
+                  'Listen to recording ${(take['slot'] as int) + 1}',
+                ),
+              ),
             ),
             if (_wave)
               PracticeWaveform(

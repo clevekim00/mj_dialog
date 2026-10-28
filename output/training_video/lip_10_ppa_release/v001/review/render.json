@@ -1,0 +1,108 @@
+{
+  "id": "lip_10_ppa_release",
+  "title": "빠 소리 내기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.076,
+      1
+    ],
+    [
+      1.3,
+      1
+    ],
+    [
+      1.8760000000000001,
+      2
+    ],
+    [
+      2.1,
+      2
+    ],
+    [
+      2.676,
+      1
+    ],
+    [
+      2.9000000000000004,
+      1
+    ],
+    [
+      3.476,
+      2
+    ],
+    [
+      3.7,
+      2
+    ],
+    [
+      4.276,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0004872465396981,
+          -0.0003056898598003888,
+          0.018768895114959383
+        ],
+        [
+          0.0003056898598003888,
+          1.0004872465396981,
+          0.20460955417638732
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0014820394314112,
+          -0.0006535668936898622,
+          -0.559552791209175
+        ],
+        [
+          0.0006535668936898622,
+          1.0014820394314112,
+          0.4736594694138949
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "35640c4d3dd5ac5a61db889f2b56567685b8fa68913a5ae6f01fea5f8a387bf8",
+  "file_bytes": 253236,
+  "atlas_sha256": "9ac176442db9863fdb1ab9db2a58cbda863433d0aa6a95a7c98c4307107454fc",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

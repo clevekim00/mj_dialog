@@ -1,0 +1,83 @@
+{
+  "id": "lip_03_a_to_i",
+  "status": "review_draft",
+  "clinical_review": "pending",
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5.0,
+  "audio": false,
+  "method": "Generated static character plate + deterministic local Bezier mouth animation",
+  "limitations": [
+    "Lip geometry is an illustrative draft, not a validated physiological model.",
+    "Head and jaw remain fixed; clinical and character consistency review pending."
+  ],
+  "keyframes": [
+    [
+      0,
+      27,
+      1.5,
+      0
+    ],
+    [
+      0.55,
+      27,
+      1.5,
+      0
+    ],
+    [
+      1.15,
+      33,
+      24,
+      0.14
+    ],
+    [
+      1.8,
+      33,
+      24,
+      0.14
+    ],
+    [
+      2.45,
+      48,
+      8,
+      0.7
+    ],
+    [
+      3.25,
+      48,
+      8,
+      0.7
+    ],
+    [
+      3.85,
+      33,
+      24,
+      0.14
+    ],
+    [
+      4.1,
+      33,
+      24,
+      0.14
+    ],
+    [
+      4.65,
+      27,
+      1.5,
+      0
+    ],
+    [
+      5,
+      27,
+      1.5,
+      0
+    ]
+  ],
+  "sha256": "a8ebd04e5c046cd1484ddf526fd1e529d319939807f79bd86ce99d28d14fc47b",
+  "versions": {
+    "ffmpeg": "7.1"
+  },
+  "output": "output/training_video/lip_03_a_to_i/v001/exports/lip_03_a_to_i_v001_review.mp4"
+}

@@ -1,0 +1,92 @@
+{
+  "id": "lip_01_tuck_extend",
+  "title": "입술 넣었다 내밀기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0035003690503945,
+          -0.0001308629238302028,
+          -1.723279605583871
+        ],
+        [
+          0.0001308629238302028,
+          1.0035003690503945,
+          3.5826139750559864
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0054261499027919,
+          -0.00011412381909907107,
+          -2.83676389824773
+        ],
+        [
+          0.00011412381909907107,
+          1.0054261499027919,
+          2.8628543036285077
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "aaeb82376507731384f25a3cb84499e073e8cb2a6695d91783feb3674cdc1644",
+  "file_bytes": 243564,
+  "atlas_sha256": "6e376b5d82156a3afbb1e3cc197f03dd95d3f0249e110c571d20c869f8832cd1",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

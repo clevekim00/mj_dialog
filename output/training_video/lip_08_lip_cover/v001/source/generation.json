@@ -1,0 +1,79 @@
+{
+  "id": "lip_08_lip_cover",
+  "title": "윗입술·아랫입술 덮기",
+  "instruction": "아랫입술로 윗입술을 덮고, 윗입술로 아랫입술을 번갈아 덮으세요.",
+  "caption": "아랫입술과 윗입술을 번갈아 덮으세요.",
+  "seconds": 5,
+  "safety": "general",
+  "visual": "faceCloseUp",
+  "pilot_order": null,
+  "motion_prompt": "Move the lower lip upward to cover the upper lip, release, then move the upper lip downward to cover the lower lip, and return to neutral.",
+  "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+  "destination_after_review": "assets/videos/training/lip_08_lip_cover.mp4",
+  "unlinked_file_exists": false,
+  "status": "awaiting_atlas",
+  "clinical_review": "pending",
+  "mode": "face",
+  "poses": [
+    "relaxed neutral closed lips",
+    "LOWER lip lifted over and visibly covering the upper lip; lower red lip is on top, no tongue visible, subtle chin elevation",
+    "UPPER lip lowered over and visibly covering the lower lip; upper red lip is on top, subtle relaxed chin lowering, no tongue visible"
+  ],
+  "layout": {
+    "columns": 1,
+    "rows": 3
+  },
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_08_lip_cover. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: LOWER lip lifted over and visibly covering the upper lip; lower red lip is on top, no tongue visible, subtle chin elevation. TILE 3: UPPER lip lowered over and visibly covering the lower lip; upper red lip is on top, subtle relaxed chin lowering, no tongue visible. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+  "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+  "version": "v001",
+  "revised_prompt": "Use case: scientific-educational. Draw a THREE-panel animation atlas for a speech therapy exercise, three equal16:9 scenes STACKED vertically, no labels no borders. Same adult illustrated woman from reference. Same calm warm clinic, dark ponytail and white uniform. In ALL panels use a fixed CLOSE THREE-QUARTER SIDE view of the WHOLE face including cheeks, nose and entire jaw/chin; the woman faces viewer-left so the protruding lips and which lip covers which is visible. Render lips as natural painterly anatomy matching the rest of the face. Panel1: relaxed neutral closed lips, normal lip seam. Panel2: exaggerated but comfortable LOWER-LIP-OVER-UPPER-LIP exercise: chin lifts, bottom lip lifts up and rolls FORWARD/UP over the top lip, completely hiding the upper red lip beneath the LOWER lip. Show the protruding lower lip distinctly ABOVE the normal seam, just under nose. Panel3: UPPER-LIP-OVER-LOWER-LIP exercise: top lip extends DOWN/FORWARD over bottom lip, lower lip tucked and completely hidden UNDER the top lip, chin relaxes down. Show the protruding UPPER lip distinctly BELOW the normal seam. DO NOT show three neutral mouths, DO NOT substitute slight smile or pout. Clearly show two opposite overlapping lip folds and accompanying cheek/chin movement. No tongue, no teeth, no biting, no strain, no text, no arrows, no captions, no watermark. Exactly same camera, identity and scale in all three panels.",
+  "render_mode": "face_profile",
+  "generation_note": "Front-face lip overlap was subtle; final uses a three-quarter face view. Overlap accuracy still requires review.",
+  "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-585ef497-2dfb-4f77-96b8-f729ce2058e3.png"
+}

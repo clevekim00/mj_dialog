@@ -317,6 +317,12 @@ class ConsonantTrainingAttempt {
     required this.analysis,
     String? language,
     this.fatigue,
+    this.exerciseKind,
+    this.plannedRepetitions,
+    this.durationMs = 0,
+    this.waveform = const [],
+    this.selfReport,
+    this.contentVersion,
   }) : _language = language;
 
   final String id;
@@ -330,25 +336,50 @@ class ConsonantTrainingAttempt {
   final String? _language;
   String get language => _language ?? analysis.language;
   final int? fatigue;
+  final String? exerciseKind;
+  final int? plannedRepetitions;
+  final int durationMs;
+  final List<double> waveform;
+  final String? selfReport;
+  final String? contentVersion;
+
+  ConsonantTrainingAttempt withSelfReport(String value) =>
+      copyWith(selfReport: value);
+  ConsonantTrainingAttempt copyWith({
+    String? selfReport,
+    PronunciationAnalysisResult? analysis,
+  }) => ConsonantTrainingAttempt(
+    id: id,
+    targetId: targetId,
+    contentId: contentId,
+    text: text,
+    level: level,
+    audioFilePath: audioFilePath,
+    createdAt: createdAt,
+    analysis: analysis ?? this.analysis,
+    language: language,
+    fatigue: fatigue,
+    exerciseKind: exerciseKind,
+    plannedRepetitions: plannedRepetitions,
+    durationMs: durationMs,
+    waveform: waveform,
+    selfReport: selfReport ?? this.selfReport,
+    contentVersion: contentVersion,
+  );
 
   ConsonantTrainingAttempt withAnalysis(PronunciationAnalysisResult result) =>
-      ConsonantTrainingAttempt(
-        id: id,
-        targetId: targetId,
-        contentId: contentId,
-        text: text,
-        level: level,
-        audioFilePath: audioFilePath,
-        createdAt: createdAt,
-        analysis: result,
-        language: language,
-        fatigue: fatigue,
-      );
+      copyWith(analysis: result);
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'language': language,
     'fatigue': fatigue,
+    'exerciseKind': exerciseKind,
+    'plannedRepetitions': plannedRepetitions,
+    'durationMs': durationMs,
+    'waveform': waveform,
+    'selfReport': selfReport,
+    'contentVersion': contentVersion,
     'targetId': targetId,
     'contentId': contentId,
     'text': text,
@@ -403,6 +434,14 @@ class ConsonantTrainingAttempt {
             (json['analysis'] as Map?)?['language'] as String? ??
             'ko-KR',
         fatigue: json['fatigue'] as int?,
+        exerciseKind: json['exerciseKind'] as String?,
+        plannedRepetitions: json['plannedRepetitions'] as int?,
+        durationMs: json['durationMs'] as int? ?? 0,
+        waveform: (json['waveform'] as List? ?? const [])
+            .map((v) => (v as num).toDouble())
+            .toList(),
+        selfReport: json['selfReport'] as String?,
+        contentVersion: json['contentVersion'] as String?,
         targetId: json['targetId'] as String,
         contentId: json['contentId'] as String,
         text: json['text'] as String,

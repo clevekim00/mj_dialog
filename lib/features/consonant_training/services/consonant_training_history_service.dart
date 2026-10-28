@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchronized/synchronized.dart';
@@ -51,6 +52,8 @@ class ConsonantTrainingHistoryService {
     required String text,
     required String language,
     String? excludingId,
+    DateTime? createdBefore,
+    String? contentVersion,
   }) async {
     for (final item in await load()) {
       if (item.targetId == targetId &&
@@ -58,12 +61,32 @@ class ConsonantTrainingHistoryService {
           item.text == text &&
           item.language == language &&
           item.id != excludingId &&
+          (createdBefore == null || item.createdAt.isBefore(createdBefore)) &&
+          (contentVersion == null || item.contentVersion == contentVersion) &&
           item.audioFilePath.isNotEmpty) {
         return item;
       }
     }
     return null;
   }
+
+  Future<void> delete(String id) => _lock.synchronized(() async {
+    final all = await load();
+    final remaining = all.where((a) => a.id != id).toList();
+    // Keep metadata until file cleanup succeeds so a failed delete is retryable.
+    for (final attempt in all.where((a) => a.id == id)) {
+      if (remaining.any((a) => a.audioFilePath == attempt.audioFilePath)) {
+        continue;
+      }
+      final file = File(attempt.audioFilePath);
+      if (await file.exists()) await file.delete();
+    }
+    final saved = await (await _prefs).setString(
+      _storageKey,
+      jsonEncode(remaining.map((a) => a.toJson()).toList()),
+    );
+    if (!saved) throw StateError('삭제하지 못했습니다.');
+  });
 
   Future<void> clear() async => (await _prefs).remove(_storageKey);
 

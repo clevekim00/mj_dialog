@@ -1,0 +1,103 @@
+{
+  "id": "tongue_11_trace_teeth",
+  "title": "치아 차례로 훑기",
+  "instruction": "이를 하나씩 확인하듯 혀끝으로 윗니와 아랫니를 차례로 훑으세요.",
+  "caption": "혀끝으로 윗니와 아랫니를 차례로 훑으세요.",
+  "seconds": 7,
+  "safety": "general",
+  "visual": "oralCutaway",
+  "pilot_order": null,
+  "motion_prompt": "Use the tongue tip to trace each upper tooth from one side to the other, then trace the lower teeth back in the opposite direction, like checking the teeth one by one.",
+  "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+  "destination_after_review": "assets/videos/training/tongue_11_trace_teeth.mp4",
+  "unlinked_file_exists": false,
+  "status": "awaiting_atlas",
+  "clinical_review": "pending",
+  "mode": "frontal_cutaway",
+  "poses": [
+    "single tongue resting centrally low, upper and lower dental arches visible",
+    "tongue TIP touching inside of UPPER VIEWER-LEFT tooth row near molars",
+    "tongue TIP touching inside of UPPER FRONT teeth at center",
+    "tongue TIP touching inside of UPPER VIEWER-RIGHT tooth row near molars",
+    "tongue TIP touching inside of LOWER VIEWER-RIGHT tooth row near molars",
+    "tongue TIP touching inside of LOWER FRONT teeth at center",
+    "tongue TIP touching inside of LOWER VIEWER-LEFT tooth row near molars"
+  ],
+  "layout": {
+    "columns": 3,
+    "rows": 3
+  },
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.1171428571428572,
+      1
+    ],
+    [
+      1.3571428571428572,
+      1
+    ],
+    [
+      1.9742857142857144,
+      2
+    ],
+    [
+      2.2142857142857144,
+      2
+    ],
+    [
+      2.831428571428571,
+      3
+    ],
+    [
+      3.071428571428571,
+      3
+    ],
+    [
+      3.688571428571428,
+      4
+    ],
+    [
+      3.9285714285714284,
+      4
+    ],
+    [
+      4.545714285714285,
+      5
+    ],
+    [
+      4.785714285714286,
+      5
+    ],
+    [
+      5.402857142857142,
+      6
+    ],
+    [
+      5.642857142857142,
+      6
+    ],
+    [
+      6.26,
+      0
+    ],
+    [
+      6.5,
+      0
+    ],
+    [
+      7,
+      0
+    ]
+  ],
+  "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_11_trace_teeth. EXACTLY 3 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 48:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable FRONT/SLIGHTLY TOP-DOWN transparent-cheek oral cutaway that clearly reveals BOTH left and right posterior molars and upper/lower dental arches at once; use this same view in every tile. A sagittal profile cannot show both molar sides, so do not use it. Tile poses: TILE 1: single tongue resting centrally low, upper and lower dental arches visible. TILE 2: tongue TIP touching inside of UPPER VIEWER-LEFT tooth row near molars. TILE 3: tongue TIP touching inside of UPPER FRONT teeth at center. TILE 4: tongue TIP touching inside of UPPER VIEWER-RIGHT tooth row near molars. TILE 5: tongue TIP touching inside of LOWER VIEWER-RIGHT tooth row near molars. TILE 6: tongue TIP touching inside of LOWER FRONT teeth at center. TILE 7: tongue TIP touching inside of LOWER VIEWER-LEFT tooth row near molars. TILE 8: single tongue resting centrally low, upper and lower dental arches visible. TILE 9: single tongue resting centrally low, upper and lower dental arches visible. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+  "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+  "version": "v001"
+}

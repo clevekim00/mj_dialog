@@ -1,0 +1,92 @@
+{
+  "id": "lip_04_u_to_a",
+  "title": "우-아 입 모양",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.004003394000561,
+          -0.004856898404193267,
+          -0.2401880168925383
+        ],
+        [
+          0.004856898404193267,
+          1.004003394000561,
+          0.6293408274668862
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.004949944722174,
+          -0.001358885001530712,
+          -1.3432870976816274
+        ],
+        [
+          0.001358885001530712,
+          1.004949944722174,
+          5.110485492815927
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "32d4489b633a8f0161f27e0da916dad557ef9850cb2788a1c780e79a6372293c",
+  "file_bytes": 250782,
+  "atlas_sha256": "7ddfd0ac65b00035d673f2a704ca109e20f1806c254aa6a2be84ec067f3298ea",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

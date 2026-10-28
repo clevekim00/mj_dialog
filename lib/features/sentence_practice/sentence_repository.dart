@@ -50,8 +50,65 @@ class SentenceRepository {
     CREATE TABLE IF NOT EXISTS recordings(id TEXT PRIMARY KEY, pair_id TEXT NOT NULL REFERENCES pairs(id), slot INTEGER NOT NULL CHECK(slot IN (0,1)), path TEXT NOT NULL, hash TEXT NOT NULL, duration INTEGER NOT NULL, envelope TEXT NOT NULL, assessment TEXT NOT NULL, UNIQUE(pair_id,slot));
     CREATE TABLE IF NOT EXISTS pending(id TEXT PRIMARY KEY, pair_id TEXT NOT NULL, slot INTEGER NOT NULL, source TEXT NOT NULL, duration INTEGER NOT NULL, envelope TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS cleanup(path TEXT PRIMARY KEY);
-    PRAGMA user_version=1;''',
+''',
     );
+    if (!db
+        .select('PRAGMA table_info(sentences)')
+        .any((r) => r['name'] == 'folder')) {
+      db.execute(
+        "ALTER TABLE sentences ADD COLUMN folder TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    db.execute(
+      'CREATE TABLE IF NOT EXISTS sentence_folders(name TEXT PRIMARY KEY)',
+    );
+    db.execute(
+      "INSERT OR IGNORE INTO sentence_folders SELECT DISTINCT folder FROM sentences WHERE deleted=0 AND folder<>''",
+    );
+    db.execute('PRAGMA user_version=3');
+  }
+
+  List<String> folders() => db
+      .select(
+        "SELECT name AS folder FROM sentence_folders ORDER BY name COLLATE NOCASE",
+      )
+      .map((r) => r['folder'] as String)
+      .toList();
+
+  void addFolder(String name) {
+    final clean = name.trim();
+    if (clean.isEmpty) throw ArgumentError('Empty folder name');
+    db.execute('INSERT INTO sentence_folders(name) VALUES(?)', [clean]);
+  }
+
+  void renameFolder(String oldName, String newName) {
+    final clean = newName.trim();
+    if (clean.isEmpty) throw ArgumentError('Empty folder name');
+    transaction(() {
+      if (!folders().contains(oldName)) throw StateError('Missing folder');
+      db.execute('UPDATE sentence_folders SET name=? WHERE name=?', [
+        clean,
+        oldName,
+      ]);
+      db.execute('UPDATE sentences SET folder=? WHERE folder=?', [
+        clean,
+        oldName,
+      ]);
+    });
+  }
+
+  void moveSentences(Iterable<String> ids, String folder) {
+    if (folder.isNotEmpty && !folders().contains(folder)) {
+      throw ArgumentError('Missing folder');
+    }
+    transaction(() {
+      for (final id in ids) {
+        db.execute('UPDATE sentences SET folder=? WHERE id=? AND deleted=0', [
+          folder,
+          id,
+        ]);
+      }
+    });
   }
 
   T transaction<T>(T Function() action) {
@@ -82,14 +139,31 @@ class SentenceRepository {
       .select('SELECT * FROM recordings WHERE pair_id=? ORDER BY slot', [pair])
       .map((r) => Map<String, dynamic>.from(r))
       .toList();
-  String addSentence(String text, String language, {String source = 'text'}) {
+  String addSentence(
+    String text,
+    String language, {
+    String source = 'text',
+    String folder = '',
+  }) {
     if (text.trim().isEmpty || !{'ko-KR', 'en-US'}.contains(language)) {
       throw ArgumentError('Invalid sentence');
     }
     final id = const Uuid().v4();
+    if (folder.trim().isNotEmpty) {
+      db.execute('INSERT OR IGNORE INTO sentence_folders(name) VALUES(?)', [
+        folder.trim(),
+      ]);
+    }
     db.execute(
-      'INSERT INTO sentences(id,text,language,source,created) VALUES(?,?,?,?,?)',
-      [id, text.trim(), language, source, DateTime.now().toIso8601String()],
+      'INSERT INTO sentences(id,text,language,source,created,folder) VALUES(?,?,?,?,?,?)',
+      [
+        id,
+        text.trim(),
+        language,
+        source,
+        DateTime.now().toIso8601String(),
+        folder.trim(),
+      ],
     );
     return id;
   }

@@ -21,6 +21,43 @@ void main() {
     return f.path;
   }
 
+  test('migrates legacy sentences and persists folder names on reopen', () {
+    repo.db.execute('ALTER TABLE sentences DROP COLUMN folder');
+    repo.db.execute(
+      "INSERT INTO sentences VALUES('legacy','기존 문장','ko-KR','text','2026-01-01',0)",
+    );
+    repo.db.close();
+    repo = SentenceRepository(sqlite3.open('${root.path}/test.sqlite'), root);
+    expect(repo.sentences().single['folder'], '');
+    repo.addSentence('새 문장', 'ko-KR', folder: ' 병원 ');
+    repo.db.close();
+    repo = SentenceRepository(sqlite3.open('${root.path}/test.sqlite'), root);
+    expect(repo.folders(), ['병원']);
+    expect(repo.sentences(), hasLength(2));
+  });
+
+  test(
+    'empty folders persist and rename and moves preserve practice history',
+    () {
+      repo.addFolder('병원');
+      repo.addFolder('빈 폴더');
+      final id = repo.addSentence('기존 미분류 문장', 'ko-KR');
+      final pair = repo.startPair(id);
+      repo.moveSentences([id], '병원');
+      repo.renameFolder('병원', '진료');
+      expect(repo.sentences().single['folder'], '진료');
+      expect(repo.pairs(id).single['id'], pair);
+      expect(() => repo.renameFolder('진료', '빈 폴더'), throwsException);
+      expect(repo.sentences().single['folder'], '진료');
+      repo.db.close();
+      repo = SentenceRepository(sqlite3.open('${root.path}/test.sqlite'), root);
+      expect(repo.folders().toSet(), {'진료', '빈 폴더'});
+      repo.moveSentences([id], '');
+      expect(repo.sentences().single['folder'], '');
+      expect(repo.folders(), contains('진료'));
+    },
+  );
+
   test('pairs persist with independent assessments', () async {
     final sentence = repo.addSentence('물을 주세요', 'ko-KR');
     final pair = repo.startPair(sentence);

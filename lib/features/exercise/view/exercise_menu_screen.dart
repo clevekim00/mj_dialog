@@ -147,8 +147,7 @@ class _ChoicesState extends ConsumerState<_TrainingChoices> {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(
-                builder: (_) =>
-                    const ConsonantTrainingHubScreen(autoResume: true),
+                builder: (_) => const ConsonantTrainingHubScreen(),
               ),
             ),
           ),

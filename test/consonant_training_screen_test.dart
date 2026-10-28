@@ -322,6 +322,7 @@ class _Client extends PronunciationAnalysisClient {
     required String contentVersion,
     required String language,
     double? baselineScore,
+    bool allOccurrences = false,
     CancelToken? cancelToken,
   }) async {
     calls++;

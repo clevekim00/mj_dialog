@@ -1,0 +1,100 @@
+{
+  "id": "tongue_09_monkey_lips",
+  "title": "원숭이 입 모양 만들기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.000796928135188,
+          8.803385044485615e-05,
+          -0.5305412111420867
+        ],
+        [
+          -8.803385044485615e-05,
+          1.000796928135188,
+          0.4087955486523855
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.000718719877318,
+          0.00023449060890352245,
+          -0.5273698278864037
+        ],
+        [
+          -0.00023449060890352245,
+          1.000718719877318,
+          1.2755782042974722
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "cc9fa1c630179f269d77ef6f37e4c98647b45a3656f112281f1b3ff343761d24",
+  "file_bytes": 224102,
+  "atlas_sha256": "69ff9bf0e77f284ff16c4d692664ee1c2d5d5a9baa0ab4b439bc7448a5ecadb4",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

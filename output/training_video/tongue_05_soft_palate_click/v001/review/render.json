@@ -1,0 +1,92 @@
+{
+  "id": "tongue_05_soft_palate_click",
+  "title": "혀 뒤쪽 붙였다 떼기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "caution",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "sagittal",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0000217299065506,
+          -0.00026220506047813753,
+          -0.08382739021951324
+        ],
+        [
+          0.00026220506047813753,
+          1.0000217299065506,
+          0.05124525504066968
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0005948643415505,
+          -0.00026392338048011557,
+          -0.3144185475593742
+        ],
+        [
+          0.00026392338048011557,
+          1.0005948643415505,
+          -0.07905572810490315
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "58f130b6ad66ade4c2eeae852795fc2c2f8d7dbeb58100c5e35f7eb3a1433be1",
+  "file_bytes": 977301,
+  "atlas_sha256": "de07f6b8c67127f8bf3c46da3448004372e0df2ef505e672f2925f6ad3f2e40f",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

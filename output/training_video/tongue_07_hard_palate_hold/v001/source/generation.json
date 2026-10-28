@@ -1,0 +1,54 @@
+{
+  "id": "tongue_07_hard_palate_hold",
+  "title": "입천장에 혀 대고 유지하기",
+  "instruction": "입을 편안한 범위에서 벌리고 혀를 경구개에 대어 잠깐 유지하세요.",
+  "caption": "혀를 입천장에 대고 편안하게 유지하세요.",
+  "seconds": 6,
+  "safety": "caution",
+  "visual": "oralCutaway",
+  "pilot_order": null,
+  "motion_prompt": "Open the jaw comfortably, not excessively. Press the broad tongue gently against the hard palate, hold visibly for two seconds, release, and return to neutral.",
+  "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+  "destination_after_review": "assets/videos/training/tongue_07_hard_palate_hold.mp4",
+  "unlinked_file_exists": false,
+  "status": "awaiting_atlas",
+  "clinical_review": "pending",
+  "mode": "sagittal",
+  "poses": [
+    "comfortable open jaw, single tongue resting low",
+    "broad upper surface of tongue gently contacting the HARD PALATE along its anterior-to-middle roof; jaw remains comfortably open, no contact with soft palate required"
+  ],
+  "layout": {
+    "columns": 1,
+    "rows": 2
+  },
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.7,
+      0
+    ],
+    [
+      1.7,
+      1
+    ],
+    [
+      3.7,
+      1
+    ],
+    [
+      5.3,
+      0
+    ],
+    [
+      6,
+      0
+    ]
+  ],
+  "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_07_hard_palate_hold. EXACTLY 1 columns and 2 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:18. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: comfortable open jaw, single tongue resting low. TILE 2: broad upper surface of tongue gently contacting the HARD PALATE along its anterior-to-middle roof; jaw remains comfortably open, no contact with soft palate required. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+  "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+  "version": "v001"
+}

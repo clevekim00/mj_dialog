@@ -1,0 +1,116 @@
+[
+  {
+    "id": "lip_04_u_to_a",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-8a93266a-0390-48dc-b4c8-0113c7a6b859.png",
+    "revision": null
+  },
+  {
+    "id": "lip_05_kiss",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-2c726051-e7e9-4b4e-b257-a4bb5d2b6de5.png",
+    "revision": null
+  },
+  {
+    "id": "lip_06_spread_pucker",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-ae297a2a-8f34-4aa0-8c67-3d6de5e7de4e.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_02_touch_lips",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-fecd6152-9725-404d-9017-760081dfbf1e.png",
+    "revision": null
+  },
+  {
+    "id": "lip_01_tuck_extend",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-ada80480-e97e-435a-9c5a-5178a6d6946a.png",
+    "revision": null
+  },
+  {
+    "id": "lip_08_lip_cover",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-585ef497-2dfb-4f77-96b8-f729ce2058e3.png",
+    "revision": "three-quarter face"
+  },
+  {
+    "id": "lip_09_one_side_grimace",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-d64edb9f-374e-4c14-a9d1-f2a7e9eb9933.png",
+    "revision": null
+  },
+  {
+    "id": "lip_10_ppa_release",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-034661c0-c24b-4a4e-84cf-0f95793113c0.png",
+    "revision": null
+  },
+  {
+    "id": "lip_11_fish_mouth",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-53027c15-448c-4fac-b2c5-3d642b9c9ef8.png",
+    "revision": null
+  },
+  {
+    "id": "lip_12_sad_smile",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-18556546-67c1-4a55-a86e-ffa72dab56cc.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_05_soft_palate_click",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-e7f8cbb6-1479-43c8-95ee-b16aa86fc80a.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_06_palate_sweep",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-f00aeac6-59b3-4bce-a19e-46aa8bfee00a.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_07_hard_palate_hold",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-b3ff45cf-b54b-41e3-a615-351994fdff9e.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_08_resistance",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-48afffef-61be-4de7-89ca-38d763539ff2.png",
+    "revision": "synthetic teaching model"
+  },
+  {
+    "id": "tongue_09_monkey_lips",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-b17770a4-662a-474b-ba84-50cb6cf95ed4.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_10_molars",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-1726f6f8-846b-4883-b2e2-a4fa9e053449.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_11_trace_teeth",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-8ac5da36-b5a8-413a-b391-9ec8e465be59.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_13_clock_click",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-cb90e552-7285-48ac-8d8c-2fa83c0446da.png",
+    "revision": null
+  },
+  {
+    "id": "tongue_14_tongue_click",
+    "tool": "built-in image_gen",
+    "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-ee28b536-d083-4618-b555-7b07964bab74.png",
+    "revision": "sagittal cutaway"
+  }
+]

@@ -1,0 +1,81 @@
+{
+  "id": "lip_05_kiss",
+  "title": "뽀뽀 입술 만들기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.35,
+      1
+    ],
+    [
+      2.0,
+      1
+    ],
+    [
+      2.7,
+      0
+    ],
+    [
+      3.2,
+      0
+    ],
+    [
+      3.65,
+      1
+    ],
+    [
+      3.9,
+      1
+    ],
+    [
+      4.45,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.000148402222017,
+          0.0005752527514184744,
+          -0.1572387486853419
+        ],
+        [
+          -0.0005752527514184744,
+          1.000148402222017,
+          0.8216154307868883
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "5276a711ca9d7045301091705dcdeb671bb275a2986d12b90d30ab62d8f13825",
+  "file_bytes": 226600,
+  "atlas_sha256": "e8dd6f2347d2fdec9393f91679a89d7ac186cce159c33784eff03816c1d4fa9a",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

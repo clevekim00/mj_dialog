@@ -10,6 +10,8 @@
 
 작성일: 2026-08-25
 
+> AI만 활용하고 유료 Higgsfield 구독 없이 추가 영상을 만드는 방법은 [무료 AI 훈련 영상 제작 가이드](free-training-video-production-guide.md)를 참고하세요. 현재 앱 자산 경로·미연결 항목·소스 보관·검수 절차를 정리했습니다.
+
 ## 1. 목적
 
 `docs/breathing-and-oral-exercises.md`의 46개 훈련을 앱에서 반복 재생할 짧은 무음 영상으로 제작한다. 영상은 동작만 보여주고, 지시문·반복 횟수·안전 문구·속도는 Flutter 앱이 별도로 표시한다.

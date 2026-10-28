@@ -1,0 +1,92 @@
+{
+  "id": "tongue_06_palate_sweep",
+  "title": "입천장 뒤로 훑기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "sagittal",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.46,
+      1
+    ],
+    [
+      1.8333333333333333,
+      1
+    ],
+    [
+      2.793333333333333,
+      2
+    ],
+    [
+      3.1666666666666665,
+      2
+    ],
+    [
+      4.126666666666667,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9993281755622949,
+          0.00040354703722181675,
+          0.39367009690390664
+        ],
+        [
+          -0.00040354703722181675,
+          0.9993281755622949,
+          0.6238833347311878
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.000204688079137,
+          -8.006098550720472e-05,
+          -0.18183287294586573
+        ],
+        [
+          8.006098550720472e-05,
+          1.000204688079137,
+          0.4335619541536625
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "4fb28e18387a949cc6cba934fbdf2dc74b0b61cfc5f2f545466a654553cdbcb1",
+  "file_bytes": 986674,
+  "atlas_sha256": "67545fa6bfb85c2f26d0b40400dda6949650332a439a23f1d58731615bbb60c9",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ]
+}

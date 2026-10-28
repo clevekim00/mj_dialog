@@ -1,0 +1,1417 @@
+[
+  {
+    "id": "lip_04_u_to_a",
+    "title": "우-아 입 모양",
+    "instruction": "/우/와 /아/ 입 모양을 번갈아 만드세요.",
+    "caption": "/우/와 /아/ 입 모양을 번갈아 만드세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": 2,
+    "motion_prompt": "Alternate between a rounded Korean 우 lip shape and an open Korean 아 mouth shape, using one smooth controlled cycle.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_04_u_to_a.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "Korean U vowel: rounded protruded lips, small central opening, cheeks and chin follow the pucker naturally",
+      "Korean A vowel: comfortably open mouth vertically, lowered jaw and chin, gently elongated lower cheeks"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_04_u_to_a. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: Korean U vowel: rounded protruded lips, small central opening, cheeks and chin follow the pucker naturally. TILE 3: Korean A vowel: comfortably open mouth vertically, lowered jaw and chin, gently elongated lower cheeks. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_05_kiss",
+    "title": "뽀뽀 입술 만들기",
+    "instruction": "뽀뽀하는 입술 모양을 느리게 한 뒤 빠르게 반복하세요.",
+    "caption": "뽀뽀하는 입술 모양을 반복하세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": 3,
+    "motion_prompt": "Form a gentle kiss pucker, hold briefly, release to neutral, and repeat once with a clear smooth motion suitable for slow or fast app playback.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_05_kiss.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "gentle closed kiss pucker, both lips project forward, mouth corners draw inward, cheeks and chin adapt naturally"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 2
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.35,
+        1
+      ],
+      [
+        2.0,
+        1
+      ],
+      [
+        2.7,
+        0
+      ],
+      [
+        3.2,
+        0
+      ],
+      [
+        3.65,
+        1
+      ],
+      [
+        3.9,
+        1
+      ],
+      [
+        4.45,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_05_kiss. EXACTLY 1 columns and 2 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:18. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: gentle closed kiss pucker, both lips project forward, mouth corners draw inward, cheeks and chin adapt naturally. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_06_spread_pucker",
+    "title": "입술 벌렸다 모으기",
+    "instruction": "입술을 양옆으로 벌렸다가 앞으로 모으세요.",
+    "caption": "입술을 양옆으로 벌렸다가 앞으로 모으세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": 4,
+    "motion_prompt": "Spread the lips horizontally into a broad relaxed shape, then bring them forward into a rounded kiss pucker, and return to neutral.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_06_spread_pucker.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "lips stretched broadly sideways with relaxed corners, subtle cheeks lift, slight tooth visibility",
+      "gentle rounded kiss pucker with lips projecting forward and corners drawn inward; cheeks follow naturally"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_06_spread_pucker. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: lips stretched broadly sideways with relaxed corners, subtle cheeks lift, slight tooth visibility. TILE 3: gentle rounded kiss pucker with lips projecting forward and corners drawn inward; cheeks follow naturally. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_02_touch_lips",
+    "title": "윗입술·아랫입술 대기",
+    "instruction": "혀끝을 윗입술과 아랫입술에 번갈아 붙이세요.",
+    "caption": "혀끝을 윗입술과 아랫입술에 번갈아 대세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": 5,
+    "motion_prompt": "Open the mouth comfortably. Touch the upper lip with the tongue tip, return to center, touch the lower lip, then return to neutral. Do not move the head.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_02_touch_lips.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "lips comfortably parted, single tongue resting inside mouth, neutral jaw",
+      "single tongue extends upward and the TIP visibly TOUCHES the OUTSIDE upper lip at the center; tongue curves up, upper lip contact clear, jaw and head remain stable",
+      "single tongue extends downward and the TIP visibly TOUCHES the OUTSIDE lower lip at the center; tongue curves down, lower lip contact clear, jaw and head remain stable"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.22,
+        1
+      ],
+      [
+        1.5,
+        1
+      ],
+      [
+        2.2199999999999998,
+        0
+      ],
+      [
+        2.5,
+        0
+      ],
+      [
+        3.2199999999999998,
+        2
+      ],
+      [
+        3.5,
+        2
+      ],
+      [
+        4.22,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_02_touch_lips. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: lips comfortably parted, single tongue resting inside mouth, neutral jaw. TILE 2: single tongue extends upward and the TIP visibly TOUCHES the OUTSIDE upper lip at the center; tongue curves up, upper lip contact clear, jaw and head remain stable. TILE 3: single tongue extends downward and the TIP visibly TOUCHES the OUTSIDE lower lip at the center; tongue curves down, lower lip contact clear, jaw and head remain stable. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_01_tuck_extend",
+    "title": "입술 넣었다 내밀기",
+    "instruction": "입술을 입 안으로 넣었다가 앞으로 쭉 내미세요.",
+    "caption": "입술을 안으로 넣었다가 앞으로 내미세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Roll both lips gently inward over the teeth, hold briefly, then release and extend both lips straight forward into a soft pucker before returning to neutral.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_01_tuck_extend.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "BOTH lips rolled inward over the teeth; red lip surfaces are tucked away, a soft compressed closed seam visible; cheeks and chin adapt naturally",
+      "both lips released and extended forward in a gentle pucker; natural lip texture and cheeks"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_01_tuck_extend. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: BOTH lips rolled inward over the teeth; red lip surfaces are tucked away, a soft compressed closed seam visible; cheeks and chin adapt naturally. TILE 3: both lips released and extended forward in a gentle pucker; natural lip texture and cheeks. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_08_lip_cover",
+    "title": "윗입술·아랫입술 덮기",
+    "instruction": "아랫입술로 윗입술을 덮고, 윗입술로 아랫입술을 번갈아 덮으세요.",
+    "caption": "아랫입술과 윗입술을 번갈아 덮으세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Move the lower lip upward to cover the upper lip, release, then move the upper lip downward to cover the lower lip, and return to neutral.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_08_lip_cover.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "LOWER lip lifted over and visibly covering the upper lip; lower red lip is on top, no tongue visible, subtle chin elevation",
+      "UPPER lip lowered over and visibly covering the lower lip; upper red lip is on top, subtle relaxed chin lowering, no tongue visible"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.22,
+        1
+      ],
+      [
+        1.5,
+        1
+      ],
+      [
+        2.2199999999999998,
+        0
+      ],
+      [
+        2.5,
+        0
+      ],
+      [
+        3.2199999999999998,
+        2
+      ],
+      [
+        3.5,
+        2
+      ],
+      [
+        4.22,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_08_lip_cover. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: LOWER lip lifted over and visibly covering the upper lip; lower red lip is on top, no tongue visible, subtle chin elevation. TILE 3: UPPER lip lowered over and visibly covering the lower lip; upper red lip is on top, subtle relaxed chin lowering, no tongue visible. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_09_one_side_grimace",
+    "title": "입꼬리 한쪽씩 움직이기",
+    "instruction": "한쪽 안면만 가볍게 찡그려 입술을 좌우로 움직이세요.",
+    "caption": "입꼬리를 한쪽씩 움직여 보세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Gently pull only one corner of the mouth sideways so the lips shift to one side, hold briefly, release, then demonstrate the opposite side and return to neutral.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_09_one_side_grimace.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "pull the VIEWER-LEFT mouth corner sideways, lips shifted to viewer-left, left cheek retracts subtly; head and gaze remain front-facing",
+      "pull the VIEWER-RIGHT mouth corner sideways, lips shifted to viewer-right, right cheek retracts subtly; head and gaze remain front-facing"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.22,
+        1
+      ],
+      [
+        1.5,
+        1
+      ],
+      [
+        2.2199999999999998,
+        0
+      ],
+      [
+        2.5,
+        0
+      ],
+      [
+        3.2199999999999998,
+        2
+      ],
+      [
+        3.5,
+        2
+      ],
+      [
+        4.22,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_09_one_side_grimace. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: pull the VIEWER-LEFT mouth corner sideways, lips shifted to viewer-left, left cheek retracts subtly; head and gaze remain front-facing. TILE 3: pull the VIEWER-RIGHT mouth corner sideways, lips shifted to viewer-right, right cheek retracts subtly; head and gaze remain front-facing. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_10_ppa_release",
+    "title": "빠 소리 내기",
+    "instruction": "입술을 막았다 터뜨리는 느낌으로 /빠/를 발음하세요.",
+    "caption": "입술을 막았다 터뜨리며 /빠/를 발음하세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "phoneme",
+    "pilot_order": null,
+    "motion_prompt": "Close both lips firmly but without strain, build a small amount of pressure, then release into one clear silent Korean 빠 articulation. Return to neutral and repeat once.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_10_ppa_release.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "both lips gently and firmly sealed, slightly compressed, cheeks relaxed, no puffing or strain",
+      "lips just released into an open A vowel after the bilabial closure, jaw lowers comfortably, soft cheeks and chin follow"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.076,
+        1
+      ],
+      [
+        1.3,
+        1
+      ],
+      [
+        1.8760000000000001,
+        2
+      ],
+      [
+        2.1,
+        2
+      ],
+      [
+        2.676,
+        1
+      ],
+      [
+        2.9000000000000004,
+        1
+      ],
+      [
+        3.476,
+        2
+      ],
+      [
+        3.7,
+        2
+      ],
+      [
+        4.276,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_10_ppa_release. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: both lips gently and firmly sealed, slightly compressed, cheeks relaxed, no puffing or strain. TILE 3: lips just released into an open A vowel after the bilabial closure, jaw lowers comfortably, soft cheeks and chin follow. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_11_fish_mouth",
+    "title": "붕어입 만들기",
+    "instruction": "볼을 살짝 안으로 당기고 입술을 둥글게 모으세요.",
+    "caption": "볼을 살짝 당겨 붕어입 모양을 만드세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Draw both cheeks slightly inward and form a small rounded fish-mouth shape with the lips, hold briefly, then relax completely.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_11_fish_mouth.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "gentle fish mouth: BOTH cheeks drawn slightly inward with subtle visible hollows, rounded closed lips protruded forward; comfortable relaxed eyes"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 2
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.6,
+        0
+      ],
+      [
+        1.6,
+        1
+      ],
+      [
+        3.2,
+        1
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_11_fish_mouth. EXACTLY 1 columns and 2 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:18. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: gentle fish mouth: BOTH cheeks drawn slightly inward with subtle visible hollows, rounded closed lips protruded forward; comfortable relaxed eyes. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "lip_12_sad_smile",
+    "title": "슬픈 표정·웃는 표정",
+    "instruction": "슬픈 표정과 웃는 표정을 천천히 번갈아 만드세요.",
+    "caption": "슬픈 표정과 웃는 표정을 번갈아 만드세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Change slowly from a gentle sad mouth expression with lowered corners to a broad relaxed smile, then return to neutral. Keep the emotion calm and non-dramatic.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/lip_12_sad_smile.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed neutral closed lips",
+      "gentle sad mouth with both lip corners downturned, lower cheeks and chin follow; no tears, no extreme emotion",
+      "broad relaxed smile with mouth corners raised and cheeks gently lifted, subtle upper teeth, natural not strained"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for lip_12_sad_smile. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed neutral closed lips. TILE 2: gentle sad mouth with both lip corners downturned, lower cheeks and chin follow; no tears, no extreme emotion. TILE 3: broad relaxed smile with mouth corners raised and cheeks gently lifted, subtle upper teeth, natural not strained. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_05_soft_palate_click",
+    "title": "혀 뒤쪽 붙였다 떼기",
+    "instruction": "혀 뒤쪽을 연구개 방향으로 천천히 붙였다가 떼세요.",
+    "caption": "혀 뒤쪽을 올려 천천히 붙였다 떼세요.",
+    "seconds": 5,
+    "safety": "caution",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Lift the back of the tongue gently toward the soft-palate area, make a controlled contact-and-release motion, then return to the resting tongue position. Show one slow cycle that can be sped up by the app.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_05_soft_palate_click.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "sagittal",
+    "poses": [
+      "tongue resting low inside the mouth, hard palate and soft palate clearly distinct",
+      "POSTERIOR tongue dorsum raised toward and gently contacting the SOFT PALATE behind the hard palate; tongue TIP stays forward and relatively low, no tip-to-front-palate substitute",
+      "posterior tongue relaxed and lowered again, no contact, calm comfortable open airway schematic"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_05_soft_palate_click. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: tongue resting low inside the mouth, hard palate and soft palate clearly distinct. TILE 2: POSTERIOR tongue dorsum raised toward and gently contacting the SOFT PALATE behind the hard palate; tongue TIP stays forward and relatively low, no tip-to-front-palate substitute. TILE 3: posterior tongue relaxed and lowered again, no contact, calm comfortable open airway schematic. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_06_palate_sweep",
+    "title": "입천장 뒤로 훑기",
+    "instruction": "혀끝을 윗니 뒤에 댄 뒤 입천장을 따라 뒤로 천천히 움직이세요.",
+    "caption": "윗니 뒤에서 입천장을 따라 혀를 뒤로 움직이세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Place the tongue tip directly behind the upper front teeth, then sweep the tongue backward along the roof of the mouth and lower it gently to the resting position.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_06_palate_sweep.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "sagittal",
+    "poses": [
+      "tongue resting low inside mouth",
+      "tongue TIP contacting alveolar ridge directly behind UPPER FRONT TEETH, broad tongue body curves naturally",
+      "tongue TIP curled and moved BACKWARD along the roof to the middle HARD PALATE; visible contact target behind previous pose, tongue body follows without penetrating palate"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.46,
+        1
+      ],
+      [
+        1.8333333333333333,
+        1
+      ],
+      [
+        2.793333333333333,
+        2
+      ],
+      [
+        3.1666666666666665,
+        2
+      ],
+      [
+        4.126666666666667,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_06_palate_sweep. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: tongue resting low inside mouth. TILE 2: tongue TIP contacting alveolar ridge directly behind UPPER FRONT TEETH, broad tongue body curves naturally. TILE 3: tongue TIP curled and moved BACKWARD along the roof to the middle HARD PALATE; visible contact target behind previous pose, tongue body follows without penetrating palate. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_07_hard_palate_hold",
+    "title": "입천장에 혀 대고 유지하기",
+    "instruction": "입을 편안한 범위에서 벌리고 혀를 경구개에 대어 잠깐 유지하세요.",
+    "caption": "혀를 입천장에 대고 편안하게 유지하세요.",
+    "seconds": 6,
+    "safety": "caution",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Open the jaw comfortably, not excessively. Press the broad tongue gently against the hard palate, hold visibly for two seconds, release, and return to neutral.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_07_hard_palate_hold.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "sagittal",
+    "poses": [
+      "comfortable open jaw, single tongue resting low",
+      "broad upper surface of tongue gently contacting the HARD PALATE along its anterior-to-middle roof; jaw remains comfortably open, no contact with soft palate required"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 2
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.7,
+        0
+      ],
+      [
+        1.7,
+        1
+      ],
+      [
+        3.7,
+        1
+      ],
+      [
+        5.3,
+        0
+      ],
+      [
+        6,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_07_hard_palate_hold. EXACTLY 1 columns and 2 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:18. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: comfortable open jaw, single tongue resting low. TILE 2: broad upper surface of tongue gently contacting the HARD PALATE along its anterior-to-middle roof; jaw remains comfortably open, no contact with soft palate required. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_08_resistance",
+    "title": "설압자 저항 운동",
+    "instruction": "전문가 지도 아래 설압자로 앞·좌·우 방향에 가벼운 저항을 주세요.",
+    "caption": "전문가 지도 아래 가벼운 저항 운동을 하세요.",
+    "seconds": 6,
+    "safety": "clinicianOnly",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Clinical supervision demonstration only. Show a stationary flat tongue depressor outside the lips providing very light resistance while the tongue presses forward, then gently to each side. No force, no deep insertion, no self-use gesture.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_08_resistance.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "resistance",
+    "poses": [
+      "mouth comfortably open with single tongue slightly protruded; a gloved clinician hand holds a flat tongue depressor OUTSIDE lips, ready without contact",
+      "tongue gently presses FORWARD against the flat tongue depressor held by a gloved clinician OUTSIDE lips; no deep insertion, no strain",
+      "tongue gently presses toward VIEWER-LEFT against a flat tongue depressor held at its left edge by clinician hand OUTSIDE lips; head and jaw stable",
+      "tongue gently presses toward VIEWER-RIGHT against a flat tongue depressor held at its right edge by clinician hand OUTSIDE lips; head and jaw stable"
+    ],
+    "layout": {
+      "columns": 2,
+      "rows": 2
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.1,
+        1
+      ],
+      [
+        1.3333333333333335,
+        1
+      ],
+      [
+        1.9333333333333336,
+        0
+      ],
+      [
+        2.166666666666667,
+        0
+      ],
+      [
+        2.7666666666666666,
+        2
+      ],
+      [
+        3.0,
+        2
+      ],
+      [
+        3.6,
+        0
+      ],
+      [
+        3.8333333333333335,
+        0
+      ],
+      [
+        4.433333333333334,
+        3
+      ],
+      [
+        4.666666666666667,
+        3
+      ],
+      [
+        5.266666666666667,
+        0
+      ],
+      [
+        5.5,
+        0
+      ],
+      [
+        6,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_08_resistance. EXACTLY 2 columns and 2 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 32:18. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Clinician-supervised illustrative demonstration. Include only one gloved clinician hand and its flat tongue depressor, outside the lips, never deep insertion, never a self-use gesture. Keep face and working area unobstructed. Tile poses: TILE 1: mouth comfortably open with single tongue slightly protruded; a gloved clinician hand holds a flat tongue depressor OUTSIDE lips, ready without contact. TILE 2: tongue gently presses FORWARD against the flat tongue depressor held by a gloved clinician OUTSIDE lips; no deep insertion, no strain. TILE 3: tongue gently presses toward VIEWER-LEFT against a flat tongue depressor held at its left edge by clinician hand OUTSIDE lips; head and jaw stable. TILE 4: tongue gently presses toward VIEWER-RIGHT against a flat tongue depressor held at its right edge by clinician hand OUTSIDE lips; head and jaw stable. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_09_monkey_lips",
+    "title": "원숭이 입 모양 만들기",
+    "instruction": "입술 안쪽에서 혀로 윗입술과 아랫입술을 번갈아 밀어주세요.",
+    "caption": "혀로 윗입술과 아랫입술 안쪽을 번갈아 미세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Keep the lips softly closed. Move the tongue inside the mouth to push the upper lip outward from behind, return, then push the lower lip outward from behind, creating a gentle monkey-face shape, then relax.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_09_monkey_lips.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "relaxed softly CLOSED lips, tongue NOT visible",
+      "tongue stays INSIDE closed mouth and gently pushes the UPPER lip outward from behind; upper lip bulges forward, no external tongue; cheeks and chin adapt",
+      "tongue stays INSIDE closed mouth and gently pushes the LOWER lip outward from behind; lower lip bulges forward, no external tongue; cheeks and chin adapt"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.22,
+        1
+      ],
+      [
+        1.5,
+        1
+      ],
+      [
+        2.2199999999999998,
+        0
+      ],
+      [
+        2.5,
+        0
+      ],
+      [
+        3.2199999999999998,
+        2
+      ],
+      [
+        3.5,
+        2
+      ],
+      [
+        4.22,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_09_monkey_lips. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: relaxed softly CLOSED lips, tongue NOT visible. TILE 2: tongue stays INSIDE closed mouth and gently pushes the UPPER lip outward from behind; upper lip bulges forward, no external tongue; cheeks and chin adapt. TILE 3: tongue stays INSIDE closed mouth and gently pushes the LOWER lip outward from behind; lower lip bulges forward, no external tongue; cheeks and chin adapt. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_10_molars",
+    "title": "양쪽 어금니 대기",
+    "instruction": "혀끝을 왼쪽과 오른쪽 어금니에 번갈아 대세요.",
+    "caption": "혀끝을 양쪽 어금니에 번갈아 대세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Move the tongue tip to touch the left back molar area, return to center, then touch the right back molar area and return. Keep the jaw still.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_10_molars.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "frontal_cutaway",
+    "poses": [
+      "single tongue resting centrally low, both UPPER and LOWER tooth arches and posterior molars visible",
+      "single tongue curves toward VIEWER-LEFT and tongue TIP touches inner surface of LEFT POSTERIOR MOLAR area; keep both arches visible and jaw fixed",
+      "single tongue curves toward VIEWER-RIGHT and tongue TIP touches inner surface of RIGHT POSTERIOR MOLAR area; keep both arches visible and jaw fixed"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.22,
+        1
+      ],
+      [
+        1.5,
+        1
+      ],
+      [
+        2.2199999999999998,
+        0
+      ],
+      [
+        2.5,
+        0
+      ],
+      [
+        3.2199999999999998,
+        2
+      ],
+      [
+        3.5,
+        2
+      ],
+      [
+        4.22,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_10_molars. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable FRONT/SLIGHTLY TOP-DOWN transparent-cheek oral cutaway that clearly reveals BOTH left and right posterior molars and upper/lower dental arches at once; use this same view in every tile. A sagittal profile cannot show both molar sides, so do not use it. Tile poses: TILE 1: single tongue resting centrally low, both UPPER and LOWER tooth arches and posterior molars visible. TILE 2: single tongue curves toward VIEWER-LEFT and tongue TIP touches inner surface of LEFT POSTERIOR MOLAR area; keep both arches visible and jaw fixed. TILE 3: single tongue curves toward VIEWER-RIGHT and tongue TIP touches inner surface of RIGHT POSTERIOR MOLAR area; keep both arches visible and jaw fixed. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_11_trace_teeth",
+    "title": "치아 차례로 훑기",
+    "instruction": "이를 하나씩 확인하듯 혀끝으로 윗니와 아랫니를 차례로 훑으세요.",
+    "caption": "혀끝으로 윗니와 아랫니를 차례로 훑으세요.",
+    "seconds": 7,
+    "safety": "general",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Use the tongue tip to trace each upper tooth from one side to the other, then trace the lower teeth back in the opposite direction, like checking the teeth one by one.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_11_trace_teeth.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "frontal_cutaway",
+    "poses": [
+      "single tongue resting centrally low, upper and lower dental arches visible",
+      "tongue TIP touching inside of UPPER VIEWER-LEFT tooth row near molars",
+      "tongue TIP touching inside of UPPER FRONT teeth at center",
+      "tongue TIP touching inside of UPPER VIEWER-RIGHT tooth row near molars",
+      "tongue TIP touching inside of LOWER VIEWER-RIGHT tooth row near molars",
+      "tongue TIP touching inside of LOWER FRONT teeth at center",
+      "tongue TIP touching inside of LOWER VIEWER-LEFT tooth row near molars"
+    ],
+    "layout": {
+      "columns": 3,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.1171428571428572,
+        1
+      ],
+      [
+        1.3571428571428572,
+        1
+      ],
+      [
+        1.9742857142857144,
+        2
+      ],
+      [
+        2.2142857142857144,
+        2
+      ],
+      [
+        2.831428571428571,
+        3
+      ],
+      [
+        3.071428571428571,
+        3
+      ],
+      [
+        3.688571428571428,
+        4
+      ],
+      [
+        3.9285714285714284,
+        4
+      ],
+      [
+        4.545714285714285,
+        5
+      ],
+      [
+        4.785714285714286,
+        5
+      ],
+      [
+        5.402857142857142,
+        6
+      ],
+      [
+        5.642857142857142,
+        6
+      ],
+      [
+        6.26,
+        0
+      ],
+      [
+        6.5,
+        0
+      ],
+      [
+        7,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_11_trace_teeth. EXACTLY 3 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 48:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable FRONT/SLIGHTLY TOP-DOWN transparent-cheek oral cutaway that clearly reveals BOTH left and right posterior molars and upper/lower dental arches at once; use this same view in every tile. A sagittal profile cannot show both molar sides, so do not use it. Tile poses: TILE 1: single tongue resting centrally low, upper and lower dental arches visible. TILE 2: tongue TIP touching inside of UPPER VIEWER-LEFT tooth row near molars. TILE 3: tongue TIP touching inside of UPPER FRONT teeth at center. TILE 4: tongue TIP touching inside of UPPER VIEWER-RIGHT tooth row near molars. TILE 5: tongue TIP touching inside of LOWER VIEWER-RIGHT tooth row near molars. TILE 6: tongue TIP touching inside of LOWER FRONT teeth at center. TILE 7: tongue TIP touching inside of LOWER VIEWER-LEFT tooth row near molars. TILE 8: single tongue resting centrally low, upper and lower dental arches visible. TILE 9: single tongue resting centrally low, upper and lower dental arches visible. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_13_clock_click",
+    "title": "똑딱 소리 내기",
+    "instruction": "혀끝을 윗니 뒤쪽에 붙였다 떼며 똑딱 소리를 내보세요.",
+    "caption": "혀끝을 붙였다 떼며 똑딱 소리를 내보세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "oralCutaway",
+    "pilot_order": null,
+    "motion_prompt": "Demonstrate a gentle clock-like tongue click: lift the tongue tip to the alveolar ridge behind the upper front teeth, create contact, release cleanly, and return to neutral in an even rhythm.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_13_clock_click.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "sagittal",
+    "poses": [
+      "tongue tip resting low behind lower front teeth",
+      "tongue TIP gently touching alveolar ridge just behind UPPER FRONT TEETH; anterior tongue raised while posterior tongue relaxed",
+      "tongue tip just RELEASED from upper ridge and lowered, contact clearly absent"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        1.076,
+        1
+      ],
+      [
+        1.3,
+        1
+      ],
+      [
+        1.8760000000000001,
+        2
+      ],
+      [
+        2.1,
+        2
+      ],
+      [
+        2.676,
+        1
+      ],
+      [
+        2.9000000000000004,
+        1
+      ],
+      [
+        3.476,
+        2
+      ],
+      [
+        3.7,
+        2
+      ],
+      [
+        4.276,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_13_clock_click. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: tongue tip resting low behind lower front teeth. TILE 2: tongue TIP gently touching alveolar ridge just behind UPPER FRONT TEETH; anterior tongue raised while posterior tongue relaxed. TILE 3: tongue tip just RELEASED from upper ridge and lowered, contact clearly absent. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  },
+  {
+    "id": "tongue_14_tongue_click",
+    "title": "혀 차기 연습",
+    "instruction": "강아지를 부르듯 혀 차기 소리를 천천히 반복하세요.",
+    "caption": "혀 차기 소리를 천천히 따라 하세요.",
+    "seconds": 5,
+    "safety": "general",
+    "visual": "faceCloseUp",
+    "pilot_order": null,
+    "motion_prompt": "Open the lips slightly and demonstrate a clear gentle tongue-click calling motion, repeating three evenly paced contact-and-release cycles, then return to a relaxed mouth.",
+    "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+    "destination_after_review": "assets/videos/training/tongue_14_tongue_click.mp4",
+    "unlinked_file_exists": false,
+    "status": "awaiting_atlas",
+    "clinical_review": "pending",
+    "mode": "face",
+    "poses": [
+      "lips slightly parted with tongue resting, comfortable jaw",
+      "mouth slightly open, SINGLE tongue tip raised to touch the ridge just behind upper front teeth, contact visible; sides of tongue not duplicated",
+      "tongue released from ridge and lowered inside mouth, lips still slightly parted, stable relaxed jaw"
+    ],
+    "layout": {
+      "columns": 1,
+      "rows": 3
+    },
+    "timeline": [
+      [
+        0,
+        0
+      ],
+      [
+        0.5,
+        0
+      ],
+      [
+        0.9114285714285714,
+        1
+      ],
+      [
+        1.0714285714285714,
+        1
+      ],
+      [
+        1.4828571428571429,
+        2
+      ],
+      [
+        1.6428571428571428,
+        2
+      ],
+      [
+        2.0542857142857143,
+        1
+      ],
+      [
+        2.2142857142857144,
+        1
+      ],
+      [
+        2.6257142857142854,
+        2
+      ],
+      [
+        2.7857142857142856,
+        2
+      ],
+      [
+        3.1971428571428566,
+        1
+      ],
+      [
+        3.3571428571428568,
+        1
+      ],
+      [
+        3.7685714285714282,
+        2
+      ],
+      [
+        3.9285714285714284,
+        2
+      ],
+      [
+        4.34,
+        0
+      ],
+      [
+        4.5,
+        0
+      ],
+      [
+        5,
+        0
+      ]
+    ],
+    "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_14_tongue_click. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: lips slightly parted with tongue resting, comfortable jaw. TILE 2: mouth slightly open, SINGLE tongue tip raised to touch the ridge just behind upper front teeth, contact visible; sides of tongue not duplicated. TILE 3: tongue released from ridge and lowered inside mouth, lips still slightly parted, stable relaxed jaw. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+    "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+    "version": "v001"
+  }
+]

@@ -1,0 +1,103 @@
+{
+  "id": "tongue_14_tongue_click",
+  "title": "혀 차기 연습",
+  "instruction": "강아지를 부르듯 혀 차기 소리를 천천히 반복하세요.",
+  "caption": "혀 차기 소리를 천천히 따라 하세요.",
+  "seconds": 5,
+  "safety": "general",
+  "visual": "faceCloseUp",
+  "pilot_order": null,
+  "motion_prompt": "Open the lips slightly and demonstrate a clear gentle tongue-click calling motion, repeating three evenly paced contact-and-release cycles, then return to a relaxed mouth.",
+  "face_animation_policy": "중립·목표·복귀의 얼굴 전체 자세를 먼저 설계한다. 운동에 필요한 턱·볼·입꼬리·턱선을 함께 연동하고 선화·명암·질감을 맞춘다. 정지 얼굴 위에 입 도형만 교체하는 방식은 사용하지 않는다. 혀 독립 운동의 턱 안정은 해당 운동 의도를 따른다.",
+  "destination_after_review": "assets/videos/training/tongue_14_tongue_click.mp4",
+  "unlinked_file_exists": false,
+  "status": "awaiting_atlas",
+  "clinical_review": "pending",
+  "mode": "face",
+  "poses": [
+    "lips slightly parted with tongue resting, comfortable jaw",
+    "mouth slightly open, SINGLE tongue tip raised to touch the ridge just behind upper front teeth, contact visible; sides of tongue not duplicated",
+    "tongue released from ridge and lowered inside mouth, lips still slightly parted, stable relaxed jaw"
+  ],
+  "layout": {
+    "columns": 1,
+    "rows": 3
+  },
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      0.9114285714285714,
+      1
+    ],
+    [
+      1.0714285714285714,
+      1
+    ],
+    [
+      1.4828571428571429,
+      2
+    ],
+    [
+      1.6428571428571428,
+      2
+    ],
+    [
+      2.0542857142857143,
+      1
+    ],
+    [
+      2.2142857142857144,
+      1
+    ],
+    [
+      2.6257142857142854,
+      2
+    ],
+    [
+      2.7857142857142856,
+      2
+    ],
+    [
+      3.1971428571428566,
+      1
+    ],
+    [
+      3.3571428571428568,
+      1
+    ],
+    [
+      3.7685714285714282,
+      2
+    ],
+    [
+      3.9285714285714284,
+      2
+    ],
+    [
+      4.34,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_14_tongue_click. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Use the attached adult Korean female illustrated therapist as the exact character and style reference. Same face, dark ponytail, white uniform, warm clinic background. Same front-facing head-and-shoulders framing in every tile, mouth and whole jaw clearly visible, same scale and head position, calm gaze. Render each WHOLE face as coherent artwork, including coordinated lip corners, cheeks, jaw, chin and natural linework, texture and shadows. No separately pasted vector mouth. Head/camera stable; jaw moves naturally for lip shapes, remains stable for independent tongue exercises. Tile poses: TILE 1: lips slightly parted with tongue resting, comfortable jaw. TILE 2: mouth slightly open, SINGLE tongue tip raised to touch the ridge just behind upper front teeth, contact visible; sides of tongue not duplicated. TILE 3: tongue released from ridge and lowered inside mouth, lips still slightly parted, stable relaxed jaw. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI.",
+  "reference": "/Users/youngwhankim/Project/mj_dialog/output/training_video/lip_03_a_to_i/v002/source/pose_neutral.png",
+  "version": "v001",
+  "revised_prompt": "Use case: scientific-educational. Animation keyframe atlas for tongue_14_tongue_click. EXACTLY 1 columns and 3 rows of equal rectangular 16:9 tiles, edge-to-edge, NO gaps, NO borders, NO labels. Overall aspect ratio 16:27. Read tiles row-major left-to-right then top-to-bottom. Each tile contains ONE complete scene, not multiple views. Create a clean non-graphic clinical educational 2D illustration matching the warm cel-shaded palette of the reference. Neutral pale warm background, large isolated mouth anatomy, no extra therapist portrait or inset. Keep the exact SAME oral geometry, camera and scale across all tiles. Distinguish ivory teeth, pink gingiva and hard/soft palate, single pink muscular tongue. Clear natural contact surfaces, no intersection through teeth or roof. No gore, saliva or surgery. This is an illustrative draft for professional review. Stable SIDE SAGITTAL mouth cutaway facing VIEWER-LEFT: lips/front teeth at left, throat at right; upper/lower jaw, alveolar ridge, hard palate and posterior soft palate visible. Do not show a frontal view. Tile poses: TILE 1: tongue tip resting low behind lower front teeth. TILE 2: tongue TIP gently touching alveolar ridge just behind UPPER FRONT TEETH; anterior tongue raised while posterior tongue relaxed. TILE 3: tongue tip just RELEASED from upper ridge and lowered, contact clearly absent. Crucial: each pose must differ by the REQUESTED movement, not random expression. One tongue only, no extra teeth, no detached lips, no camera cuts, no text, numbers, arrows, captions, logos, watermark or UI. This replaces a failed front-face contact pose: use ONLY the side oral cutaway so contact behind upper incisors is unambiguous. Repeated tongue clicking will be animated from these keyframes. No external tongue.",
+  "render_mode": "sagittal",
+  "generation_note": "Front-face tongue contact was ambiguous; final uses a sagittal cutaway.",
+  "generated_source": "/Users/youngwhankim/.codex/generated_images/01a1715a-b4dd-7910-9bc5-1a2075721100/exec-ee28b536-d083-4618-b555-7b07964bab74.png"
+}

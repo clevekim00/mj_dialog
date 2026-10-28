@@ -97,6 +97,7 @@ async def create_job(
     target_phone: str = Form(...),
     position: str = Form(...),
     target_occurrence: int = Form(0),
+    all_occurrences: bool = Form(False),
     content_version: str = Form(...),
     baseline_score: float | None = Form(None),
     owner: str = Depends(require_client),
@@ -135,7 +136,7 @@ async def create_job(
     background_tasks.add_task(
         _run_reserved_job, job_id, payload, audio.filename or "recording.m4a", text,
         language, target_phone, position, target_occurrence, content_version,
-        baseline_score, backend,
+        baseline_score, backend, all_occurrences,
     )
     return {"jobId": job_id, "status": "queued"}
 
@@ -159,6 +160,7 @@ def _analyze_job(
     content_version: str,
     baseline_score: float | None,
     backend: AcousticBackend,
+    all_occurrences: bool = False,
 ) -> None:
     with _lock:
         job = _jobs.get(job_id)
@@ -189,7 +191,7 @@ def _analyze_job(
                         _message(language, "occurrence", str(target_occurrence + 1))
                     )
                 score_validated = bool(getattr(backend, "score_validated", False))
-                phonemes = [dict(matches[target_occurrence])]
+                phonemes = [dict(match) for match in matches] if all_occurrences else [dict(matches[target_occurrence])]
                 if not score_validated:
                     for phone in phonemes:
                         phone.update(practiceScore=None, gop=None, scoreAvailable=False)

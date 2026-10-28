@@ -48,7 +48,7 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>SpeechBridge requires microphone access to record your voice for pronunciation feedback.</string>
+	<string>SpeechBridge uses the microphone to record speech practice and enter sentences by voice.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>SpeechBridge uses the camera to photograph text for sentence practice or show your mouth during practice.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

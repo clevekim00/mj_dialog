@@ -87,6 +87,7 @@ flutter:
     - assets/images/ai_speech_2d_tutor.png
     - assets/videos/training/
     - assets/pronunciation/content/
+    - assets/pronunciation/liquid_examples/
     - assets/resources/catalog/
     - assets/resources/ui/
 

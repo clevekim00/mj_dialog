@@ -36,6 +36,7 @@ class PronunciationAnalysisClient {
     required String contentVersion,
     required String language,
     double? baselineScore,
+    bool allOccurrences = false,
     CancelToken? cancelToken,
   }) async {
     final uri = Uri.tryParse(baseUrl);
@@ -114,6 +115,7 @@ class PronunciationAnalysisClient {
           'target_phone': target.phone,
           'position': target.position.name,
           'target_occurrence': 0,
+          if (allOccurrences) 'all_occurrences': true,
           'content_version': contentVersion,
           'baseline_score': ?baselineScore,
         }),

@@ -22,6 +22,22 @@ class SttService {
   SttService({this.languageTag = 'ko-KR', bool? useIosNative})
     : _useIosNative = useIosNative ?? (!kIsWeb && Platform.isIOS);
 
+  /// Terminal state and errors are observable independently of transcript text.
+  /// Consumers must still stop/dispose their session when notified.
+  final sessionEnded = ValueNotifier<int>(0);
+  final recognitionError = ValueNotifier<String?>(null);
+  bool _disposed = false;
+  bool _androidSessionStarted = false;
+  Future<void>? _disposing;
+
+  void _ended() {
+    if (!_disposed) sessionEnded.value++;
+  }
+
+  void _error(String code) {
+    if (!_disposed) recognitionError.value = code;
+  }
+
   final bool _useIosNative;
 
   final String languageTag;
@@ -78,6 +94,10 @@ class SttService {
         onError: _handleError,
         onStatus: (status) {
           debugPrint('[STT] status: $status');
+          if (_androidSessionStarted &&
+              (status == 'done' || status == 'notListening')) {
+            _ended();
+          }
         },
       );
     } catch (e) {
@@ -105,6 +125,8 @@ class SttService {
       '[STT] start requested: enabled=$_sttEnabled '
       'isListening=${_speechToText.isListening}',
     );
+    if (_disposed) return false;
+    recognitionError.value = null;
     if (!_sttEnabled) {
       final initialized = await init();
       if (!initialized) {
@@ -113,6 +135,7 @@ class SttService {
       }
     }
 
+    if (_disposed) return false;
     if (_useIosNative) {
       if (_iosListening) {
         await stopListening();
@@ -141,9 +164,13 @@ class SttService {
                   terminal.complete();
                 }
                 await handling;
+                if (event['error'] != null) _error(event['error'].toString());
+                if (isFinal || event['done'] == true) _ended();
               },
               onError: (Object error) {
                 debugPrint('[STT] iOS event error: $error');
+                _error('recognition_failed');
+                _ended();
                 if (!terminal.isCompleted) terminal.complete();
               },
             );
@@ -154,6 +181,11 @@ class SttService {
               'contextualStrings': contextualStrings,
             }) ??
             false;
+        if (_disposed) {
+          await _iosSpeechChannel.invokeMethod<void>('cancelListening');
+          _iosListening = false;
+          return false;
+        }
         debugPrint('[STT] iOS listen started: $_iosListening');
         return _iosListening;
       } catch (error) {
@@ -170,10 +202,12 @@ class SttService {
 
     try {
       final listenWatch = Stopwatch()..start();
+      _androidSessionStarted = true;
       await _speechToText.listen(
         onResult: (SpeechRecognitionResult result) async {
           debugPrint('[STT] result received (final: ${result.finalResult})');
           await onResult(result.recognizedWords, result.finalResult);
+          if (result.finalResult) _ended();
         },
         localeId: languageTag.replaceAll('-', '_'),
         listenOptions: SpeechListenOptions(
@@ -182,6 +216,10 @@ class SttService {
           listenMode: ListenMode.dictation,
         ),
       );
+      if (_disposed) {
+        await _speechToText.cancel();
+        return false;
+      }
       listenWatch.stop();
       debugPrint(
         '[STT] listen started: isListening=${_speechToText.isListening} '
@@ -236,23 +274,31 @@ class SttService {
     debugPrint('[STT] stopped: isListening=${_speechToText.isListening}');
   }
 
-  Future<void> dispose() async {
-    if (_useIosNative) {
-      if (_iosListening) {
-        await _iosSpeechChannel.invokeMethod<void>('cancelListening');
-      }
-      await _iosSpeechSubscription?.cancel();
-      _iosSpeechSubscription = null;
-      _iosListening = false;
-      return;
-    }
+  Future<void> dispose() => _disposing ??= _dispose();
 
-    if (_speechToText.isListening) {
-      await _speechToText.cancel();
+  Future<void> _dispose() async {
+    _disposed = true;
+    _androidSessionStarted = false;
+    try {
+      if (_useIosNative) {
+        if (_iosListening) {
+          await _iosSpeechChannel.invokeMethod<void>('cancelListening');
+        }
+        await _iosSpeechSubscription?.cancel();
+        _iosSpeechSubscription = null;
+        _iosListening = false;
+      } else if (_speechToText.isListening) {
+        await _speechToText.cancel();
+      }
+    } finally {
+      sessionEnded.dispose();
+      recognitionError.dispose();
     }
   }
 
   void _handleError(SpeechRecognitionError error) {
+    _error(error.errorMsg);
+    _ended();
     debugPrint(
       '[STT] error: ${error.errorMsg} '
       '(permanent: ${error.permanent})',

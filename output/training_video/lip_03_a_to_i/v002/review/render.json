@@ -1,0 +1,90 @@
+{
+  "status": "visual_review_draft",
+  "clinical_review": "pending",
+  "method": "image_gen full-face keyframes + local bidirectional optical flow",
+  "timeline": [
+    [
+      0,
+      "neutral"
+    ],
+    [
+      0.55,
+      "neutral"
+    ],
+    [
+      1.15,
+      "a"
+    ],
+    [
+      1.8,
+      "a"
+    ],
+    [
+      2.45,
+      "i"
+    ],
+    [
+      3.25,
+      "i"
+    ],
+    [
+      3.85,
+      "a"
+    ],
+    [
+      4.1,
+      "a"
+    ],
+    [
+      4.65,
+      "neutral"
+    ],
+    [
+      5,
+      "neutral"
+    ]
+  ],
+  "stabilization": {
+    "a": [
+      [
+        1.0007590776113022,
+        0.00012416592191738418,
+        -0.442540153883212
+      ],
+      [
+        -0.00012416592191738418,
+        1.0007590776113022,
+        0.5240256535600617
+      ]
+    ],
+    "i": [
+      [
+        1.0003597242243514,
+        -6.82017936849016e-05,
+        -0.21161441027895833
+      ],
+      [
+        6.82017936849016e-05,
+        1.0003597242243514,
+        0.5319960585333015
+      ]
+    ]
+  },
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5.0,
+  "limitations": [
+    "Image-based interpolation can soften lips or teeth during transitions.",
+    "Character identity and motion naturalness require user review; no anatomical rig or clinical validation."
+  ],
+  "outputs": {
+    "lip_03_a_to_i_v002_review.mp4": {
+      "sha256": "0a09aba99e92fd827ae6c59e1327011bccafd20cb2bb31aac5ef88cdf52caa19",
+      "bytes": 240913
+    },
+    "lip_03_a_to_i_v001_vs_v002.mp4": {
+      "sha256": "31d2ce13b37f59c73b0daa457930df72d0764ca9b75624324fa1dbd5138195f0",
+      "bytes": 398048
+    }
+  }
+}

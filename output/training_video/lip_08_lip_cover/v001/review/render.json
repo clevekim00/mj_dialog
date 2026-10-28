@@ -1,0 +1,101 @@
+{
+  "id": "lip_08_lip_cover",
+  "title": "윗입술·아랫입술 덮기",
+  "status": "rendered_review_draft",
+  "clinical_review": "pending",
+  "safety": "general",
+  "method": "image_gen whole-face/whole-oral keyframes + local bidirectional optical-flow animation",
+  "render_mode": "face_profile",
+  "timeline": [
+    [
+      0,
+      0
+    ],
+    [
+      0.5,
+      0
+    ],
+    [
+      1.22,
+      1
+    ],
+    [
+      1.5,
+      1
+    ],
+    [
+      2.2199999999999998,
+      0
+    ],
+    [
+      2.5,
+      0
+    ],
+    [
+      3.2199999999999998,
+      2
+    ],
+    [
+      3.5,
+      2
+    ],
+    [
+      4.22,
+      0
+    ],
+    [
+      4.5,
+      0
+    ],
+    [
+      5,
+      0
+    ]
+  ],
+  "alignments": [
+    {
+      "applied": true,
+      "matrix": [
+        [
+          0.9970396409053549,
+          -0.03244550538271011,
+          10.090351054578925
+        ],
+        [
+          0.03244550538271011,
+          0.9970396409053549,
+          -7.692956901650928
+        ]
+      ]
+    },
+    {
+      "applied": true,
+      "matrix": [
+        [
+          1.0016713744417192,
+          0.002463385605019565,
+          -1.7311892125227906
+        ],
+        [
+          -0.002463385605019565,
+          1.0016713744417192,
+          -3.732778437639178
+        ]
+      ]
+    }
+  ],
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "frames": 120,
+  "seconds": 5,
+  "audio": false,
+  "sha256": "b13347a5d9ae6fc5bdd60b26e55b7b516ec9177ee8ce1ae4a132a2754fe95a2d",
+  "file_bytes": 341352,
+  "atlas_sha256": "87fcd55aa4cef357c1717394eb9e8369a77886492d32057a0ea8dff8f2700e7b",
+  "limitations": [
+    "Interpolation can soften teeth or tongue borders. Human movement/contact review pending.",
+    "Muted visual articulation cannot establish actual click sound, airflow, pressure or therapeutic effects."
+  ],
+  "review_focus": "Lip overlap needs close review; three-quarter view improves visibility but does not confirm correct overlap."
+}
